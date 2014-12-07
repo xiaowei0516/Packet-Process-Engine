@@ -4,6 +4,7 @@
 #include "decode-ipv4.h"
 #include "decode-tcp.h"
 #include "decode-statistic.h"
+#include <dp_acl.h>
 
 extern void FlowHandlePacket(mbuf_t *m);
 
@@ -58,6 +59,10 @@ int DecodeTCP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     }
 
 	STAT_TCP_RECV_OK;
+
+
+	firewall_pass_rule(mbuf);
+	
 	
 	FlowHandlePacket(mbuf);
 

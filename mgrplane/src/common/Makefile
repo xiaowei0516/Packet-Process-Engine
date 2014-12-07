@@ -9,7 +9,7 @@ SOURCES:=$(wildcard *.c)
 OBJS:=$(addprefix $(BUILD_DIR)/,$(subst .c,.o,$(SOURCES)))
 DEPS:=$(addprefix $(BUILD_DIR)/,$(subst .c,.d,$(SOURCES)))
 
-PROJ_CFLAGS += -I.  
+PROJ_CFLAGS += -I.  -I$(TOP)/../include
 
 .PHONY: all clean
 

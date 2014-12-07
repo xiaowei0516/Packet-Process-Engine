@@ -73,10 +73,8 @@ cparser_cmd_commit_rule(cparser_context_t *context)
 {
 	assert(context);
 
-	int sn,rn;
+	int sn;
 	cmd_type_t cmd;
-	CLI_RESULT *blocks;
-	int rv = 0;
 	struct rcp_msg_params_s rcp_para;
 	memset(&rcp_para, 0, sizeof(struct rcp_msg_params_s));
 
@@ -92,6 +90,10 @@ cparser_cmd_commit_rule(cparser_context_t *context)
 	cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
 	LOG("after pack the message\n");
 
+	process_cli_show_cmd(recv_buf, send_buf, sn);
+
+
+#if 0
 	process_message(sn, &rn);
 	if (rn <= 0) {
 		LOG("%s error\n", __FUNCTION__);
@@ -100,10 +102,7 @@ cparser_cmd_commit_rule(cparser_context_t *context)
 	blocks = (CLI_RESULT *) (recv_buf + MESSAGE_HEADER_LENGTH);
 	rv = blocks[0].result_code;
 	sec_error_print(rv, NULL);
-
-	cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
-	LOG("after pack the message\n");
-	
+#endif
 	return CPARSER_OK;
 }
 

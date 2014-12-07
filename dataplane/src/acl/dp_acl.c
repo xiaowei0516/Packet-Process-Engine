@@ -1,7 +1,7 @@
 #include <sec-common.h>
 #include <shm.h>
 #include <acl_rule.h>
-
+#include "dp_acl.h"
 
 
 
@@ -39,3 +39,10 @@ uint32_t DP_Acl_Rule_Init()
 	return SEC_OK;
 	
 }
+
+
+
+
+
+
+

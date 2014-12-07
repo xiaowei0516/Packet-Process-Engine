@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-//#include <pthread.h>
 #include <stdbool.h>
 #include <signal.h>
 #include <sys/time.h>
@@ -10,6 +9,8 @@
 #include <time.h>
 
 #include <acl_rule.h>
+#include <dp_acl.h>
+#include <mbuf.h>
 
 
 extern int BuildHSTree(rule_set_t* ruleset, hs_node_t* node, unsigned int depth);
@@ -62,14 +63,7 @@ uint32_t number_bits;
 unit_tree g_acltree;
 
 
-/*****************************************************************************/
-/* Function     : range_alloc                                               */
-/* Description  : 申请匹配因子的内存                                                 */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 bool range_alloc(unsigned int* dim[DIM][2])    
 {
     int i,j;
@@ -84,27 +78,70 @@ bool range_alloc(unsigned int* dim[DIM][2])
     }
 
 	dim[0][0] = (unsigned int*)malloc(16);
+	memset((void *)dim[0][0], 0, 16);
+	
 	dim[0][1] = (unsigned int*)malloc(16);
+	memset((void *)dim[0][1], 0, 16);
+	
 	dim[1][0] = (unsigned int*)malloc(16);
+	memset((void *)dim[1][0], 0, 16);
+	
 	dim[1][1] = (unsigned int*)malloc(16);
+	memset((void *)dim[1][1], 0, 16);
+	
 	dim[2][0] = (unsigned int*)malloc(8);
+	memset((void *)dim[2][0], 0, 8);
+	
 	dim[2][1] = (unsigned int*)malloc(8);
+	memset((void *)dim[2][1], 0, 8);
+	
 	dim[3][0] = (unsigned int*)malloc(8);
+	memset((void *)dim[3][0], 0, 8);
+	
 	dim[3][1] = (unsigned int*)malloc(8);
+	memset((void *)dim[3][1], 0, 8);
+	
 	dim[4][0] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[4][0], 0, sizeof(int));
+	
 	dim[4][1] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[4][1], 0, sizeof(int));
+	
 	dim[5][0] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[5][0], 0, sizeof(int));
+	
 	dim[5][1] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[5][1], 0, sizeof(int));
+	
 	dim[6][0] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[6][0], 0, sizeof(int));
+
 	dim[6][1] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[6][1], 0, sizeof(int));
+	
 	dim[7][0] = (unsigned int*)malloc(8);
+	memset((void *)dim[7][0], 0, 8);
+	
 	dim[7][1] = (unsigned int*)malloc(8);
+	memset((void *)dim[7][1], 0, 8);
+	
 	dim[8][0] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[8][0], 0, sizeof(int));
+	
 	dim[8][1] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[8][1], 0, sizeof(int));
+	
 	dim[9][0] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[9][0], 0, sizeof(int));
+	
 	dim[9][1] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[9][1], 0, sizeof(int));
+	
 	dim[10][0] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[10][0], 0, sizeof(int));
+	
 	dim[10][1] = (unsigned int*)malloc(sizeof(int));
+	memset((void *)dim[10][1], 0, sizeof(int));
 
 
     for(i=0;i<DIM;i++)
@@ -130,7 +167,7 @@ bool range_alloc(unsigned int* dim[DIM][2])
                 {
 
                 	  free(dim[i][j]);
-                    dim[i][j] = NULL;
+                      dim[i][j] = NULL;
                 }
             }
         }
@@ -142,14 +179,7 @@ bool range_alloc(unsigned int* dim[DIM][2])
         return true;
     }
 }
-/*****************************************************************************/
-/* Function     : range_free                                               */
-/* Description  : 释放匹配因子                                                 */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 void range_free(unsigned int* dim[DIM][2])
 {
     int i = 0;
@@ -169,14 +199,7 @@ void range_free(unsigned int* dim[DIM][2])
 
 }
 
-/*****************************************************************************/
-/* Function     : hs_init                                                    */
-/* Description  : 初始化该树                                                 */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 int hs_init()
 {
     //CurrentWstNodeNum = 0;
@@ -200,14 +223,8 @@ int hs_init()
     //gNumTotalNonOverlappings = 1;
     return 0;
 }
-/*****************************************************************************/
-/* Function     : Show                                                    */
-/* Description  : 查看标识                                                 */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
+#ifdef DEBUGv2
 static void Show(uint32_t* array,uint32_t length,uint32_t bit)
 {
     printf("\nShow length = %u,bit = %u\n",length,bit);
@@ -221,15 +238,8 @@ static void Show(uint32_t* array,uint32_t length,uint32_t bit)
         }
     }
 }
- 
-/*****************************************************************************/
-/* Function     : TempSegPointCompare32                                      */
-/* Description  : for qsort 32                                                 */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+#endif
+
 static inline int TempSegPointCompare32 (const void * a1, const void * b1)
 {
 	segmentpt32_t* a = (segmentpt32_t *)a1;
@@ -241,14 +251,7 @@ static inline int TempSegPointCompare32 (const void * a1, const void * b1)
 	else
 		return 1;
 }
-/*****************************************************************************/
-/* Function     : TempSegPointCompare64                                      */
-/* Description  : for qsort 64                                                 */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int TempSegPointCompare64 (const void * a1, const void * b1)
 {
 	int i;
@@ -265,14 +268,7 @@ static inline int TempSegPointCompare64 (const void * a1, const void * b1)
 	}
 	return 0;
 }
-/*****************************************************************************/
-/* Function     : TempSegPointCompare128                                      */
-/* Description  : for qsort 128                                                */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int TempSegPointCompare128 (const void * a1, const void * b1)
 {
 	int i;
@@ -290,14 +286,7 @@ static inline int TempSegPointCompare128 (const void * a1, const void * b1)
 	return 0;
 }
 
-/*****************************************************************************/
-/* Function     : SegPointCompare32                                      */
-/* Description  : for qsort 32                                                */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int SegPointCompare32 (const void * a, const void * b)
 {
 	if ( *(uint32_t*)a < *(uint32_t*)b )
@@ -307,14 +296,7 @@ static inline int SegPointCompare32 (const void * a, const void * b)
 	else 
 		return 1;
 }
-/*****************************************************************************/
-/* Function     : SegPointCompare_64_128                                     */
-/* Description  : for qsort 64、128                                          */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int SegPointCompare_64_128 (const void * a1, const void * b1)
 {
 	uint32_t i;
@@ -336,14 +318,7 @@ static inline int SegPointCompare_64_128 (const void * a1, const void * b1)
 	}
 	return 0;
 }
-/*****************************************************************************/
-/* Function     : SegPointCompare_64_128_nsf                                 */
-/* Description  : for qsort 64、128                                         */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int SegPointCompare_64_128_nsf (const void * a1, const void * b1,unsigned int number_bits)
 {
 	uint32_t i;
@@ -365,14 +340,7 @@ static inline int SegPointCompare_64_128_nsf (const void * a1, const void * b1,u
 	}
 	return 0;
 }
-/*****************************************************************************/
-/* Function     : SegPointCompare128                                     */
-/* Description  : for qsort 128                                          */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int SegPointCompare128 (const void * a1, const void * b1)
 {
 	uint32_t i;
@@ -395,14 +363,7 @@ static inline int SegPointCompare128 (const void * a1, const void * b1)
 	return 0;
 }
 
-/*****************************************************************************/
-/* Function     : SegPointCompare128_nsf                                     */
-/* Description  : for qsort 128                                          */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int SegPointCompare128_nsf (const void * a1, const void * b1,uint32_t num_bits)
 {
 	uint32_t i;
@@ -425,14 +386,7 @@ static inline int SegPointCompare128_nsf (const void * a1, const void * b1,uint3
 	return 0;
 }
 
-/*****************************************************************************/
-/* Function     : SegPointCompare                                     */
-/* Description  : for qsort 128                                          */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int SegPointCompare(const void * a1, const void * b1)
 {
 	uint32_t i;
@@ -454,14 +408,7 @@ static inline int SegPointCompare(const void * a1, const void * b1)
 	}
 	return 0;
 }
-/*****************************************************************************/
-/* Function     : Assign                                                     */
-/* Description  : for qsort                                                  */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int Assign(uint32_t* destination, uint32_t* source, int number_of_bits)
 {
 	int i;
@@ -477,14 +424,7 @@ static inline int Assign(uint32_t* destination, uint32_t* source, int number_of_
 	return(1);
 }
 
-/*****************************************************************************/
-/* Function     : Assign_DiffBits                                                     */
-/* Description  :                                                   */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int Assign_DiffBits(uint32_t* destination, int bits_destination, uint32_t* source, int bits_source)
 {
 	int i;
@@ -506,14 +446,7 @@ static inline int Assign_DiffBits(uint32_t* destination, int bits_destination, u
 	}
 	return(1);
 }
-/*****************************************************************************/
-/* Function     : Assign_RuleList                                                     */
-/* Description  :                                                   */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int Assign_RuleList(rule_t* rd, rule_t* rs)
 {
 	int i, number_of_bits;
@@ -549,14 +482,7 @@ static inline int Assign_RuleList(rule_t* rd, rule_t* rs)
 	return(1);
 }
 
-/*****************************************************************************/
-/* Function     : ShowRule                                                     */
-/* Description  :  Show a Rule                                                  */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 void ShowRule(rule_set_t* ruleset, uint32_t ruleNum)
 {
 	int i;
@@ -602,14 +528,7 @@ void ShowRule(rule_set_t* ruleset, uint32_t ruleNum)
                 }
     }
 }
-/*****************************************************************************/
-/* Function     : ShowRule                                                     */
-/* Description  :  Show a Rule                                                  */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 int Assign_SegmentPoints_32(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoints, segmentpt32_t* tempPoints_32)
 {
 
@@ -660,14 +579,7 @@ int Assign_SegmentPoints_32(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoin
 
     return(1);
 }
-/*****************************************************************************/
-/* Function     : Assign_SegmentPoints_64                              */
-/* Description  :                                                    */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 int Assign_SegmentPoints_64(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoints, segmentpt64_t* tempPoints_128)
 {
 
@@ -720,14 +632,7 @@ int Assign_SegmentPoints_64(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoin
     return(1);
 }
 
-/*****************************************************************************/
-/* Function     : Assign_SegmentPoints_128                              */
-/* Description  :                                                    */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 int Assign_SegmentPoints_128(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoints, segmentpt128_t* tempPoints_128)
 {
 
@@ -780,14 +685,7 @@ int Assign_SegmentPoints_128(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoi
 
     return(1);
 }
-/*****************************************************************************/
-/* Function     : Subtract                              */
-/* Description  :                                                    */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline void Subtract(uint32_t* array, int bits)
 {
 	int length = bits/32;
@@ -801,14 +699,7 @@ static inline void Subtract(uint32_t* array, int bits)
 		break;
 	}
 }
-/*****************************************************************************/
-/* Function     : Add                              */
-/* Description  :                                                    */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/
+
 static inline int Add(uint32_t* array, int bits)
 {
 	int length = bits/32;
@@ -821,14 +712,7 @@ static inline int Add(uint32_t* array, int bits)
 	}
 	return(0);
 }
-/*****************************************************************************/
-/* Function     : release_ruleset                              */
-/* Description  :                                                    */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/                 
+             
 void release_ruleset(rule_set_t* childRuleSet)
 {
     uint32_t num;
@@ -847,14 +731,7 @@ void release_ruleset(rule_set_t* childRuleSet)
     if(childRuleSet)
         free(childRuleSet);
 }
-/*****************************************************************************/
-/* Function     : Prediction                              */
-/* Description  :                                                    */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/                                                                                     
+                                                                                   
 double	Prediction (rule_set_t* ruleset)
 {
 	/* generate segments for input filtset */
@@ -1009,15 +886,7 @@ double	Prediction (rule_set_t* ruleset)
                                     
 //static time_t start_time;
 static uint32_t max_rule_id = 0;
-
-/*****************************************************************************/
-/* Function     : PreBuildHSTree                              */
-/* Description  :  pre building hyper-splitting tree via recursion           */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/   
+  
 int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, time_t second,FILE* dir,uint32_t* p_rule_complex)
 {
 
@@ -1717,14 +1586,7 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
     return	HS_SUCCESS;
 }
 
-/*****************************************************************************/
-/* Function     : BuildHSTree                                      */
-/* Description  :  building hyper-splitting tree via recursion        */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/  
+ 
 int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
 {
 
@@ -2268,16 +2130,6 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
 
 
 
-/*****************************************************************************/
-/* Function     : LinearSearch                                      */
-/* Description  :  linear search for packets; Brute force algorithm, compare each dim respectively*/
-/*                Input: num_rule and rule_pri in current nodes           */
-/*                Return: num_matched rules and matched_rule_pri        */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/  
 int LinearSearch(rule_set_t* ruleset, uint32_t num_rule, uint32_t* rule_pri, uint32_t packet[DIM][4], uint32_t* num_matched, uint32_t* matched_rule_pri){
     uint32_t i;
     *num_matched = 0;
@@ -2303,35 +2155,23 @@ int LinearSearch(rule_set_t* ruleset, uint32_t num_rule, uint32_t* rule_pri, uin
     return(1);
 }
 
-/*****************************************************************************/
-/* Function     : Matched                                      */
-/* Description  :  used in linear search to find out if the packet and the rule matched        */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/  
+ 
 int Matched(rule_t rule, uint32_t packet[DIM][4]){
     int i;
     int temp1, temp2;
-    for(i=0;i<DIM;i++){
+    for(i=0;i<DIM;i++)
+	{
         number_bits = BITNUMBER[FLAG[i]];
         temp1 = SegPointCompare_64_128(&packet[i][4-(number_bits>>5)], rule.range[i][0]);
         temp2 = SegPointCompare_64_128(rule.range[i][1], &packet[i][4-(number_bits>>5)]);
-        if((temp1!=-1) && (temp2!=-1))continue;
+        if((temp1!=-1) && (temp2!=-1))
+			continue;
         return(0);
     }
     return(1);
 }
 
-/*****************************************************************************/
-/* Function     : LookupHSTtree                                             */
-/* Description  :  test the hyper-split-tree with give 7-tuple packet        */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/ 
+ 
 int	LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* root, hs_node_t** hitnode,unsigned int* pdepth)
 {
    
@@ -2398,9 +2238,13 @@ int	LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* ro
 /*****************************************************************************/ 
 int LookupPacket(rule_set_t* ruleset, hs_node_t* root, uint32_t packet[DIM][4], hs_node_t** hitnode)
 {
-	int i;
+	
 	hs_node_t*	node = root;
     unsigned int number_bits;
+
+#ifdef DEBUGv2
+	uint32_t i;
+#endif
 
     node = root;
 
@@ -2564,6 +2408,116 @@ static int _FreeRootNode(hs_node_t *rootnode, int depth)
     return HS_SUCCESS;
 }
 
+
+bool acltree_lookup(mbuf_t* p, rule_set_t* ruleset, hs_node_t* root,rule_t** hitrule)
+{
+    int i;
+    uint32_t packet[DIM][4];
+    hs_node_t* hitnode = NULL;
+    uint8_t* mac_src = NULL;
+    uint8_t* mac_dst = NULL;
+  
+    memset(packet,0,DIM*4*4);
+    packet[9][3] = p->ipv4.sip;
+    packet[10][3] = p->ipv4.dip;
+    mac_src = p->eth_src;
+    mac_dst = p->eth_dst;
+    if (mac_src && mac_dst)
+    {
+        packet[2][2] = mac_src[0] * 256 + mac_src[1];
+        packet[2][3] = mac_src[2] * 16777216 + mac_src[3] * 65536 + mac_src[4] * 256 + mac_src[5];
+        //printf("\nsmac = %X-%X-%X-%X-%X-%X\n",mac_src[0],mac_src[1],mac_src[2],mac_src[3],mac_src[4],mac_src[5]);
+
+        packet[3][2] = mac_dst[0] * 256 + mac_dst[1];
+        packet[3][3] = mac_dst[2] * 16777216 + mac_dst[3] * 65536 + mac_dst[4] * 256 + mac_dst[5];
+        //printf("\ndmac = %X-%X-%X-%X-%X-%X\n",mac_dst[0],mac_dst[1],mac_dst[2],mac_dst[3],mac_dst[4],mac_dst[5]);
+    }
+    
+    packet[4][3] = p->sport;
+    packet[5][3] = p->dport;
+    packet[8][3] = p->proto;    
+        
+    if(!ruleset || !root)
+    {
+        printf("\nnot ready\n");
+        return false;
+    }
+    
+    LookupPacket(ruleset,root,packet,&hitnode);
+    
+    if(NULL == hitnode)
+    {
+        return false;
+    }
+
+    for(i=0;i<hitnode->num_rule;i++)
+    {
+        *hitrule = &(ruleset->ruleList[hitnode->rule[i]]);
+        if(!*hitrule )
+        {
+            continue;
+        }
+
+		if((*hitrule)->pri == ruleset->num - 1)
+		{
+			return false;
+		}
+        
+        //add check other info of the acl rule,like time etc.
+        return true;
+
+    }
+    return false;
+}
+
+bool firewall_pass_rule(mbuf_t* p)
+{
+    rule_t* hitrule = NULL;
+    bool pass_flag = false;
+
+    rule_set_t* ruleset = &(g_acltree.TreeSet);
+    hs_node_t* root = &(g_acltree.TreeNode);
+    
+    if(!ruleset->num)
+    {
+    	printf("no rule\n");
+        return false; //no rule,default deny.
+    }
+    
+    if(acltree_lookup(p,ruleset,root,&hitrule))
+    {
+    	printf("hit it\n");
+        pass_flag = true; 
+    }
+    else //not hit any rule,default deny.
+    {
+    	printf("not hit any\n");
+    	return false;
+    }
+
+    if(pass_flag)
+    {
+        if(!hitrule)
+        {
+            return false;
+        }
+		printf("id is %d\n", hitrule->id);
+		if (hitrule->action == 1)
+		{
+			 printf("action is 1\n");
+			 
+			 return false; //hit the rule ,rule action is deny
+		}
+		else
+		{
+			printf("action is 0\n");
+
+			 return true; //hit the rule ,rule action is pass
+		}  
+    }
+    return false;
+}
+
 void ReadIPRange(uint32_t ipnet, uint32_t ipmask, unsigned int* IPrange, unsigned int* IPrange1)
 {
 	/*asindmemacces IPv4 prefixes*/
@@ -2627,35 +2581,96 @@ void ReadIPRange(uint32_t ipnet, uint32_t ipmask, unsigned int* IPrange, unsigne
     printf("%x\n", IPrange1[0]);
 }
 
+bool add_guard(rule_t* guard)
+{
+	if(!guard)
+	{
+		return false;
+	}
+	guard->rule_id = 0;
+	if(!range_alloc(guard->range))
+	{
+		return false;
+	}
+	
+	
+	memset(guard->range[0][0],0,16);
+	memset(guard->range[0][1],255,16);
+	memset(guard->range[1][0],0,16);
+	memset(guard->range[1][1],255,16);
+	
 
-bool load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
+	((uint32_t *)(guard->range[2][0]))[0] = 0;
+	((uint32_t *)(guard->range[2][0]))[1] = 0;
+	((uint32_t *)(guard->range[2][1]))[0] = 255*256+255;
+	//((unsigned int*)(guard->range[2][1]))[1] = (unsigned int)(255*16777216 + 255*65536 + 255*256 + 255);
+	((uint32_t *)(guard->range[2][1]))[1] = 0xFFFFFFFF;
+	((uint32_t *)(guard->range[3][0]))[0] = 0;
+	((uint32_t *)(guard->range[3][0]))[1] = 0;
+	((uint32_t *)(guard->range[3][1]))[0] = 255*256+255;
+	//((unsigned int*)(guard->range[3][1]))[1] = (unsigned int)(255*16777216 + 255*65536 + 255*256 + 255);
+	((uint32_t *)(guard->range[3][1]))[1] = 0xFFFFFFFF;
+	
+	*guard->range[4][0] = 0;
+	*guard->range[4][1] = 65535;
+	*guard->range[5][0] = 0;
+	*guard->range[5][1] = 65535;
+	*guard->range[6][0] = 0;
+	*guard->range[6][1] = 0;
+	((uint32_t *)(guard->range[7][0]))[0] = 0;
+	((uint32_t *)(guard->range[7][0]))[1] = 0;
+	((uint32_t *)(guard->range[7][1]))[0] = (uint32_t)(-1);
+	((uint32_t *)(guard->range[7][1]))[1] = (uint32_t)(-1);
+	*guard->range[8][0] = 0;
+	*guard->range[8][1] = (uint8_t)(-1);
+	*guard->range[9][0] = 0;
+	*guard->range[9][1] = (uint32_t)(-1);
+	*guard->range[10][0] = 0;
+	*guard->range[10][1] = (uint32_t)(-1);
+	
+	return true;
+}
+
+
+
+uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
 {
 	uint32_t i = 0;
 	int count = 0;
 	unsigned int v = 0;
+	struct FILTER *tempfilt,tempfilt1;
+	tempfilt = &tempfilt1;
 	
     struct FILTSET* filtset = (struct FILTSET*)malloc(sizeof(struct FILTSET));
     if(!filtset)
     {
-        return false;
+        return SEC_NO;
     }
-
-    struct FILTER *tempfilt,tempfilt1;
-
-    filtset->numFilters = 0;
+   
     memset(filtset,0,sizeof(struct FILTSET));
 
-	tempfilt = &tempfilt1;
-
-    memset(tempfilt->dim,0,DIM*2*sizeof(int*));
-    range_alloc(tempfilt->dim);
+	
 
     if(ruleset == NULL || node == NULL)
     {
         printf("\nwrong parameters\n");
         free(filtset);
-        return false;
+        return SEC_NO;
     }
+
+	
+	if (0 != ruleset->num)
+	{
+		for(i = 0; i < ruleset->num; i++)
+		{
+			range_free(ruleset->ruleList[i].range);
+		}
+	
+		free(ruleset->ruleList);
+		ruleset->ruleList = NULL;
+		ruleset->num = 0;
+		FreeRootNode(node);
+	}
 
 	
 	for( i = 0; i < RULE_ENTRY_MAX; i++ )
@@ -2665,15 +2680,18 @@ bool load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
 			continue;
 		}
 
+		memset(tempfilt->dim, 0, DIM*2*sizeof(uint32_t *));
+	    range_alloc(tempfilt->dim);
+
 		count++;
 		tempfilt->action = (unsigned int)rule_list->rule_entry[i].rule_tuple.action;
 		tempfilt->id = i;
 		tempfilt->rule_id = i;
 
-		*tempfilt->dim[0][0] = rule_list->rule_entry[i].rule_tuple.smac[0] * 256 + rule_list->rule_entry[i].rule_tuple.smac[1];
-		*tempfilt->dim[0][1] = rule_list->rule_entry[i].rule_tuple.smac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.smac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.smac[4] * 256 + rule_list->rule_entry[i].rule_tuple.smac[5];
-		*tempfilt->dim[1][0] = rule_list->rule_entry[i].rule_tuple.dmac[0] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[1];
-		*tempfilt->dim[1][1] = rule_list->rule_entry[i].rule_tuple.dmac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.dmac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.dmac[4] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[5];
+		*tempfilt->dim[2][0] = rule_list->rule_entry[i].rule_tuple.smac[0] * 256 + rule_list->rule_entry[i].rule_tuple.smac[1];
+		*tempfilt->dim[2][1] = rule_list->rule_entry[i].rule_tuple.smac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.smac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.smac[4] * 256 + rule_list->rule_entry[i].rule_tuple.smac[5];
+		*tempfilt->dim[3][0] = rule_list->rule_entry[i].rule_tuple.dmac[0] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[1];
+		*tempfilt->dim[3][1] = rule_list->rule_entry[i].rule_tuple.dmac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.dmac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.dmac[4] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[5];
 		
 		*tempfilt->dim[4][0] = rule_list->rule_entry[i].rule_tuple.sport_start;
 		*tempfilt->dim[4][1] = rule_list->rule_entry[i].rule_tuple.sport_end;
@@ -2686,16 +2704,18 @@ bool load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
 		ReadIPRange(rule_list->rule_entry[i].rule_tuple.sip,rule_list->rule_entry[i].rule_tuple.sip_mask, tempfilt->dim[9][0], tempfilt->dim[9][1]);
 		ReadIPRange(rule_list->rule_entry[i].rule_tuple.dip,rule_list->rule_entry[i].rule_tuple.dip_mask, tempfilt->dim[10][0], tempfilt->dim[10][1]);	
 
-		
-		memcpy(&(filtset->filtArr[filtset->numFilters]),tempfilt,sizeof(struct FILTER));
+		memcpy(&(filtset->filtArr[filtset->numFilters]), tempfilt, sizeof(struct FILTER));
+			
 		filtset->numFilters++;
-
+		
 	}
     
     ruleset->num = filtset->numFilters;
-    ruleset->ruleList = (rule_t*) malloc((ruleset->num+1) * sizeof(rule_t));
+    ruleset->ruleList = (rule_t *) malloc((ruleset->num + 1) * sizeof(rule_t));
 	
-    memset(ruleset->ruleList,0,(ruleset->num + 1) * sizeof(rule_t));
+    memset(ruleset->ruleList, 0, (ruleset->num + 1) * sizeof(rule_t));
+
+	
     for (i = 0; i < ruleset->num; i++) 
 	{
         ruleset->ruleList[i].pri = i;
@@ -2706,31 +2726,22 @@ bool load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
         for (v = 0; v < DIM; v++) {
             ruleset->ruleList[i].range[v][0] = filtset->filtArr[i].dim[v][0];
             ruleset->ruleList[i].range[v][1] = filtset->filtArr[i].dim[v][1];
+			
         }
     }
 
-    
-    if(ruleset->num + 1 < RULE_ENTRY_MAX)
-    {
-        ruleset->ruleList[ruleset->num].pri = ruleset->num;
-        ruleset->num++;
-    }
-    else
-    {
-        range_free(ruleset->ruleList[ruleset->num].range);
-    }
-    
-    
+	add_guard(&ruleset->ruleList[ruleset->num]);
+    ruleset->ruleList[ruleset->num].pri = ruleset->num;
+    ruleset->num++;
+        
     if(BuildHSTree(ruleset,node,0) != HS_SUCCESS)
     {
         free(filtset);
-        return false;
+        return SEC_NO;
     }
-    
-    range_free(tempfilt->dim);
    
     free(filtset);
-    return true;
+    return SEC_OK;
 }
 
 

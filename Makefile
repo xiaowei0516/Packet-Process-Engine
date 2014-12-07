@@ -70,11 +70,11 @@ include $(dir)/flow.mk
 dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/L7
 include $(dir)/l7.mk
 
-dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/acl
-include $(dir)/acl.mk
-
 dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/common
 include $(dir)/com.mk
+
+dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/acl
+include $(dir)/acl.mk
 
 dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/platform
 include $(dir)/oct.mk

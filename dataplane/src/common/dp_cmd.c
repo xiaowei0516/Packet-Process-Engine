@@ -1,5 +1,6 @@
 #include "dp_cmd.h"
 #include "decode-statistic.h"
+#include "dp_acl.h"
 
 void oct_send_response(cvmx_wqe_t *work, uint16_t opcode, void *data, uint32_t size)
 {
@@ -318,13 +319,40 @@ void dp_show_mem_pool(cvmx_wqe_t *wq, void *data)
 void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
 {
 	char out[1024];
-	uint32_t len;
+	uint32_t len, totallen = 0;
 	memset((void *)out, 0, sizeof(out));
+	uint8_t *ptr;
 
-	sprintf(out, "%s, %s\n", __DATE__, __TIME__);
-	len = strlen(out);
 
-	oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, len);
+	ptr = (uint8_t *)&out;
+
+	if (SEC_OK != load_rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode)))
+	{
+		len = sprintf((void *)ptr, "commit failed\n");
+		ptr += len;
+		totallen += len;
+		
+	}
+	else
+	{
+		printf("\nwrst case tree depth: %d\n",gWstDepth);
+		if(gChildCount)
+			printf("\naverage tree depth: %f\n",(float)gAvgDepth/gChildCount);
+		printf("\nnumber of tree nodes: %d\n",gNumTreeNode);
+		printf("\nnumber of leaf nodes: %d\n",gNumLeafNode);
+		printf("\ntotal mem: %d(KB)\n",((gNumTreeNode*8)>>10) + ((gNumLeafNode*8)>>10));
+		
+		printf("\nfinished\n");
+
+		len = sprintf((void *)ptr, "commit ok\n");
+		ptr += len;
+		totallen += len;
+	}
+
+	
+	printf("total len is %d\n",totallen);
+	
+	oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, totallen);
 } 
 
 
@@ -359,7 +387,8 @@ void oct_rx_process_command(cvmx_wqe_t *wq)
 		}
 		case COMMAND_ACL_RULE_COMMIT:
 		{
-			dp_acl_rule_commit(wq, data);	
+			dp_acl_rule_commit(wq, data);
+			break;
 		}
 		default:
 		{

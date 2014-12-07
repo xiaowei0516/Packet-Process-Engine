@@ -11,9 +11,7 @@
 rule_list_t *rule_list;
 
 
-
-
-
+extern int octeon_rpccall(uint8_t * from, uint32_t length, uint32_t fd, void *param_p, cmd_type_t cmdack, uint16_t opcode);
 static inline int Rule_compare(RCP_BLOCK_ACL_RULE_TUPLE *rule1, RCP_BLOCK_ACL_RULE_TUPLE *rule2)
 {
 	return memcmp((void *)rule1, (void *)rule2, sizeof(RCP_BLOCK_ACL_RULE_TUPLE));
@@ -374,19 +372,7 @@ int Rule_commit_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *par
 {
 	LOG("Rule_commit_acl_rule\n");
 
-	uint8_t s_buf[MAX_BUF];
-	cmd_type_t cmd_ack = COMMIT_ACL_RULE_ACK;
-
-	
-	struct rcp_msg_params_s *rcp_param_p = (struct rcp_msg_params_s *)param_p;
-
-	rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
-	
-	rcp_param_p->nparam = 1;
-		
-	send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
-		
-	return 0;
+	return octeon_rpccall(from, length, fd, param_p, COMMIT_ACL_RULE_ACK, COMMAND_ACL_RULE_COMMIT);
 }
 
 
