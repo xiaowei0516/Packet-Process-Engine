@@ -1024,9 +1024,8 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
 	//printf("\nruleset = %p, node = %p, depth = %u\n",ruleset,currNode,depth);
 
     time_t cur_time;
-    uint32_t i; 
 	uint32_t worst_rule;
-    
+    uint32_t i = 0;
     struct timeval end;
 
     if(0 == depth)
@@ -1334,9 +1333,9 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
 	/**Have not refind the following code... Go to sleep for a while... Dorm! I am coming! **/
 	/* For 3 points, directly split at the center */
 	if(maxDiffSegPts_All >= 3){
-        segmentpt32_t* tempPoints_32;
-        segmentpt64_t* tempPoints_64;
-        segmentpt128_t* tempPoints_128;
+        segmentpt32_t* tempPoints_32 = NULL;
+        segmentpt64_t* tempPoints_64 = NULL;
+        segmentpt128_t* tempPoints_128 = NULL;
 	    segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         if(number_bits == 32){
             tempPoints_32 = (segmentpt32_t*)malloc(maxDiffSegPts * sizeof(segmentpt32_t));
@@ -1918,9 +1917,9 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
 	/**Have not refind the following code... Go to sleep for a while... Dorm! I am coming! **/
 	/* For 3 points, directly split at the center */
 	if(maxDiffSegPts_All >= 3){
-        segmentpt32_t* tempPoints_32;
-        segmentpt64_t* tempPoints_64;
-        segmentpt128_t* tempPoints_128;
+        segmentpt32_t* tempPoints_32 = NULL;
+        segmentpt64_t* tempPoints_64 = NULL;
+        segmentpt128_t* tempPoints_128 = NULL;
 	    segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         if(number_bits == 32){
             tempPoints_32 = (segmentpt32_t*)malloc(maxDiffSegPts * sizeof(segmentpt32_t));
