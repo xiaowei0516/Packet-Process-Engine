@@ -87,14 +87,14 @@ cparser_match_keyword (const char *token, const int token_len,
     //kw_len = strnlen(node->param, CPARSER_MAX_TOKEN_SIZE);
     kw_len = strlen(node->param);
     if (token_len > kw_len) {
-	*is_complete = 0;
-	return CPARSER_NOT_OK;
+    *is_complete = 0;
+    return CPARSER_NOT_OK;
     }
     match_len = (kw_len < token_len ? kw_len : token_len);
     
     if (!strncmp(token, node->param, match_len)) {
-	*is_complete = (match_len == kw_len);
-	return CPARSER_OK;
+    *is_complete = (match_len == kw_len);
+    return CPARSER_OK;
     }
 
     *is_complete = 0;
@@ -133,22 +133,22 @@ cparser_match_uint (const char *token, const int token_len,
     /* The first character must be 0-9 */
     if (!isdigit(token[0])) return CPARSER_NOT_OK;
     if (1 == token_len) {
-	*is_complete = 1;
-	return CPARSER_OK;
+    *is_complete = 1;
+    return CPARSER_OK;
     }
 
     /* The 2nd character (optional) must be 0-9 or 'x' */
     if ('x' == token[1]) {
-	if ('0' != token[0]) {
-	    return CPARSER_NOT_OK;
-	}
-	is_dec = 0;
+    if ('0' != token[0]) {
+        return CPARSER_NOT_OK;
+    }
+    is_dec = 0;
     } else if (!isdigit(token[1])) {
-	return CPARSER_NOT_OK;
+    return CPARSER_NOT_OK;
     }
     if (2 == token_len) {
-	*is_complete = is_dec;
-	return CPARSER_OK;
+    *is_complete = is_dec;
+    return CPARSER_OK;
     }
 
     /*
@@ -156,13 +156,13 @@ cparser_match_uint (const char *token, const int token_len,
      * the first 2 characters are equal to '0x' or not 
      */
     if (is_dec) {
-	for (n = 2; n < token_len; n++) {
-	    if (!isdigit(token[n])) return CPARSER_NOT_OK;
-	}
+    for (n = 2; n < token_len; n++) {
+        if (!isdigit(token[n])) return CPARSER_NOT_OK;
+    }
     } else {
-	for (n = 2; n < token_len; n++) {
-	    if (!isxdigit(token[n])) return CPARSER_NOT_OK;
-	}
+    for (n = 2; n < token_len; n++) {
+        if (!isxdigit(token[n])) return CPARSER_NOT_OK;
+    }
     }
     *is_complete = 1;
     return CPARSER_OK;
@@ -187,15 +187,15 @@ cparser_match_int (const char *token, const int token_len,
 
     /* 1st digit can be 0-9,-,+ */
     if (!isdigit(token[0]) && ('-' != token[0]) && ('+' != token[0])) 
-	return CPARSER_NOT_OK;
+    return CPARSER_NOT_OK;
     if (1 == token_len) {
-	if (isdigit(token[0])) *is_complete =  1;
-	return CPARSER_OK;
+    if (isdigit(token[0])) *is_complete =  1;
+    return CPARSER_OK;
     }
 
     /* All subsequent characters must be digits */
     for (n = 1; n < token_len; n++) {
-	if (!isdigit(token[n])) return CPARSER_NOT_OK;
+    if (!isdigit(token[n])) return CPARSER_NOT_OK;
     }
     *is_complete = 1;
     return CPARSER_OK;
@@ -222,7 +222,7 @@ cparser_match_hex (const char *token, const int token_len,
     if ('x' != token[1]) return CPARSER_NOT_OK;
     if (2 == token_len) return CPARSER_OK;
     for (n = 2; n < token_len; n++) {
-	if (!isxdigit(token[n])) return CPARSER_NOT_OK;
+    if (!isxdigit(token[n])) return CPARSER_NOT_OK;
     }
     *is_complete = 1;
     return CPARSER_OK;
@@ -290,23 +290,23 @@ cparser_match_macaddr (const char *token, const int token_len,
     assert(token && node && (CPARSER_NODE_MACADDR == node->type));
     *is_complete = 0;
     for (n = 0; n < token_len; n++) {
-	if (!num_digit) {
-	    if (!isxdigit(token[n])) return CPARSER_NOT_OK;
-	    num_digit = 1;
-	} else if (1 == num_digit) {
-	    if (!isxdigit(token[n]) && (':' != token[n])) return CPARSER_NOT_OK;
-	    num_digit = 2;
-	    if (':' == token[n]) {
-		num_colon++;
-		if (num_colon > 5) return CPARSER_NOT_OK;
-		num_digit = 0;
-	    }
-	} else {
-	    if (':' != token[n]) return CPARSER_NOT_OK;
-	    num_colon++;
-	    if (num_colon > 5) return CPARSER_NOT_OK;
-	    num_digit = 0;
-	}
+    if (!num_digit) {
+        if (!isxdigit(token[n])) return CPARSER_NOT_OK;
+        num_digit = 1;
+    } else if (1 == num_digit) {
+        if (!isxdigit(token[n]) && (':' != token[n])) return CPARSER_NOT_OK;
+        num_digit = 2;
+        if (':' == token[n]) {
+        num_colon++;
+        if (num_colon > 5) return CPARSER_NOT_OK;
+        num_digit = 0;
+        }
+    } else {
+        if (':' != token[n]) return CPARSER_NOT_OK;
+        num_colon++;
+        if (num_colon > 5) return CPARSER_NOT_OK;
+        num_digit = 0;
+    }
     }
     if ((5 == num_colon) && (0 < num_digit)) *is_complete = 1;
     return CPARSER_OK;
@@ -325,28 +325,28 @@ cparser_match_ipv4addr (const char *token, const int token_len,
     assert(token && node && (CPARSER_NODE_IPV4ADDR == node->type));
     *is_complete = 0;
     for (n = 0; n < token_len; n++) {
-	assert((unsigned int)num_digit < 4);
-	if (!num_digit) {
-	    if (!isdigit(token[n])) return CPARSER_NOT_OK;
-	    num_digit++;
-	} else if (3 == num_digit) {
-	    if ('.' != token[n]) return CPARSER_NOT_OK;
-	    num_dot++;
-	    if (num_dot > 3) return CPARSER_NOT_OK;
-	    num_digit = 0;
-	} else {
-	    if (!isdigit(token[n]) && ('.' != token[n])) return CPARSER_NOT_OK;
-	    num_digit++;
-	    if ('.' == token[n]) {
-		num_dot++;
-		if (num_dot > 3) return CPARSER_NOT_OK;
-		num_digit = 0;
-	    } else if (3 == num_digit) {
+    assert((unsigned int)num_digit < 4);
+    if (!num_digit) {
+        if (!isdigit(token[n])) return CPARSER_NOT_OK;
+        num_digit++;
+    } else if (3 == num_digit) {
+        if ('.' != token[n]) return CPARSER_NOT_OK;
+        num_dot++;
+        if (num_dot > 3) return CPARSER_NOT_OK;
+        num_digit = 0;
+    } else {
+        if (!isdigit(token[n]) && ('.' != token[n])) return CPARSER_NOT_OK;
+        num_digit++;
+        if ('.' == token[n]) {
+        num_dot++;
+        if (num_dot > 3) return CPARSER_NOT_OK;
+        num_digit = 0;
+        } else if (3 == num_digit) {
                 char a[4] = { token[n-2], token[n-1], token[n] };
                 char b[4] = "255";
                 if (0 < strncmp(a, b, 3)) return CPARSER_NOT_OK;
             }
-	}
+    }
     }
     if ((3 == num_dot) && (0 < num_digit)) *is_complete = 1;
     return CPARSER_OK;
@@ -520,14 +520,14 @@ cparser_get_uint_internal (const char *token, const int token_len, void *value)
     assert(token && val);
     *val = old = 0;
     for (n = 0; n < token_len; n++) {
-	if (('0' <= token[n]) && ('9' >= token[n])) {
-	    d = token[n] - '0';
-	} else {
-	    assert(0); /* not a hex digit! */
-	}
-	new = (old * 10) + d;
-	if (((new - d) / 10) != old) return CPARSER_NOT_OK;
-	old = new;
+    if (('0' <= token[n]) && ('9' >= token[n])) {
+        d = token[n] - '0';
+    } else {
+        assert(0); /* not a hex digit! */
+    }
+    new = (old * 10) + d;
+    if (((new - d) / 10) != old) return CPARSER_NOT_OK;
+    old = new;
     }
     *val = new;
     return CPARSER_OK;
@@ -545,14 +545,14 @@ cparser_get_uint64_internal (const char *token, const int token_len, void *value
     assert(token && val);
     *val = old = 0;
     for (n = 0; n < token_len; n++) {
-	if (('0' <= token[n]) && ('9' >= token[n])) {
-	    d = token[n] - '0';
-	} else {
-	    assert(0); /* not a hex digit! */
-	}
-	new = (old * 10) + d;
-	if (((new - d) / 10) != old) return CPARSER_NOT_OK;
-	old = new;
+    if (('0' <= token[n]) && ('9' >= token[n])) {
+        d = token[n] - '0';
+    } else {
+        assert(0); /* not a hex digit! */
+    }
+    new = (old * 10) + d;
+    if (((new - d) / 10) != old) return CPARSER_NOT_OK;
+    old = new;
     }
     *val = new;
     return CPARSER_OK;
@@ -571,8 +571,8 @@ cparser_get_uint (const cparser_token_t *token, void *value)
         return CPARSER_NOT_OK; /* optional argument wasn't provided */
     }
     if ((1 < token->token_len) && ('x' == token->buf[1])) {
-	/* Hexadecmial format use cparser_get_hex() */
-	return cparser_get_hex(token, value);
+    /* Hexadecmial format use cparser_get_hex() */
+    return cparser_get_hex(token, value);
     }
     return cparser_get_uint_internal(token->buf, token->token_len, value);
 }
@@ -590,8 +590,8 @@ cparser_get_uint64 (const cparser_token_t *token, void *value)
         return CPARSER_NOT_OK; /* optional argument wasn't provided */
     }
     if ((1 < token->token_len) && ('x' == token->buf[1])) {
-	/* Hexadecmial format use cparser_get_hex64() */
-	return cparser_get_hex64(token, value);
+    /* Hexadecmial format use cparser_get_hex64() */
+    return cparser_get_hex64(token, value);
     }
     return cparser_get_uint64_internal(token->buf, token->token_len, value);
 }
@@ -612,24 +612,24 @@ cparser_get_int (const cparser_token_t *token, void *value)
     }
     assert(token->token_len > 0);
     if ('-' == token->buf[0]) {
-	sign = -1;
-	init_pos = 1;
+    sign = -1;
+    init_pos = 1;
     }
     if ('+' == token->buf[0]) {
-	init_pos = 1;
+    init_pos = 1;
     }
     if (CPARSER_OK != cparser_get_uint_internal(&token->buf[init_pos], 
                                                 token->token_len - init_pos, 
                                                 &tmp)) {
-	return CPARSER_NOT_OK;
+    return CPARSER_NOT_OK;
     }
     if (+1 == sign) {
-	if (tmp > 0x7fffffff) return CPARSER_NOT_OK;
-	*val = (int32_t)tmp;
+    if (tmp > 0x7fffffff) return CPARSER_NOT_OK;
+    *val = (int32_t)tmp;
     } else {
-	assert(-1 == sign);
-	if (tmp > 0x80000000) return CPARSER_NOT_OK;
-	*val = -((int32_t)tmp);
+    assert(-1 == sign);
+    if (tmp > 0x80000000) return CPARSER_NOT_OK;
+    *val = -((int32_t)tmp);
     }
     return CPARSER_OK;
 }
@@ -650,24 +650,24 @@ cparser_get_int64 (const cparser_token_t *token, void *value)
     }
     assert(token->token_len > 0);
     if ('-' == token->buf[0]) {
-	sign = -1;
-	init_pos = 1;
+    sign = -1;
+    init_pos = 1;
     }
     if ('+' == token->buf[0]) {
-	init_pos = 1;
+    init_pos = 1;
     }
     if (CPARSER_OK != cparser_get_uint64_internal(&token->buf[init_pos], 
                                                   token->token_len - init_pos, 
                                                   &tmp)) {
-	return CPARSER_NOT_OK;
+    return CPARSER_NOT_OK;
     }
     if (+1 == sign) {
-	if (tmp > 0x7fffffffffffffffULL) return CPARSER_NOT_OK;
-	*val = (int64_t)tmp;
+    if (tmp > 0x7fffffffffffffffULL) return CPARSER_NOT_OK;
+    *val = (int64_t)tmp;
     } else {
-	assert(-1 == sign);
-	if (tmp > 0x8000000000000000ULL) return CPARSER_NOT_OK;
-	*val = -((int64_t)tmp);
+    assert(-1 == sign);
+    if (tmp > 0x8000000000000000ULL) return CPARSER_NOT_OK;
+    *val = -((int64_t)tmp);
     }
     return CPARSER_OK;
 }
@@ -689,18 +689,18 @@ cparser_get_hex (const cparser_token_t *token, void *value)
     assert((token->token_len > 2) && ('0' == token->buf[0]) && ('x' == token->buf[1]));
     *val = old = 0;
     for (n = 2; n < token->token_len; n++) {
-	if (('0' <= token->buf[n]) && ('9' >= token->buf[n])) {
-	    d = token->buf[n] - '0';
-	} else if (('a' <= token->buf[n]) && ('f' >= token->buf[n])) {
-	    d = token->buf[n] - 'a' + 10;
-	} else if (('A' <= token->buf[n]) && ('F' >= token->buf[n])) {
-	    d = token->buf[n] - 'A' + 10;
-	} else {
-	    assert(0); /* not a hex digit! */
-	}
-	new = (old << 4) + d;
-	if (((new - d) >> 4) != old) return CPARSER_NOT_OK;
-	old = new;
+    if (('0' <= token->buf[n]) && ('9' >= token->buf[n])) {
+        d = token->buf[n] - '0';
+    } else if (('a' <= token->buf[n]) && ('f' >= token->buf[n])) {
+        d = token->buf[n] - 'a' + 10;
+    } else if (('A' <= token->buf[n]) && ('F' >= token->buf[n])) {
+        d = token->buf[n] - 'A' + 10;
+    } else {
+        assert(0); /* not a hex digit! */
+    }
+    new = (old << 4) + d;
+    if (((new - d) >> 4) != old) return CPARSER_NOT_OK;
+    old = new;
     }
     *val = new;
     return CPARSER_OK;
@@ -723,18 +723,18 @@ cparser_get_hex64 (const cparser_token_t *token, void *value)
     assert((token->token_len > 2) && ('0' == token->buf[0]) && ('x' == token->buf[1]));
     *val = old = 0;
     for (n = 2; n < token->token_len; n++) {
-	if (('0' <= token->buf[n]) && ('9' >= token->buf[n])) {
-	    d = token->buf[n] - '0';
-	} else if (('a' <= token->buf[n]) && ('f' >= token->buf[n])) {
-	    d = token->buf[n] - 'a' + 10;
-	} else if (('A' <= token->buf[n]) && ('F' >= token->buf[n])) {
-	    d = token->buf[n] - 'A' + 10;
-	} else {
-	    assert(0); /* not a hex digit! */
-	}
-	new = (old << 4) + d;
-	if (((new - d) >> 4) != old) return CPARSER_NOT_OK;
-	old = new;
+    if (('0' <= token->buf[n]) && ('9' >= token->buf[n])) {
+        d = token->buf[n] - '0';
+    } else if (('a' <= token->buf[n]) && ('f' >= token->buf[n])) {
+        d = token->buf[n] - 'a' + 10;
+    } else if (('A' <= token->buf[n]) && ('F' >= token->buf[n])) {
+        d = token->buf[n] - 'A' + 10;
+    } else {
+        assert(0); /* not a hex digit! */
+    }
+    new = (old << 4) + d;
+    if (((new - d) >> 4) != old) return CPARSER_NOT_OK;
+    old = new;
     }
     *val = new;
     return CPARSER_OK;
@@ -774,12 +774,12 @@ cparser_get_macaddr (const cparser_token_t *token, void *value)
         return CPARSER_NOT_OK; /* optional argument wasn't provided */
     }
     if ((6 != sscanf(token->buf, "%lx:%lx:%lx:%lx:%lx:%lx", 
-		     &a, &b, &c, &d, &e, &f)) ||
-	(a > 255) || (b > 255) || (c > 255) || (d > 255) || (e > 255) || 
-	(f > 255)) {
-	val->octet[0] = val->octet[1] = val->octet[2] = 
+             &a, &b, &c, &d, &e, &f)) ||
+    (a > 255) || (b > 255) || (c > 255) || (d > 255) || (e > 255) || 
+    (f > 255)) {
+    val->octet[0] = val->octet[1] = val->octet[2] = 
             val->octet[3] = val->octet[4] = val->octet[5] = 0;
-	return CPARSER_NOT_OK;
+    return CPARSER_NOT_OK;
     }
     val->octet[0] = (uint8_t)a;
     val->octet[1] = (uint8_t)b;
@@ -806,9 +806,9 @@ cparser_get_ipv4addr (const cparser_token_t *token, void *value)
         return CPARSER_NOT_OK; /* optional argument wasn't provided */
     }
     if ((4 != sscanf(token->buf, "%lu.%lu.%lu.%lu", &a, &b, &c, &d)) ||
-	(a > 255) || (b > 255) || (c > 255) || (d > 255)) {
+    (a > 255) || (b > 255) || (c > 255) || (d > 255)) {
         *val = 0;
-	return CPARSER_NOT_OK;
+    return CPARSER_NOT_OK;
     }
     *val = ((uint32_t)a) << 24;
     *val |= ((uint32_t)b) << 16;
@@ -833,7 +833,7 @@ cparser_get_file (const cparser_token_t *token, void *value)
         return CPARSER_NOT_OK; /* optional argument wasn't provided */
     }
     if (stat(token->buf, &stat_buf) || !(stat_buf.st_mode & S_IFREG)) {
-	return CPARSER_NOT_OK;
+    return CPARSER_NOT_OK;
     }
     *val = (char *)token->buf;
     return CPARSER_OK;

@@ -650,8 +650,8 @@ cparser_run (cparser_t *parser)
         cparser_input(parser, ch, ch_type);
     } /* while not done */
 
-	parser->cfg.prints(parser, "\n");
-	
+    parser->cfg.prints(parser, "\n");
+    
     parser->cfg.io_cleanup(parser);
 
     return CPARSER_OK;
@@ -663,7 +663,7 @@ cparser_init (cparser_cfg_t *cfg, cparser_t *parser)
     int n;
 
     if (!parser || !cfg || !cfg->root || !cfg->ch_erase) {
-	return CPARSER_ERR_INVALID_PARAMS;
+    return CPARSER_ERR_INVALID_PARAMS;
     }
 
     parser->cfg = *cfg;

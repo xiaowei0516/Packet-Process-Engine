@@ -6,34 +6,34 @@
 
 int main(int argc, char *argv[])
 {
-	int ch;
-	
-	while ((ch = getopt(argc, argv, "d:h")) != -1) {
-		switch (ch) {
-		case 'd':
-			debugprint = 1;
-			break;
-		}
-	}
+    int ch;
+    
+    while ((ch = getopt(argc, argv, "d:h")) != -1) {
+        switch (ch) {
+        case 'd':
+            debugprint = 1;
+            break;
+        }
+    }
 
-	if (!debugprint) {
-		daemon(0, 1);
-	}
+    if (!debugprint) {
+        daemon(0, 1);
+    }
 
 
-	server_init();
+    server_init();
 
-	if(Rule_list_init() < 0)
-	{
-		exit(1);
-	}
+    if(Rule_list_init() < 0)
+    {
+        exit(1);
+    }
 
-	printf("server init done.\n");
+    printf("server init done.\n");
 
-	printf("now server running....\n");
-	server_run();
-	
-	return 0;
+    printf("now server running....\n");
+    server_run();
+    
+    return 0;
 }
 
 

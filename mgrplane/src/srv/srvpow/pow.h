@@ -25,11 +25,11 @@
 
 
 typedef struct comm_info {
-	struct {
-		int32_t ifindex;
-		uint8_t mac[6];
-		uint32_t fd;
-	} pow;
+    struct {
+        int32_t ifindex;
+        uint8_t mac[6];
+        uint32_t fd;
+    } pow;
 }comm_info_t;
 
 

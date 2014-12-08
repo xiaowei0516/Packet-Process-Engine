@@ -44,11 +44,11 @@ typedef void (*timer_thread_fn)(Oct_Timer_Threat *, void *);
 
 struct Oct_Timer_Thread_t
 {
-	uint32_t magic;
-	uint16_t free;
-	uint16_t tick;
-	timer_thread_fn fn;
-	void *param;
+    uint32_t magic;
+    uint16_t free;
+    uint16_t tick;
+    timer_thread_fn fn;
+    void *param;
 };
 
 
@@ -73,7 +73,7 @@ extern void OCT_RX_Group_Init();
 extern int OCT_Intercept_Port_Init();
 extern int OCT_Timer_Init();
 extern int OCT_Timer_Create(uint32_t tag, cvmx_pow_tag_type_t tag_type, uint64_t qos, uint64_t grp, timer_thread_fn fn,
-								void *param, uint32_t param_len, uint16_t tick);
+                                void *param, uint32_t param_len, uint16_t tick);
 extern void OCT_Timer_Thread_Process(cvmx_wqe_t *wq);
 
 #endif

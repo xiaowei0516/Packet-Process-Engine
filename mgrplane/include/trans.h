@@ -6,36 +6,36 @@
 #include "message.h"
 
 
-#define SOCK_MAX	1027
+#define SOCK_MAX    1027
 
 typedef enum SOCK_TYPE 
 { 
-	TCP_SERVER = 0, 
-	TCP_CLIENT = 1, 
-	UDP_CLIENT = 2, 
-	UDP_SERVER = 3
+    TCP_SERVER = 0, 
+    TCP_CLIENT = 1, 
+    UDP_CLIENT = 2, 
+    UDP_SERVER = 3
 }SOCK_TYPE_T;
 
 typedef enum SOCK_STATUS {
-	INVALID = -1,
-	INITIALIZED = 0,
-	CONNETED = 1,
-	OPERATIONAL = 2,
+    INVALID = -1,
+    INITIALIZED = 0,
+    CONNETED = 1,
+    OPERATIONAL = 2,
 } SOCK_STATUS_T;
 
 
 
 
 typedef struct tag_SOCK_MAP {
-	SOCK_STATUS_T status;
-	int conn_num;
+    SOCK_STATUS_T status;
+    int conn_num;
 
-	int32_t account_type;
-	int32_t account_id;		/*0:admin 1:main 2~5:user1~user4 6:debug*/
-	int8_t login_tool[10];
+    int32_t account_type;
+    int32_t account_id;     /*0:admin 1:main 2~5:user1~user4 6:debug*/
+    int8_t login_tool[10];
 
-	struct sockaddr_in addr;
-	SOCK_TYPE_T sock_type;
+    struct sockaddr_in addr;
+    SOCK_TYPE_T sock_type;
 } SOCK_MAP;
 
 

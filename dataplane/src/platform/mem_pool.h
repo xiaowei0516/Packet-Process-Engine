@@ -18,38 +18,38 @@
 
 typedef struct MEM_SLICE_CTRL_B_TAG_S
 {
-	uint32_t magic;
-	uint16_t pool_id;
-	uint8_t subpool_id;
-	uint8_t  ref;
-	struct list_head list;
+    uint32_t magic;
+    uint16_t pool_id;
+    uint8_t subpool_id;
+    uint8_t  ref;
+    struct list_head list;
 }Mem_Slice_Ctrl_B;
 
 
 
 typedef struct MEM_SLICE_CHAIN_TAG_S
 {
-	cvmx_spinlock_t chain_lock;
-	uint32_t freenum;
-	struct list_head head;
+    cvmx_spinlock_t chain_lock;
+    uint32_t freenum;
+    struct list_head head;
 }Mem_Slice_Chain;
 
 typedef struct MEM_POOL_CTRL_TAG_S
 {
-	int32_t global_index;
-	Mem_Slice_Chain msc[MEM_POOL_INTERNAL_NUM];
+    int32_t global_index;
+    Mem_Slice_Chain msc[MEM_POOL_INTERNAL_NUM];
 }Mem_Pool_Ctrl;
 
 
 
 typedef struct MEM_POOL_CFG_TAG_S
 {
-	void *start;
-	uint32_t totalsize;
-	uint32_t slicesize;
-	uint32_t slicenum;
-	uint32_t datasize;
-	Mem_Pool_Ctrl mpc;
+    void *start;
+    uint32_t totalsize;
+    uint32_t slicesize;
+    uint32_t slicenum;
+    uint32_t datasize;
+    Mem_Pool_Ctrl mpc;
 }CACHE_ALIGNED Mem_Pool_Cfg;
 
 
@@ -95,13 +95,13 @@ typedef struct MEM_POOL_CFG_TAG_S
 
 static inline void *mem_pool_fpa_slice_alloc(int pool_id)
 {
-	return cvmx_fpa_alloc(pool_id);
+    return cvmx_fpa_alloc(pool_id);
 }
 
 
 static inline void mem_pool_fpa_slice_free(void *buf, int pool_id)
 {
-	cvmx_fpa_free(buf, pool_id, 0);
+    cvmx_fpa_free(buf, pool_id, 0);
 }
 
 

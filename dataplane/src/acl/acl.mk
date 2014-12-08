@@ -39,14 +39,14 @@ LIBACL_CLEAN_LIST  :=  $(LIBACL_CLEAN_LIST) $(LIBACL_OBJ_$(d)) $(LIBACL_DEPS_$(d
 -include $(LIBACL_DEPS_$(d))
 
 $(LIBRARY_ACL): $(LIBACL_OBJ_$(d))
-    $(AR) -cr $@ $^
+	$(AR) -cr $@ $^
 
 $(OBJ_DIR)/%.o: $(d)/%.c
-    $(COMPILE)
+	$(COMPILE)
 
 
 $(OBJ_DIR)/%.o: $(d)/%.S
-    $(ASSEMBLE)
+	$(ASSEMBLE)
 
 #  standard component Makefile footer
 

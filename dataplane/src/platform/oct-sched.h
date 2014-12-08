@@ -20,13 +20,13 @@
 
 typedef struct OCT_SCHED_tag_t
 {
-	uint32_t  watchdog_disabled;
-	uint32_t  watchdog_retry;
-	struct
-	{
-		uint32_t watchdog_enabled;
-		uint32_t watchdog_ok;
-	}data[CPU_HW_RUNNING_MAX];
+    uint32_t  watchdog_disabled;
+    uint32_t  watchdog_retry;
+    struct
+    {
+        uint32_t watchdog_enabled;
+        uint32_t watchdog_ok;
+    }data[CPU_HW_RUNNING_MAX];
 }oct_sched_t;
 
 

@@ -11,32 +11,32 @@
 
 typedef struct
 {
-	uint8_t mem_ref;
-	void   *mb;
+    uint8_t mem_ref;
+    void   *mb;
 }oct_pko_pend_tx_done_t;
 
 typedef struct
 {
-	uint16_t consumer;
-	uint16_t producer;
-	uint16_t tx_entries;
-	oct_pko_pend_tx_done_t pend_tx_done[OCT_PKO_TX_DESC_NUM];
+    uint16_t consumer;
+    uint16_t producer;
+    uint16_t tx_entries;
+    oct_pko_pend_tx_done_t pend_tx_done[OCT_PKO_TX_DESC_NUM];
 }tx_done_t;
 
 
 typedef struct 
 {
-	tx_done_t tx_done[OCT_PHY_PORT_MAX];
+    tx_done_t tx_done[OCT_PHY_PORT_MAX];
 }oct_softx_stat_t;
 
 
 
 typedef union { 
-	uint64_t        u64;
-	struct { 
-		uint64_t    resvd : 28;
-		uint64_t    ptr   : 36;   /* Pointer of byte for TX-DONE */
-	}s;
+    uint64_t        u64;
+    struct { 
+        uint64_t    resvd : 28;
+        uint64_t    ptr   : 36;   /* Pointer of byte for TX-DONE */
+    }s;
 }cvmx_pko_command_word2_t;
 
 
@@ -45,8 +45,8 @@ typedef union {
 static inline void
 oct_packet_free(cvmx_wqe_t * wq, int wqepool)
 {
-	cvmx_helper_free_packet_data(wq);
-	cvmx_fpa_free(wq, wqepool, 0);
+    cvmx_helper_free_packet_data(wq);
+    cvmx_fpa_free(wq, wqepool, 0);
 }
 
 

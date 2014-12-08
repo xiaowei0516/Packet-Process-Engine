@@ -81,7 +81,7 @@ test_prints (const cparser_t *parser, const char *s)
 
 void parser_config(cparser_t *parser)
 {
-	parser->cfg.root = &cparser_root;
+    parser->cfg.root = &cparser_root;
     parser->cfg.ch_complete = '\t';
     /* 
      * Instead of making sure the terminal setting of the target and 
@@ -124,7 +124,7 @@ main (int argc, char *argv[])
                 printf("pid = %d\n", getpid());
                 break;
             case 'd':
-				debugprint = 1;
+                debugprint = 1;
                 break;
             case 'c':
                 config_file = optarg;
@@ -136,23 +136,23 @@ main (int argc, char *argv[])
     }
 
 
-	init_msg_pack_handle();
-	init_msg_header();
+    init_msg_pack_handle();
+    init_msg_header();
 
-	open_cli2server_socket();
+    open_cli2server_socket();
 
     parser_config(&parser);
 
     if (CPARSER_OK != cparser_init(&parser.cfg, &parser)) {
         printf("Fail to initialize parser.\n");
-		return -1;
+        return -1;
     }
-	
+    
     if (config_file) {
         (void)cparser_load_cmd(&parser, config_file);
     }
 
-	cparser_run(&parser);
+    cparser_run(&parser);
      
     return 0;
 }
@@ -203,7 +203,7 @@ oldmain (int argc, char *argv[])
 
     if (CPARSER_OK != cparser_init(&parser.cfg, &parser)) {
         printf("Fail to initialize parser.\n");
-	return -1;
+    return -1;
     }
     if (interactive) {
         if (config_file) {

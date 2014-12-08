@@ -11,15 +11,15 @@ LIBRARY_COMMON := $(OBJ_DIR)/libcommon.a
 
 
 LIBCOMMON_OBJ_$(d)  :=  \
-    $(OBJ_DIR)/dp_cmd.o \
-    $(OBJ_DIR)/mbuf.o \
-    $(OBJ_DIR)/watchdog.o \
-    $(OBJ_DIR)/sos_malloc.o
+	$(OBJ_DIR)/dp_cmd.o \
+	$(OBJ_DIR)/mbuf.o \
+	$(OBJ_DIR)/watchdog.o \
+	$(OBJ_DIR)/sos_malloc.o
     
 
 INCLUDE_DIR := \
-    -I$(d) \
-    -I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
+	-I$(d) \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
     -I$(OCTEON_ROOT)/sec-fw/dataplane/src/decode \
     -I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
     -I$(OCTEON_ROOT)/sec-fw/dataplane/src/flow \
@@ -43,14 +43,14 @@ LIBCOMMON_CLEAN_LIST  :=  $(LIBCOMMON_CLEAN_LIST) $(LIBCOMMON_OBJ_$(d)) $(LIBCOM
 -include $(LIBCOMMON_DEPS_$(d))
 
 $(LIBRARY_COMMON): $(LIBCOMMON_OBJ_$(d))
-    $(AR) -cr $@ $^
+	$(AR) -cr $@ $^
 
 $(OBJ_DIR)/%.o: $(d)/%.c
-    $(COMPILE)
+	$(COMPILE)
 
 
 $(OBJ_DIR)/%.o: $(d)/%.S
-    $(ASSEMBLE)
+	$(ASSEMBLE)
 
 #  standard component Makefile footer
 

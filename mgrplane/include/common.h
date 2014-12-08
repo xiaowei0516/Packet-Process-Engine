@@ -25,11 +25,11 @@ extern int debugprint;
 
 #ifdef DEBUG_PRINT
 #define LOG(str...)   \
-{				      \
-	if(debugprint)    \
-	{				  \
-		printf(str);  \
-	}                 \
+{                     \
+    if(debugprint)    \
+    {                 \
+        printf(str);  \
+    }                 \
 }
 #else
 #define LOG(str...)
@@ -44,9 +44,9 @@ extern int debugprint;
 
 typedef struct _time_info
 {
-	int year;
-	int month;
-	int day;
+    int year;
+    int month;
+    int day;
     int hour;
     int minute;
     int second;
@@ -54,14 +54,14 @@ typedef struct _time_info
 
 typedef struct 
 {
-	uint32_t ip;
+    uint32_t ip;
 }ipv4_addr;
 
 
 typedef struct
 {
-	uint64_t ip_high;
-	uint64_t ip_low;
+    uint64_t ip_high;
+    uint64_t ip_low;
 }ipv6_addr;
 
 

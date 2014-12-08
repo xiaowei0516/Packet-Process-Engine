@@ -4,11 +4,11 @@
 void l7_deliver(mbuf_t *m)
 {
 #ifdef SEC_L7_DEBUG
-	printf("l7 enter\n");
+    printf("l7 enter\n");
 #endif
 
-	oct_tx_process_mbuf(m, m->input_port);	
+    oct_tx_process_mbuf(m, m->input_port);  
 
-	return; 
+    return; 
 }
 
