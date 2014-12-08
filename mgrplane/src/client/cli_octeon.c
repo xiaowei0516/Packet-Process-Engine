@@ -58,7 +58,7 @@ cparser_cmd_show_pkt_stat (cparser_context_t *context)
 	g_msg_id++;
 	LOG("cmd=%d\n", cmd);
 
-	cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
+    cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
 	LOG("after pack the message\n");
 
 	process_cli_show_cmd(recv_buf, send_buf, sn);

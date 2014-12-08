@@ -11,11 +11,11 @@
 extern rule_list_t *rule_list;
 
 extern unit_tree g_acltree;
-extern uint32_t	gWstDepth;
+extern uint32_t gWstDepth;
 extern uint32_t gAvgDepth;
-extern uint32_t	gChildCount;
-extern uint32_t	gNumTreeNode;
-extern uint32_t	gNumLeafNode;
+extern uint32_t gChildCount;
+extern uint32_t gNumTreeNode;
+extern uint32_t gNumLeafNode;
 
 extern uint32_t DP_Acl_Rule_Init();
 

@@ -41,23 +41,23 @@ uint32_t num3 = 0;
 //wst_rule_t* WstRuleNode = NULL;
 time_t  hs_start_time;
 #define  DEBUGv2
-uint32_t	gChildCount = 0; //the total number of tree's child nodes
+uint32_t    gChildCount = 0; //the total number of tree's child nodes
 
-uint32_t	gNumTreeNode = 0;//the total number of tree's nodes
-uint32_t	gNumLeafNode = 0;//the total number of tree's leaf nodes
+uint32_t    gNumTreeNode = 0;//the total number of tree's nodes
+uint32_t    gNumLeafNode = 0;//the total number of tree's leaf nodes
 
-uint32_t	gWstDepth = 0;//the worst depth = 0
-uint32_t	gAvgDepth = 0;//the average depth
+uint32_t    gWstDepth = 0;//the worst depth = 0
+uint32_t    gAvgDepth = 0;//the average depth
 
 #define MAX_DEPTH   30
 /*#define MEM_LIMIT*/
-unsigned int	gNodeDepth[256][2];
-unsigned int	gBucket[MAX_DEPTH];
+unsigned int    gNodeDepth[256][2];
+unsigned int    gBucket[MAX_DEPTH];
 
-unsigned int	gNumNonOverlappings[DIM];
-//unsigned long long	gNumTotalNonOverlappings = 1;
+unsigned int    gNumNonOverlappings[DIM];
+//unsigned long long    gNumTotalNonOverlappings = 1;
 
-struct timeval	gStartTime,gEndTime;
+struct timeval  gStartTime,gEndTime;
 
 uint32_t number_bits;
 unit_tree g_acltree;
@@ -77,71 +77,71 @@ bool range_alloc(uint32_t* dim[DIM][2])
         }
     }
 
-	dim[0][0] = (uint32_t *)malloc(16);
-	memset((void *)dim[0][0], 0, 16);
-	
-	dim[0][1] = (uint32_t *)malloc(16);
-	memset((void *)dim[0][1], 0, 16);
-	
-	dim[1][0] = (uint32_t *)malloc(16);
-	memset((void *)dim[1][0], 0, 16);
-	
-	dim[1][1] = (uint32_t *)malloc(16);
-	memset((void *)dim[1][1], 0, 16);
-	
-	dim[2][0] = (uint32_t *)malloc(8);
-	memset((void *)dim[2][0], 0, 8);
-	
-	dim[2][1] = (uint32_t *)malloc(8);
-	memset((void *)dim[2][1], 0, 8);
-	
-	dim[3][0] = (uint32_t *)malloc(8);
-	memset((void *)dim[3][0], 0, 8);
-	
-	dim[3][1] = (uint32_t *)malloc(8);
-	memset((void *)dim[3][1], 0, 8);
-	
-	dim[4][0] = (uint32_t *)malloc(4);
-	memset((void *)dim[4][0], 0, 4);
-	
-	dim[4][1] = (uint32_t *)malloc(4);
-	memset((void *)dim[4][1], 0, 4);
-	
-	dim[5][0] = (uint32_t *)malloc(4);
-	memset((void *)dim[5][0], 0, 4);
-	
-	dim[5][1] = (uint32_t *)malloc(4);
-	memset((void *)dim[5][1], 0, 4);
-	
-	dim[6][0] = (uint32_t *)malloc(4);
-	memset((void *)dim[6][0], 0, 4);
+    dim[0][0] = (uint32_t *)malloc(16);
+    memset((void *)dim[0][0], 0, 16);
+    
+    dim[0][1] = (uint32_t *)malloc(16);
+    memset((void *)dim[0][1], 0, 16);
+    
+    dim[1][0] = (uint32_t *)malloc(16);
+    memset((void *)dim[1][0], 0, 16);
+    
+    dim[1][1] = (uint32_t *)malloc(16);
+    memset((void *)dim[1][1], 0, 16);
+    
+    dim[2][0] = (uint32_t *)malloc(8);
+    memset((void *)dim[2][0], 0, 8);
+    
+    dim[2][1] = (uint32_t *)malloc(8);
+    memset((void *)dim[2][1], 0, 8);
+    
+    dim[3][0] = (uint32_t *)malloc(8);
+    memset((void *)dim[3][0], 0, 8);
+    
+    dim[3][1] = (uint32_t *)malloc(8);
+    memset((void *)dim[3][1], 0, 8);
+    
+    dim[4][0] = (uint32_t *)malloc(4);
+    memset((void *)dim[4][0], 0, 4);
+    
+    dim[4][1] = (uint32_t *)malloc(4);
+    memset((void *)dim[4][1], 0, 4);
+    
+    dim[5][0] = (uint32_t *)malloc(4);
+    memset((void *)dim[5][0], 0, 4);
+    
+    dim[5][1] = (uint32_t *)malloc(4);
+    memset((void *)dim[5][1], 0, 4);
+    
+    dim[6][0] = (uint32_t *)malloc(4);
+    memset((void *)dim[6][0], 0, 4);
 
-	dim[6][1] = (uint32_t *)malloc(4);
-	memset((void *)dim[6][1], 0, 4);
-	
-	dim[7][0] = (uint32_t *)malloc(8);
-	memset((void *)dim[7][0], 0, 8);
-	
-	dim[7][1] = (uint32_t *)malloc(8);
-	memset((void *)dim[7][1], 0, 8);
-	
-	dim[8][0] = (uint32_t *)malloc(4);
-	memset((void *)dim[8][0], 0, 4);
-	
-	dim[8][1] = (uint32_t *)malloc(4);
-	memset((void *)dim[8][1], 0, 4);
-	
-	dim[9][0] = (uint32_t *)malloc(4);
-	memset((void *)dim[9][0], 0, 4);
-	
-	dim[9][1] = (uint32_t *)malloc(4);
-	memset((void *)dim[9][1], 0, 4);
-	
-	dim[10][0] = (uint32_t *)malloc(4);
-	memset((void *)dim[10][0], 0, 4);
-	
-	dim[10][1] = (uint32_t *)malloc(4);
-	memset((void *)dim[10][1], 0, 4);
+    dim[6][1] = (uint32_t *)malloc(4);
+    memset((void *)dim[6][1], 0, 4);
+    
+    dim[7][0] = (uint32_t *)malloc(8);
+    memset((void *)dim[7][0], 0, 8);
+    
+    dim[7][1] = (uint32_t *)malloc(8);
+    memset((void *)dim[7][1], 0, 8);
+    
+    dim[8][0] = (uint32_t *)malloc(4);
+    memset((void *)dim[8][0], 0, 4);
+    
+    dim[8][1] = (uint32_t *)malloc(4);
+    memset((void *)dim[8][1], 0, 4);
+    
+    dim[9][0] = (uint32_t *)malloc(4);
+    memset((void *)dim[9][0], 0, 4);
+    
+    dim[9][1] = (uint32_t *)malloc(4);
+    memset((void *)dim[9][1], 0, 4);
+    
+    dim[10][0] = (uint32_t *)malloc(4);
+    memset((void *)dim[10][0], 0, 4);
+    
+    dim[10][1] = (uint32_t *)malloc(4);
+    memset((void *)dim[10][1], 0, 4);
 
 
     for(i=0;i<DIM;i++)
@@ -159,14 +159,14 @@ bool range_alloc(uint32_t* dim[DIM][2])
     {
     #ifdef DEBUGv2
         printf("\nload rule malloc erro,begin to clear\n");
-	#endif
-		for(i=0;i<DIM;i++)
+    #endif
+        for(i=0;i<DIM;i++)
         {
-			for(j=0;j<2;j++)
+            for(j=0;j<2;j++)
             {
                 if( NULL != dim[i][j] )
                 {
-					free(dim[i][j]);
+                    free(dim[i][j]);
                     dim[i][j] = NULL;
                 }
             }
@@ -241,227 +241,227 @@ static void Show(uint32_t* array,uint32_t length,uint32_t bit)
 
 static inline int TempSegPointCompare32 (const void * a1, const void * b1)
 {
-	segmentpt32_t* a = (segmentpt32_t *)a1;
-	segmentpt32_t* b = (segmentpt32_t *)b1;
-	if ( a->segmentpoint < b->segmentpoint )
-		return -1;
-	else if ( a->segmentpoint == b->segmentpoint )
-		return 0;
-	else
-		return 1;
+    segmentpt32_t* a = (segmentpt32_t *)a1;
+    segmentpt32_t* b = (segmentpt32_t *)b1;
+    if ( a->segmentpoint < b->segmentpoint )
+        return -1;
+    else if ( a->segmentpoint == b->segmentpoint )
+        return 0;
+    else
+        return 1;
 }
 
 static inline int TempSegPointCompare64 (const void * a1, const void * b1)
 {
-	int i;
-	segmentpt64_t* a = (segmentpt64_t *)a1;
-	segmentpt64_t* b = (segmentpt64_t *)b1;
+    int i;
+    segmentpt64_t* a = (segmentpt64_t *)a1;
+    segmentpt64_t* b = (segmentpt64_t *)b1;
 
-	for(i=0;i<2;i++){
+    for(i=0;i<2;i++){
         if ( a->segmentpoint[i] < b->segmentpoint[i] )
             return -1;
         else if ( a->segmentpoint[i] == b->segmentpoint[i] )
             continue;
         else
             return 1;
-	}
-	return 0;
+    }
+    return 0;
 }
 
 static inline int TempSegPointCompare128 (const void * a1, const void * b1)
 {
-	int i;
-	segmentpt128_t* a = (segmentpt128_t *)a1;
-	segmentpt128_t* b = (segmentpt128_t *)b1;
+    int i;
+    segmentpt128_t* a = (segmentpt128_t *)a1;
+    segmentpt128_t* b = (segmentpt128_t *)b1;
 
-	for(i=0;i<4;i++){
+    for(i=0;i<4;i++){
         if ( a->segmentpoint[i] < b->segmentpoint[i] )
             return -1;
         else if ( a->segmentpoint[i] == b->segmentpoint[i] )
             continue;
         else
             return 1;
-	}
-	return 0;
+    }
+    return 0;
 }
 
 
 static inline int SegPointCompare32 (const void * a, const void * b)
 {
-	if ( *(uint32_t*)a < *(uint32_t*)b )
-		return -1;
-	else if ( *(uint32_t*)a == *(uint32_t*)b )
-		return 0;
-	else 
-		return 1;
+    if ( *(uint32_t*)a < *(uint32_t*)b )
+        return -1;
+    else if ( *(uint32_t*)a == *(uint32_t*)b )
+        return 0;
+    else 
+        return 1;
 }
 
 static inline int SegPointCompare_64_128 (const void * a1, const void * b1)
 {
-	uint32_t i;
-	uint32_t* a = (uint32_t*)a1;
-	uint32_t* b = (uint32_t*)b1;
+    uint32_t i;
+    uint32_t* a = (uint32_t*)a1;
+    uint32_t* b = (uint32_t*)b1;
 
-	if((number_bits & 0x1F) !=0){
-		printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
-		exit(-1);
-	}
+    if((number_bits & 0x1F) !=0){
+        printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
+        exit(-1);
+    }
 
-	for(i=0;i<(number_bits>>5);i++){
-		if( a[i] < b[i] )
-			return -1;
-		else if( a[i] == b[i] )
-			continue;
-		else
-			return 1;
-	}
-	return 0;
+    for(i=0;i<(number_bits>>5);i++){
+        if( a[i] < b[i] )
+            return -1;
+        else if( a[i] == b[i] )
+            continue;
+        else
+            return 1;
+    }
+    return 0;
 }
 
 static inline int SegPointCompare_64_128_nsf (const void * a1, const void * b1,unsigned int number_bits)
 {
-	uint32_t i;
-	uint32_t* a = (uint32_t*)a1;
-	uint32_t* b = (uint32_t*)b1;
+    uint32_t i;
+    uint32_t* a = (uint32_t*)a1;
+    uint32_t* b = (uint32_t*)b1;
 
-	if((number_bits & 0x1F) !=0){
-		printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
-		exit(-1);
-	}
+    if((number_bits & 0x1F) !=0){
+        printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
+        exit(-1);
+    }
 
-	for(i=0;i<(number_bits>>5);i++){
-		if( a[i] < b[i] )
-			return -1;
-		else if( a[i] == b[i] )
-			continue;
-		else
-			return 1;
-	}
-	return 0;
+    for(i=0;i<(number_bits>>5);i++){
+        if( a[i] < b[i] )
+            return -1;
+        else if( a[i] == b[i] )
+            continue;
+        else
+            return 1;
+    }
+    return 0;
 }
 
 static inline int SegPointCompare128 (const void * a1, const void * b1)
 {
-	uint32_t i;
-	uint32_t* a = (uint32_t*)a1;
-	uint32_t* b = (uint32_t*)b1;
+    uint32_t i;
+    uint32_t* a = (uint32_t*)a1;
+    uint32_t* b = (uint32_t*)b1;
 
-	if((number_bits & 0x1F) !=0){
-		printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
-		exit(-1);
-	}
+    if((number_bits & 0x1F) !=0){
+        printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
+        exit(-1);
+    }
 
-	for(i=0;i<(number_bits>>5);i++){
-		if( a[i] < b[i] )
-			return -1;
-		else if( a[i] == b[i] )
-			continue;
-		else 
-			return 1;
-	}
-	return 0;
+    for(i=0;i<(number_bits>>5);i++){
+        if( a[i] < b[i] )
+            return -1;
+        else if( a[i] == b[i] )
+            continue;
+        else 
+            return 1;
+    }
+    return 0;
 }
 
 
 static inline int SegPointCompare128_nsf (const void * a1, const void * b1,uint32_t num_bits)
 {
-	uint32_t i;
-	uint32_t* a = (uint32_t*)a1;
-	uint32_t* b = (uint32_t*)b1;
+    uint32_t i;
+    uint32_t* a = (uint32_t*)a1;
+    uint32_t* b = (uint32_t*)b1;
 
-	if((num_bits & 0x1F) !=0){
-		printf("\n>>[err]SegPointCompare: num_bits should be multiple of 32 bits!");
-		exit(-1);
-	}
+    if((num_bits & 0x1F) !=0){
+        printf("\n>>[err]SegPointCompare: num_bits should be multiple of 32 bits!");
+        exit(-1);
+    }
 
-	for(i=0;i<(num_bits>>5);i++){
-		if( a[i] < b[i] )
-			return -1;
-		else if( a[i] == b[i] )
-			continue;
-		else 
-			return 1;
-	}
-	return 0;
+    for(i=0;i<(num_bits>>5);i++){
+        if( a[i] < b[i] )
+            return -1;
+        else if( a[i] == b[i] )
+            continue;
+        else 
+            return 1;
+    }
+    return 0;
 }
 
 
 static inline int SegPointCompare(const void * a1, const void * b1)
 {
-	uint32_t i;
-	uint32_t* a = (uint32_t*)a1;
-	uint32_t* b = (uint32_t*)b1;
+    uint32_t i;
+    uint32_t* a = (uint32_t*)a1;
+    uint32_t* b = (uint32_t*)b1;
 
-	if((number_bits & 0x1F) !=0 ){
-		printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
-		exit(-1);
-	}
+    if((number_bits & 0x1F) !=0 ){
+        printf("\n>>[err]SegPointCompare: number_bits should be multiple of 32 bits!");
+        exit(-1);
+    }
 
-	for(i=0; i<(number_bits>>5); i++){
-		if(a[4-(number_bits>>5)+i] < b[i])
-			return -1;
-		else if(a[4-(number_bits>>5)+i] == b[i])
-			continue;
-		else 
-			return 1;
-	}
-	return 0;
+    for(i=0; i<(number_bits>>5); i++){
+        if(a[4-(number_bits>>5)+i] < b[i])
+            return -1;
+        else if(a[4-(number_bits>>5)+i] == b[i])
+            continue;
+        else 
+            return 1;
+    }
+    return 0;
 }
 
 static inline int Assign(uint32_t* destination, uint32_t* source, int number_of_bits)
 {
-	int i;
-	/* if(number_bits % 32 !=0){ */
-	//printf("\nAssign, number_bits = %u\n",number_of_bits);
+    int i;
+    /* if(number_bits % 32 !=0){ */
+    //printf("\nAssign, number_bits = %u\n",number_of_bits);
     if((number_bits & 0x1F) !=0){
-		printf("\n>>Assign: number_of_bits should be multiple of 32 bits!");
-		exit(-1);
-	}
-	for(i=0;i<(number_of_bits>>5);i++){
-		destination[i] = source[i];
-	}
-	return(1);
+        printf("\n>>Assign: number_of_bits should be multiple of 32 bits!");
+        exit(-1);
+    }
+    for(i=0;i<(number_of_bits>>5);i++){
+        destination[i] = source[i];
+    }
+    return(1);
 }
 
 
 static inline int Assign_DiffBits(uint32_t* destination, int bits_destination, uint32_t* source, int bits_source)
 {
-	int i;
-	int d_bits = bits_destination>>5;
-	int s_bits = bits_source>>5;
-	/* if(bits_destination % 32 !=0 || bits_source % 32 !=0 || bits_destination < bits_source){ */
-	if((bits_destination & 0x1F) !=0 || (bits_source & 0x1F) !=0 || bits_destination < bits_source){
-		printf("\n>>Assign_DiffBits: number_of_bits should be multiple of 32 bits!");
-		exit(-1);
-	}
+    int i;
+    int d_bits = bits_destination>>5;
+    int s_bits = bits_source>>5;
+    /* if(bits_destination % 32 !=0 || bits_source % 32 !=0 || bits_destination < bits_source){ */
+    if((bits_destination & 0x1F) !=0 || (bits_source & 0x1F) !=0 || bits_destination < bits_source){
+        printf("\n>>Assign_DiffBits: number_of_bits should be multiple of 32 bits!");
+        exit(-1);
+    }
 
-	/* set higher bits */
-	for(i=0;i<d_bits-s_bits;i++){
-		destination[i] = 0;
-	}
-	/* set lower bits */
-	for(i=d_bits-s_bits; i < d_bits; i++) {
-		destination[i] = source[i-(d_bits-s_bits)];
-	}
-	return(1);
+    /* set higher bits */
+    for(i=0;i<d_bits-s_bits;i++){
+        destination[i] = 0;
+    }
+    /* set lower bits */
+    for(i=d_bits-s_bits; i < d_bits; i++) {
+        destination[i] = source[i-(d_bits-s_bits)];
+    }
+    return(1);
 }
 
 static inline int Assign_RuleList(rule_t* rd, rule_t* rs)
 {
-	int i, number_of_bits;
-	rd->pri = rs->pri;
-	rd->rule_id = rs->rule_id;
+    int i, number_of_bits;
+    rd->pri = rs->pri;
+    rd->rule_id = rs->rule_id;
     //printf("\nassign list\n");
     for(i=0;i<DIM;i++){
-		number_of_bits = BITNUMBER[FLAG[i]];
+        number_of_bits = BITNUMBER[FLAG[i]];
 
-		rd->range[i][0] = (uint32_t*)malloc(number_of_bits/32 * sizeof(uint32_t));
+        rd->range[i][0] = (uint32_t*)malloc(number_of_bits/32 * sizeof(uint32_t));
         if(NULL == rd->range[i][0])
         {
             printf("\nmalloc erro0\n");
         }
         //mem_stat1 += number_of_bits/32 * sizeof(uint32_t);
-		memset(rd->range[i][0],0,number_of_bits/32 * sizeof(uint32_t));
+        memset(rd->range[i][0],0,number_of_bits/32 * sizeof(uint32_t));
         Assign(rd->range[i][0], rs->range[i][0], number_of_bits);
 
         rd->range[i][1] = (uint32_t*)malloc(number_of_bits/32 * sizeof(uint32_t));
@@ -477,14 +477,14 @@ static inline int Assign_RuleList(rule_t* rd, rule_t* rs)
         mem_stat3 += number_of_bits/32 * sizeof(uint32_t) * 2;
         memset(rd->range[i][1],0,number_of_bits/32 * sizeof(uint32_t));
         Assign(rd->range[i][1], rs->range[i][1], number_of_bits);
-	}
-	return(1);
+    }
+    return(1);
 }
 
 
 void ShowRule(rule_set_t* ruleset, uint32_t ruleNum)
 {
-	int i;
+    int i;
     
     if(!ruleset)
     {
@@ -493,43 +493,43 @@ void ShowRule(rule_set_t* ruleset, uint32_t ruleNum)
     }
 
     for(i=0; i < DIM; i++) 
-	{
-		printf("\ndim=%d:",i);
-		if(FLAG[i] == 0) 
-		{
-			printf("[%x %x]", 
-					ruleset->ruleList[ruleNum].range[i][0][0], 
-					ruleset->ruleList[ruleNum].range[i][1][0]);
-		}
-		else if(FLAG[i] == 1)
-		{
-			printf("[%u:%u:%u:%u %u:%u:%u:%u]", 
-					ruleset->ruleList[ruleNum].range[i][0][0],
-					ruleset->ruleList[ruleNum].range[i][0][1], 
-					ruleset->ruleList[ruleNum].range[i][0][2],
-					ruleset->ruleList[ruleNum].range[i][0][3], 
-					ruleset->ruleList[ruleNum].range[i][1][0], 
-					ruleset->ruleList[ruleNum].range[i][1][1], 
-					ruleset->ruleList[ruleNum].range[i][1][2],
-					ruleset->ruleList[ruleNum].range[i][1][3]);
-		}
-		else if (FLAG[i] == 2)
-		{
-			printf("[%x%x %x%x]", 
-					ruleset->ruleList[ruleNum].range[i][0][0], 
-					ruleset->ruleList[ruleNum].range[i][0][1],
-					ruleset->ruleList[ruleNum].range[i][1][0], 
-					ruleset->ruleList[ruleNum].range[i][1][1]);
-		} 
+    {
+        printf("\ndim=%d:",i);
+        if(FLAG[i] == 0) 
+        {
+            printf("[%x %x]", 
+                    ruleset->ruleList[ruleNum].range[i][0][0], 
+                    ruleset->ruleList[ruleNum].range[i][1][0]);
+        }
+        else if(FLAG[i] == 1)
+        {
+            printf("[%u:%u:%u:%u %u:%u:%u:%u]", 
+                    ruleset->ruleList[ruleNum].range[i][0][0],
+                    ruleset->ruleList[ruleNum].range[i][0][1], 
+                    ruleset->ruleList[ruleNum].range[i][0][2],
+                    ruleset->ruleList[ruleNum].range[i][0][3], 
+                    ruleset->ruleList[ruleNum].range[i][1][0], 
+                    ruleset->ruleList[ruleNum].range[i][1][1], 
+                    ruleset->ruleList[ruleNum].range[i][1][2],
+                    ruleset->ruleList[ruleNum].range[i][1][3]);
+        }
+        else if (FLAG[i] == 2)
+        {
+            printf("[%x%x %x%x]", 
+                    ruleset->ruleList[ruleNum].range[i][0][0], 
+                    ruleset->ruleList[ruleNum].range[i][0][1],
+                    ruleset->ruleList[ruleNum].range[i][1][0], 
+                    ruleset->ruleList[ruleNum].range[i][1][1]);
+        } 
         else
         {
-			printf("[%u-%u %u-%u]", 
-					ruleset->ruleList[ruleNum].range[i][0][0], 
-					ruleset->ruleList[ruleNum].range[i][0][1],
-					ruleset->ruleList[ruleNum].range[i][1][0], 
-					ruleset->ruleList[ruleNum].range[i][1][1]);
-		}
-	}
+            printf("[%u-%u %u-%u]", 
+                    ruleset->ruleList[ruleNum].range[i][0][0], 
+                    ruleset->ruleList[ruleNum].range[i][0][1],
+                    ruleset->ruleList[ruleNum].range[i][1][0], 
+                    ruleset->ruleList[ruleNum].range[i][1][1]);
+        }
+    }
 }
 
 
@@ -693,29 +693,29 @@ int Assign_SegmentPoints_128(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoi
 
 static inline void Subtract(uint32_t* array, int bits)
 {
-	int length = bits/32;
-	int i;
-	for(i=length-1; i >= 0; i--){
-		if(array[i] == 0){
-			array[i] --;
-			continue;
-		}
-		array[i]--;
-		break;
-	}
+    int length = bits/32;
+    int i;
+    for(i=length-1; i >= 0; i--){
+        if(array[i] == 0){
+            array[i] --;
+            continue;
+        }
+        array[i]--;
+        break;
+    }
 }
 
 static inline int Add(uint32_t* array, int bits)
 {
-	int length = bits/32;
-	int i;
-	for(i = length-1;i>=0;i--){
-		array[i]++;
-		if(array[i] > 0){
-			return(1);
-		}
-	}
-	return(0);
+    int length = bits/32;
+    int i;
+    for(i = length-1;i>=0;i--){
+        array[i]++;
+        if(array[i] > 0){
+            return(1);
+        }
+    }
+    return(0);
 }
              
 void release_ruleset(rule_set_t* childRuleSet)
@@ -737,34 +737,34 @@ void release_ruleset(rule_set_t* childRuleSet)
         free(childRuleSet);
 }
                                                                                    
-double	Prediction (rule_set_t* ruleset)
+double  Prediction (rule_set_t* ruleset)
 {
-	/* generate segments for input filtset */
-	uint32_t i;
-	uint32_t	dim, num, pos;
-	//uint32_t	if_start_is_end[DIM], if_end_is_start[DIM];
-	uint32_t	diffSegPts = 1; /* at least there are one differnt segment point */
-	uint32_t    diffSegPts_All = 1; /* distinguish start and end when a point's flag is both*/
+    /* generate segments for input filtset */
+    uint32_t i;
+    uint32_t    dim, num, pos;
+    //uint32_t  if_start_is_end[DIM], if_end_is_start[DIM];
+    uint32_t    diffSegPts = 1; /* at least there are one differnt segment point */
+    uint32_t    diffSegPts_All = 1; /* distinguish start and end when a point's flag is both*/
 
-	uint32_t    *segPoints;
-	uint32_t	*tempSegPoints;
-	uint32_t    *SegFlag;
+    uint32_t    *segPoints;
+    uint32_t    *tempSegPoints;
+    uint32_t    *SegFlag;
     
     uint32_t    pre_number_bits = 0;
 
     double      overlapping_count = 0;
     
-	/*** find the splitting dimension ***/
-	for(dim=0; dim < DIM; dim++) {
-		pre_number_bits = BITNUMBER[FLAG[dim]]; /* int BITNUMBER[4] = {32, 32, 128, 64}; */
-		diffSegPts = 1; /* at least there are one differnt segment point */
+    /*** find the splitting dimension ***/
+    for(dim=0; dim < DIM; dim++) {
+        pre_number_bits = BITNUMBER[FLAG[dim]]; /* int BITNUMBER[4] = {32, 32, 128, 64}; */
+        diffSegPts = 1; /* at least there are one differnt segment point */
         diffSegPts_All = 1;
 
-		segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (pre_number_bits>>5) * sizeof(uint32_t));
+        segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (pre_number_bits>>5) * sizeof(uint32_t));
         tempSegPoints  = (uint32_t*) malloc( (ruleset->num<<1) * (pre_number_bits>>5) * sizeof(uint32_t));
-		SegFlag = (uint32_t*)malloc((ruleset->num<<1)*sizeof(uint32_t));
+        SegFlag = (uint32_t*)malloc((ruleset->num<<1)*sizeof(uint32_t));
 
-		
+        
         if(!segPoints || !tempSegPoints || !SegFlag)
         {
             if(segPoints)
@@ -783,30 +783,30 @@ double	Prediction (rule_set_t* ruleset)
         }
 
         for (num=0; num<ruleset->num; num++) {
-			for(i=0; i<(pre_number_bits>>5); i++){
-				segPoints[(pre_number_bits>>4)*num + i] = ruleset->ruleList[num].range[dim][0][i];
-				segPoints[(pre_number_bits>>4)*num + i + (pre_number_bits>>5)] = ruleset->ruleList[num].range[dim][1][i];
-			}
-		}
-//		Show(segPoints, (ruleset->num)<<1, number_bits);
-		Assign(&tempSegPoints[0], &segPoints[0], pre_number_bits);
-		SegFlag[0] = 1;
+            for(i=0; i<(pre_number_bits>>5); i++){
+                segPoints[(pre_number_bits>>4)*num + i] = ruleset->ruleList[num].range[dim][0][i];
+                segPoints[(pre_number_bits>>4)*num + i + (pre_number_bits>>5)] = ruleset->ruleList[num].range[dim][1][i];
+            }
+        }
+//      Show(segPoints, (ruleset->num)<<1, number_bits);
+        Assign(&tempSegPoints[0], &segPoints[0], pre_number_bits);
+        SegFlag[0] = 1;
 
-		/* count number of different segment points */
-		/*The underlyng assumption is that odd point in segPoints is an end point, the even point in segPoints is a start point*/
-		/**you can optimize this part. To make the programme clear, I just let it go as below. A hash table??**/
-		pre_number_bits = BITNUMBER[FLAG[dim]];
-		for(num=1; num < 2*ruleset->num; num++) {
-			int if_unique = 1;
-			for(pos=0; pos < diffSegPts; pos++) {
-				if (pre_number_bits <= 32) {
-					if(SegPointCompare32(&segPoints[num*pre_number_bits/32], &tempSegPoints[pos*pre_number_bits/32]) == 0){
-						//if it is "both" or the same with the points in Seg
-						if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
+        /* count number of different segment points */
+        /*The underlyng assumption is that odd point in segPoints is an end point, the even point in segPoints is a start point*/
+        /**you can optimize this part. To make the programme clear, I just let it go as below. A hash table??**/
+        pre_number_bits = BITNUMBER[FLAG[dim]];
+        for(num=1; num < 2*ruleset->num; num++) {
+            int if_unique = 1;
+            for(pos=0; pos < diffSegPts; pos++) {
+                if (pre_number_bits <= 32) {
+                    if(SegPointCompare32(&segPoints[num*pre_number_bits/32], &tempSegPoints[pos*pre_number_bits/32]) == 0){
+                        //if it is "both" or the same with the points in Seg
+                        if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
                             if_unique = 0;
                             break;
-						}
-						else{
+                        }
+                        else{
                             if((SegFlag[pos] | ((num & 1)+1))!=3){
                                 printf(">>[err] SegFlag has a problem!\n");
                                 exit(-1);
@@ -815,64 +815,64 @@ double	Prediction (rule_set_t* ruleset)
                             diffSegPts_All++;
                             if_unique = 0;
                             break;
-						}
-					}
-				}
-				else {
-					if(SegPointCompare_64_128(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
-						if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
-                            if_unique = 0;
-                            break;
-						}
-						else{
-                            if((SegFlag[pos] | ((num & 1)+1))!=3){
-                                printf(">>[err] SegFlag has a problem!\n");
-                                exit(-1);
-                            }
-                            SegFlag[pos] = 3;
-                            diffSegPts_All++;
-                            if_unique = 0;
-                            break;
-						}
-					}
-				}
-			}
-			if(if_unique) {
-				Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[num*number_bits/32], number_bits);
-				SegFlag[diffSegPts] = (num & 1)+1;
-				diffSegPts++;
-				diffSegPts_All++;
+                        }
+                    }
                 }
-		}
-		/*different variable num compared to above*/
+                else {
+                    if(SegPointCompare_64_128(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
+                        if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
+                            if_unique = 0;
+                            break;
+                        }
+                        else{
+                            if((SegFlag[pos] | ((num & 1)+1))!=3){
+                                printf(">>[err] SegFlag has a problem!\n");
+                                exit(-1);
+                            }
+                            SegFlag[pos] = 3;
+                            diffSegPts_All++;
+                            if_unique = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+            if(if_unique) {
+                Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[num*number_bits/32], number_bits);
+                SegFlag[diffSegPts] = (num & 1)+1;
+                diffSegPts++;
+                diffSegPts_All++;
+                }
+        }
+        /*different variable num compared to above*/
         for(num=0; num < ruleset->num; num++){
             int temp1, temp2;
             for(pos=0; pos < diffSegPts; pos++) {
-				if (number_bits <= 32) {
-				    temp1 = SegPointCompare32(&segPoints[2*num*number_bits/32], &tempSegPoints[pos*number_bits/32]);
-				    temp2 = SegPointCompare32(&segPoints[(2*num+1)*number_bits/32], &tempSegPoints[pos*number_bits/32]);
-				    if(temp1 <= 0 && temp2 >= 0){
+                if (number_bits <= 32) {
+                    temp1 = SegPointCompare32(&segPoints[2*num*number_bits/32], &tempSegPoints[pos*number_bits/32]);
+                    temp2 = SegPointCompare32(&segPoints[(2*num+1)*number_bits/32], &tempSegPoints[pos*number_bits/32]);
+                    if(temp1 <= 0 && temp2 >= 0){
                         overlapping_count++;
                         if(SegFlag[pos] == 3){
                             overlapping_count++;
                         }
-				    }
-				}
-				else {
+                    }
+                }
+                else {
                     temp1 = SegPointCompare_64_128(&segPoints[2*num*number_bits/32], &tempSegPoints[pos*number_bits/32]);
-				    temp2 = SegPointCompare_64_128(&segPoints[(2*num+1)*number_bits/32], &tempSegPoints[pos*number_bits/32]);
-				    if(temp1 <=0 && temp2 >= 0){
+                    temp2 = SegPointCompare_64_128(&segPoints[(2*num+1)*number_bits/32], &tempSegPoints[pos*number_bits/32]);
+                    if(temp1 <=0 && temp2 >= 0){
                         overlapping_count++;
                         if(SegFlag[pos] == 3){
                             overlapping_count++;
                         }
-				    }
-				}
-			}
-			overlapping_count--;
+                    }
+                }
+            }
+            overlapping_count--;
         }
 
-		if(segPoints)
+        if(segPoints)
         {
             free(segPoints);
         }
@@ -884,21 +884,21 @@ double	Prediction (rule_set_t* ruleset)
         {
             free(tempSegPoints);
         }
-	}
-	overlapping_count /= ruleset->num;
-	return	overlapping_count;
+    }
+    overlapping_count /= ruleset->num;
+    return  overlapping_count;
 }
                                     
 //static time_t start_time;
 static uint32_t max_rule_id = 0;
   
-int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, time_t second,FILE* dir,uint32_t* p_rule_complex)
+int PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, time_t second,FILE* dir,uint32_t* p_rule_complex)
 {
 
-	//printf("\nruleset = %p, node = %p, depth = %u\n",ruleset,currNode,depth);
+    //printf("\nruleset = %p, node = %p, depth = %u\n",ruleset,currNode,depth);
 
     time_t cur_time;
-	uint32_t worst_rule;
+    uint32_t worst_rule;
     uint32_t i = 0;
     struct timeval end;
 
@@ -915,13 +915,13 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
     //printf("\ndepth = %u\n",depth);
     if(0 == depth)
     {
-		 for (i = 0; i < ruleset->num; i++) {
+         for (i = 0; i < ruleset->num; i++) {
             if (ruleset->ruleList[i].rule_id > max_rule_id) {
                 max_rule_id = ruleset->ruleList[i].rule_id;
             }
         }
 
-	/*  
+    /*  
         build_time = calloc(max_rule_id + 1, sizeof(*build_time));
         printf("\nBuild time = %p\n",build_time);
         if (build_time == NULL) {
@@ -956,9 +956,9 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
                 worst_rule = i;
             }
         }
-		
-		/*
-		for(;i < ruleset->num;i++)
+        
+        /*
+        for(;i < ruleset->num;i++)
         {
             if(tmp_ruleid != ruleset->ruleList[i].rule_id && 0 != ruleset->ruleList[i].rule_id )
             {
@@ -986,9 +986,9 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
                 
             }
         }
-		*/
-		
-		//printf("timeout\nworst rule: %d\n", worst_rule);
+        */
+        
+        //printf("timeout\nworst rule: %d\n", worst_rule);
         
         if(p_rule_complex)
         {
@@ -1004,93 +1004,93 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
         {
             fclose(fp);
         }
-		/*
-		if(build_time)
-		{
-			free(build_time);
-		}
+        /*
+        if(build_time)
+        {
+            free(build_time);
+        }
         */
         printf("\nout over\n");
         exit(-1);
     }
 
     /* generate segments for input filtset */
-	//printf("\nBuild tree\n");
+    //printf("\nBuild tree\n");
     //int i;
-	uint32_t	dim, num, pos;
-	uint32_t	maxDiffSegPts = 1;	/* maximum different segment points */
-	uint32_t    maxDiffSegPts_All = 1;
-	uint32_t	d2s = 0;		/* dimension to split (with max diffseg) */
-	uint32_t	p2s[4];
-	uint32_t	*t_p2s;
-	//uint32_t	if_start_is_end[DIM], if_end_is_start[DIM];
-	uint32_t	range[2][2][4];	/* sub-space ranges for child-nodes */
-	uint32_t	diffSegPts = 1; /* at least there are one differnt segment point */
-	uint32_t    diffSegPts_All = 1;
-    uint32_t	*segPoints;
-	uint32_t	*tempSegPoints;
+    uint32_t    dim, num, pos;
+    uint32_t    maxDiffSegPts = 1;  /* maximum different segment points */
+    uint32_t    maxDiffSegPts_All = 1;
+    uint32_t    d2s = 0;        /* dimension to split (with max diffseg) */
+    uint32_t    p2s[4];
+    uint32_t    *t_p2s;
+    //uint32_t  if_start_is_end[DIM], if_end_is_start[DIM];
+    uint32_t    range[2][2][4]; /* sub-space ranges for child-nodes */
+    uint32_t    diffSegPts = 1; /* at least there are one differnt segment point */
+    uint32_t    diffSegPts_All = 1;
+    uint32_t    *segPoints;
+    uint32_t    *tempSegPoints;
     uint32_t    *SegFlag;
-	uint32_t	*tempRuleNumList;
-	rule_set_t	*childRuleSet;
+    uint32_t    *tempRuleNumList;
+    rule_set_t  *childRuleSet;
 
     //printf("\nrule num = %u\n",ruleset->num);
 #ifdef DEBUGv2
-	printf("\n\n>>--------------new node in depth=%u -----------------", depth);
-	printf("\n>>current rules:");
-	for(num=0; num < ruleset->num; num++) {
-		printf("\n>>rules#%u", num+1);
-		ShowRule(ruleset, num);
-	}
+    printf("\n\n>>--------------new node in depth=%u -----------------", depth);
+    printf("\n>>current rules:");
+    for(num=0; num < ruleset->num; num++) {
+        printf("\n>>rules#%u", num+1);
+        ShowRule(ruleset, num);
+    }
 #endif
 
-	/*Initialize the worst-case range */
-	if(depth == 0) {
-		for(dim=0; dim < DIM; dim ++) {
-			Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0],number_bits);
-			Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1],number_bits);
-		}
-	}
+    /*Initialize the worst-case range */
+    if(depth == 0) {
+        for(dim=0; dim < DIM; dim ++) {
+            Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0],number_bits);
+            Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1],number_bits);
+        }
+    }
     if(ruleset->num <= Rule_Num_Threshold){
         currNode->flag = 1;
-		currNode->d2s = 0;
-		currNode->depth = depth;
-		currNode->p2s = NULL;
+        currNode->d2s = 0;
+        currNode->depth = depth;
+        currNode->p2s = NULL;
 
-		currNode->num_rule = ruleset->num;
+        currNode->num_rule = ruleset->num;
         currNode->rule = (uint32_t*) malloc(ruleset->num*sizeof(uint32_t));
 
-		uint32_t i;
+        uint32_t i;
         for(i = 0; i<ruleset->num; i++){
             currNode->rule[i] = ruleset->ruleList[i].pri;
         }
 
-		currNode->child[0] = NULL;
-		currNode->child[1] = NULL;
+        currNode->child[0] = NULL;
+        currNode->child[1] = NULL;
 
 
-		gChildCount ++;
-		gNumLeafNode ++;
-		if ((gNumLeafNode & 0xFFFF) == 0) {
+        gChildCount ++;
+        gNumLeafNode ++;
+        if ((gNumLeafNode & 0xFFFF) == 0) {
 #ifdef DEBUGv2
-			printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
+            printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
 #endif
         }
-		/* worst-case depth and range update */
-		if (gWstDepth < depth){
-			gWstDepth = depth;
-			/*TODO: worst-case range setup */
-			for(dim=0; dim < DIM; dim ++) {
-				number_bits = BITNUMBER[FLAG[dim]];
-				/* getting the worst from the last ^_^ */
-				Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
-				Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
-			}
-		}
-		gAvgDepth += depth;
+        /* worst-case depth and range update */
+        if (gWstDepth < depth){
+            gWstDepth = depth;
+            /*TODO: worst-case range setup */
+            for(dim=0; dim < DIM; dim ++) {
+                number_bits = BITNUMBER[FLAG[dim]];
+                /* getting the worst from the last ^_^ */
+                Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
+                Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
+            }
+        }
+        gAvgDepth += depth;
 
-		/* freeing */
-		/* for(num=0; num<ruleset->num; num ++) { */
-			/* free(ruleset->ruleList[num] */
+        /* freeing */
+        /* for(num=0; num<ruleset->num; num ++) { */
+            /* free(ruleset->ruleList[num] */
         gettimeofday(&end, NULL);
 
         //duration = end.tv_sec * 1000000 + end.tv_usec -
@@ -1100,49 +1100,49 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
             build_time[ruleset->ruleList[i].rule_id] += duration;
         }
         */
-		return	HS_SUCCESS;
+        return  HS_SUCCESS;
     }
-	/*** find the splitting dimension ***/
-	for(dim=0; dim < DIM; dim++) {
-		//printf("\nzwz005 dim = %u\n",dim);
+    /*** find the splitting dimension ***/
+    for(dim=0; dim < DIM; dim++) {
+        //printf("\nzwz005 dim = %u\n",dim);
         number_bits = BITNUMBER[FLAG[dim]]; /* int BITNUMBER[4] = {32, 32, 128, 64}; */
-		diffSegPts = 1; /* at least there are one differnt segment point */
+        diffSegPts = 1; /* at least there are one differnt segment point */
         diffSegPts_All = 1;
         
-		segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
-		tempSegPoints  = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
+        segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
+        tempSegPoints  = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         memset(segPoints,0,(ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         memset(tempSegPoints,0,(ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         //printf("\nzwz dim = %u,malloc seg = %p, temp = %p\n",dim,segPoints[dim],tempSegPoints);
         //printf("\nzwz dim = %u\n",dim);
         //mem_stat2 += (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t) * 2;
         //sleep(20);
-		SegFlag = (uint32_t*)malloc((ruleset->num<<1)*sizeof(uint32_t));
-		for (num=0; num<ruleset->num; num++) {
-			for(i = 0; i<(number_bits>>5); i++){
-				segPoints[(number_bits>>4)*num + i] = ruleset->ruleList[num].range[dim][0][i];
-				segPoints[(number_bits>>4)*num + i + (number_bits>>5)] = ruleset->ruleList[num].range[dim][1][i];
-			}
-		}
-//		Show(segPoints, (ruleset->num)<<1, number_bits);
-		Assign(&tempSegPoints[0], &segPoints[0], number_bits);
-		SegFlag[0] = 1;
+        SegFlag = (uint32_t*)malloc((ruleset->num<<1)*sizeof(uint32_t));
+        for (num=0; num<ruleset->num; num++) {
+            for(i = 0; i<(number_bits>>5); i++){
+                segPoints[(number_bits>>4)*num + i] = ruleset->ruleList[num].range[dim][0][i];
+                segPoints[(number_bits>>4)*num + i + (number_bits>>5)] = ruleset->ruleList[num].range[dim][1][i];
+            }
+        }
+//      Show(segPoints, (ruleset->num)<<1, number_bits);
+        Assign(&tempSegPoints[0], &segPoints[0], number_bits);
+        SegFlag[0] = 1;
 
-		/* count number of different segment points */
-		number_bits = BITNUMBER[FLAG[dim]];
-		for(num=1; num < 2*ruleset->num; num++) {
-			//printf("\ndim = %u,num = %u,number_bits = %u\n",dim,num,number_bits);
+        /* count number of different segment points */
+        number_bits = BITNUMBER[FLAG[dim]];
+        for(num=1; num < 2*ruleset->num; num++) {
+            //printf("\ndim = %u,num = %u,number_bits = %u\n",dim,num,number_bits);
 
             int if_unique = 1;
-			for(pos=0; pos < diffSegPts; pos++) {
-				//printf("zz = %u, %u, %u\n",zz,((uint32_t*)(&segPoints[dim][num*number_bits/32]))[zz],((uint32_t*)(&tempSegPoints[pos*number_bits/32]))[zz]);
+            for(pos=0; pos < diffSegPts; pos++) {
+                //printf("zz = %u, %u, %u\n",zz,((uint32_t*)(&segPoints[dim][num*number_bits/32]))[zz],((uint32_t*)(&tempSegPoints[pos*number_bits/32]))[zz]);
                 if (number_bits <= 32) {
-					if(SegPointCompare32(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
-						if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
-						if_unique = 0; 
-							break;
-						}
-						else{
+                    if(SegPointCompare32(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
+                        if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
+                        if_unique = 0; 
+                            break;
+                        }
+                        else{
                             if((SegFlag[pos] | ((num & 1)+1))!=3){
                                 printf(">>[err] SegFlag has a problem!\n");
                                 exit(-1);
@@ -1151,16 +1151,16 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
                             diffSegPts_All++;
                             if_unique = 0;
                             break;
-						}
-					}
-				}
-				else {
-					if(SegPointCompare_64_128(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
-						if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
+                        }
+                    }
+                }
+                else {
+                    if(SegPointCompare_64_128(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
+                        if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
                             if_unique = 0;
                             break;
-						}
-						else{
+                        }
+                        else{
                             if((SegFlag[pos] | ((num & 1)+1))!=3){
                                 printf(">>[err] SegFlag has a problem!\n");
                                 exit(-1);
@@ -1169,48 +1169,48 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
                             diffSegPts_All++;
                             if_unique = 0;
                             break;
-						}
-					}
-				}
-			}
-			if(if_unique) {
-				Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[num*number_bits/32], number_bits);
-				SegFlag[diffSegPts] = (num & 1)+1;
-				diffSegPts++;
-				diffSegPts_All++;
-			}
-		}
+                        }
+                    }
+                }
+            }
+            if(if_unique) {
+                Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[num*number_bits/32], number_bits);
+                SegFlag[diffSegPts] = (num & 1)+1;
+                diffSegPts++;
+                diffSegPts_All++;
+            }
+        }
 
 #ifdef DEBUGv2
-		printf("\n>>different seg: dim=%u, diffsegpts#=%u, diffsegpts_all#=%u, diffsegvalue(flag)=", dim, diffSegPts, diffSegPts_All);
-		for(pos=0; pos < diffSegPts; pos++) {
-			Show(&tempSegPoints[pos*number_bits/32], 1, number_bits);
-			printf("(%u)", SegFlag[pos]);
-		}
-		printf("\n");
+        printf("\n>>different seg: dim=%u, diffsegpts#=%u, diffsegpts_all#=%u, diffsegvalue(flag)=", dim, diffSegPts, diffSegPts_All);
+        for(pos=0; pos < diffSegPts; pos++) {
+            Show(&tempSegPoints[pos*number_bits/32], 1, number_bits);
+            printf("(%u)", SegFlag[pos]);
+        }
+        printf("\n");
 #endif
 
-		//printf("\ndim = %d, diffSegPts = %d, diffSegPts_All = %d", dim, diffSegPts, diffSegPts_All);
-		if (maxDiffSegPts_All < diffSegPts_All) {
-			maxDiffSegPts_All = diffSegPts_All;
-			maxDiffSegPts     = diffSegPts;
-			d2s = dim;
-		}
-		free(segPoints);
-		free(SegFlag);
-		free(tempSegPoints);
-	}
+        //printf("\ndim = %d, diffSegPts = %d, diffSegPts_All = %d", dim, diffSegPts, diffSegPts_All);
+        if (maxDiffSegPts_All < diffSegPts_All) {
+            maxDiffSegPts_All = diffSegPts_All;
+            maxDiffSegPts     = diffSegPts;
+            d2s = dim;
+        }
+        free(segPoints);
+        free(SegFlag);
+        free(tempSegPoints);
+    }
 
-	number_bits = BITNUMBER[FLAG[d2s]];
+    number_bits = BITNUMBER[FLAG[d2s]];
 
 
-	/**Have not refind the following code... Go to sleep for a while... Dorm! I am coming! **/
-	/* For 3 points, directly split at the center */
-	if(maxDiffSegPts_All >= 3){
+    /**Have not refind the following code... Go to sleep for a while... Dorm! I am coming! **/
+    /* For 3 points, directly split at the center */
+    if(maxDiffSegPts_All >= 3){
         segmentpt32_t* tempPoints_32 = NULL;
         segmentpt64_t* tempPoints_64 = NULL;
         segmentpt128_t* tempPoints_128 = NULL;
-	    segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
+        segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         if(number_bits == 32){
             tempPoints_32 = (segmentpt32_t*)malloc(maxDiffSegPts * sizeof(segmentpt32_t));
             Assign_SegmentPoints_32(ruleset, d2s, segPoints, tempPoints_32);
@@ -1229,10 +1229,10 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
         }
 
 
-		/*Sort the Segment Points*/
-		if (number_bits == 32) //forgive me...
-			qsort(&(tempPoints_32[0]), maxDiffSegPts, sizeof(segmentpt32_t), TempSegPointCompare32);
-		else{
+        /*Sort the Segment Points*/
+        if (number_bits == 32) //forgive me...
+            qsort(&(tempPoints_32[0]), maxDiffSegPts, sizeof(segmentpt32_t), TempSegPointCompare32);
+        else{
             if(number_bits == 64){
                 //printf("%u\n", maxDiffSegPts);
                 //ShowSeg(&(tempPoints_64[0]), maxDiffSegPts);
@@ -1245,41 +1245,41 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
                 qsort(&(tempPoints_128[0]), maxDiffSegPts, sizeof(segmentpt128_t), TempSegPointCompare128);
             }
 
-		}
+        }
 
 
 #ifdef DEBUGv2
-		/* printf("\n>>different seg points after qsort:"); */
-		/* for(num=0; num < 2*ruleset->num; num++) { */
-		/* Show(&segPoints[d2s][num*number_bits/32], 1, number_bits); */
-		/* } */
+        /* printf("\n>>different seg points after qsort:"); */
+        /* for(num=0; num < 2*ruleset->num; num++) { */
+        /* Show(&segPoints[d2s][num*number_bits/32], 1, number_bits); */
+        /* } */
 #endif
-//		tempSegPoints  = (uint32_t*) malloc(maxDiffSegPts * number_bits/32 * sizeof(uint32_t));
+//      tempSegPoints  = (uint32_t*) malloc(maxDiffSegPts * number_bits/32 * sizeof(uint32_t));
         //printf("malloc2 = %p,max num = %d",tempSegPoints,maxDiffSegPts);
 //
-//		diffSegPts = 1;
-//		Assign(&tempSegPoints[0], &segPoints[d2s][0], number_bits);
-//		for(num=1; num<2*ruleset->num; num++){
-//			if (number_bits <= 32) {
-//				if(SegPointCompare32(&segPoints[d2s][num*number_bits/32], &tempSegPoints[(diffSegPts-1)*number_bits/32]) != 0){
-//					Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[d2s][num*number_bits/32], number_bits);
-//					diffSegPts++;
-//				}
-//			}
-//			else {
-//				if(SegPointCompare128(&segPoints[d2s][num*number_bits/32], &tempSegPoints[(diffSegPts-1)*number_bits/32]) != 0){
-//					Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[d2s][num*number_bits/32], number_bits);
-//					diffSegPts++;
-//				}
-//			}
-//		}
+//      diffSegPts = 1;
+//      Assign(&tempSegPoints[0], &segPoints[d2s][0], number_bits);
+//      for(num=1; num<2*ruleset->num; num++){
+//          if (number_bits <= 32) {
+//              if(SegPointCompare32(&segPoints[d2s][num*number_bits/32], &tempSegPoints[(diffSegPts-1)*number_bits/32]) != 0){
+//                  Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[d2s][num*number_bits/32], number_bits);
+//                  diffSegPts++;
+//              }
+//          }
+//          else {
+//              if(SegPointCompare128(&segPoints[d2s][num*number_bits/32], &tempSegPoints[(diffSegPts-1)*number_bits/32]) != 0){
+//                  Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[d2s][num*number_bits/32], number_bits);
+//                  diffSegPts++;
+//              }
+//          }
+//      }
 #ifdef DEBUGv2
-//		printf("\n>>unique seg points after qsort:");
-//		for(num=0; num < maxDiffSegPts; num++) {
+//      printf("\n>>unique seg points after qsort:");
+//      for(num=0; num < maxDiffSegPts; num++) {
 //
-//			Show(&tempSegPoints[num*number_bits/32], 1, number_bits);
-//		}
-		//printf("\n>>maxDiffseg=%u", maxDiffSegPts);
+//          Show(&tempSegPoints[num*number_bits/32], 1, number_bits);
+//      }
+        //printf("\n>>maxDiffseg=%u", maxDiffSegPts);
 #endif
 
         uint32_t temp_pos = (maxDiffSegPts_All>>1);
@@ -1374,60 +1374,60 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
         if(number_bits == 128)free(tempPoints_128);
 
 #ifdef DEBUGv2
-		printf("\n>>split decision: d2s=%u, p2s=", d2s);
-		Show(p2s, 1, 128);
-		printf("\n>>left child range:");
-		Show(range[0][0], 1, 128); printf("\t");
-		Show(range[0][1], 1, 128);
-		printf("\n>>right child range:");
-		Show(range[1][0], 1, 128); printf("\t");
-		Show(range[1][1], 1, 128);
+        printf("\n>>split decision: d2s=%u, p2s=", d2s);
+        Show(p2s, 1, 128);
+        printf("\n>>left child range:");
+        Show(range[0][0], 1, 128); printf("\t");
+        Show(range[0][1], 1, 128);
+        printf("\n>>right child range:");
+        Show(range[1][0], 1, 128); printf("\t");
+        Show(range[1][1], 1, 128);
 #endif
         free(segPoints);
-	}
+    }
 
 
 
-	/*Update Leaf node*/
-	if ( maxDiffSegPts_All <= 2) {
-	    currNode->flag = 0;
-		currNode->d2s = 0;
-		currNode->depth = depth;
-		currNode->p2s = NULL;
+    /*Update Leaf node*/
+    if ( maxDiffSegPts_All <= 2) {
+        currNode->flag = 0;
+        currNode->d2s = 0;
+        currNode->depth = depth;
+        currNode->p2s = NULL;
         currNode->num_rule = ruleset->num;
         currNode->rule = (uint32_t*) malloc(ruleset->num*sizeof(uint32_t));
         uint32_t i;
         for(i=0;i<ruleset->num;i++){
             currNode->rule[i] = ruleset->ruleList[i].pri;
         }
-		currNode->child[0] = NULL;
-		currNode->child[1] = NULL;
+        currNode->child[0] = NULL;
+        currNode->child[1] = NULL;
 
 
-		gChildCount ++;
-		gNumLeafNode ++;
-		if ((gNumLeafNode & 0xFFFF) == 0) {
+        gChildCount ++;
+        gNumLeafNode ++;
+        if ((gNumLeafNode & 0xFFFF) == 0) {
 #ifdef DEBUGv2
-			printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
+            printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
 #endif
         }
 
-		/* worst-case depth and range update */
-		if (gWstDepth < depth){
-			gWstDepth = depth;
-			/*TODO: worst-case range setup */
-			for(dim=0; dim < DIM; dim ++) {
-				number_bits = BITNUMBER[FLAG[dim]];
-				/* getting the worst from the last ^_^ */
-				Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
-				Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
-			}
-		}
-		gAvgDepth += depth;
+        /* worst-case depth and range update */
+        if (gWstDepth < depth){
+            gWstDepth = depth;
+            /*TODO: worst-case range setup */
+            for(dim=0; dim < DIM; dim ++) {
+                number_bits = BITNUMBER[FLAG[dim]];
+                /* getting the worst from the last ^_^ */
+                Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
+                Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
+            }
+        }
+        gAvgDepth += depth;
 
-		/* freeing */
-		/* for(num=0; num<ruleset->num; num ++) { */
-			/* free(ruleset->ruleList[num] */
+        /* freeing */
+        /* for(num=0; num<ruleset->num; num ++) { */
+            /* free(ruleset->ruleList[num] */
         gettimeofday(&end, NULL);
 
         //duration = end.tv_sec * 1000000 + end.tv_usec -
@@ -1437,82 +1437,82 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
             build_time[ruleset->ruleList[i].rule_id] += duration;
         }
         */
-		return	HS_SUCCESS;
-	}
+        return  HS_SUCCESS;
+    }
 
-	/**** Update currNode ****/
-	number_bits = BITNUMBER[FLAG[d2s]];
-	gNumTreeNode ++;
-	currNode->d2s = (uint8_t) d2s;
-	currNode->depth = (uint8_t) depth;
-	currNode->p2s = (uint32_t*) malloc(number_bits/32 * sizeof(uint32_t));
-	//printf("\nmalloc4 = %p\n",currNode->p2s);
-	int j;
+    /**** Update currNode ****/
+    number_bits = BITNUMBER[FLAG[d2s]];
+    gNumTreeNode ++;
+    currNode->d2s = (uint8_t) d2s;
+    currNode->depth = (uint8_t) depth;
+    currNode->p2s = (uint32_t*) malloc(number_bits/32 * sizeof(uint32_t));
+    //printf("\nmalloc4 = %p\n",currNode->p2s);
+    int j;
     for(j=number_bits/32-1; j >= 0; j--){
-		currNode->p2s[j] = p2s[i+4-number_bits/32];
-	}
+        currNode->p2s[j] = p2s[i+4-number_bits/32];
+    }
 
-	currNode->num_rule = 0;
-	currNode->rule = NULL;
-	currNode->child[0] = (hs_node_t *) malloc(sizeof(hs_node_t));
+    currNode->num_rule = 0;
+    currNode->rule = NULL;
+    currNode->child[0] = (hs_node_t *) malloc(sizeof(hs_node_t));
     //printf("\nmalloc5 = %p\n",currNode->child[0]);
-	/*Generate left child rule list*/
-	tempRuleNumList = (uint32_t*) malloc(ruleset->num * sizeof(uint32_t)); /* need to be freed */
-	//printf("\nmalloc6 = %p\n",tempRuleNumList);
+    /*Generate left child rule list*/
+    tempRuleNumList = (uint32_t*) malloc(ruleset->num * sizeof(uint32_t)); /* need to be freed */
+    //printf("\nmalloc6 = %p\n",tempRuleNumList);
     //sleep(20);
     pos = 0;
     //printf("\npos ruleset num = %u\n",ruleset->num);
-	for (num = 0; num < ruleset->num; num++) {
-		int temp1, temp2;
-		if (number_bits <= 32) {
-			temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
-			temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
-		} 
-		else {
-			temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
-			temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
-		}
+    for (num = 0; num < ruleset->num; num++) {
+        int temp1, temp2;
+        if (number_bits <= 32) {
+            temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
+            temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
+        } 
+        else {
+            temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
+            temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
+        }
 
-		if (temp1 <=0 && temp2 >= 0)
-		{
-			tempRuleNumList[pos] = num;
+        if (temp1 <=0 && temp2 >= 0)
+        {
+            tempRuleNumList[pos] = num;
             pos++;
             //printf("\nnum = %u,pos = %u\n",num,pos);
-		}
-	}
+        }
+    }
 
-	childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
-	//printf("\nmalloc7 = %p\n",childRuleSet);
+    childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
+    //printf("\nmalloc7 = %p\n",childRuleSet);
     childRuleSet->num = pos;
-	childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
-	//printf("\nmalloc8 = %p\n",childRuleSet->ruleList);
+    childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
+    //printf("\nmalloc8 = %p\n",childRuleSet->ruleList);
     num1++;
     mem_stat1 += childRuleSet->num * sizeof(rule_t);
     number_bits = BITNUMBER[FLAG[d2s]];
     //sleep(20);
-	for (num = 0; num < childRuleSet->num; num++) {
-		Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
-		/* in d2s dim, the search space needs to be trimmed off */
-		if (number_bits <= 32) {
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0], &range[0][0][4-number_bits/32], number_bits);
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32], number_bits);
-		}
-		else {
-			if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0],&range[0][0][4-number_bits/32],number_bits);
-			if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32],number_bits);
-		}
-	}
-	//printf("\nhs free add4 = %p\n",tempRuleNumList);
+    for (num = 0; num < childRuleSet->num; num++) {
+        Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
+        /* in d2s dim, the search space needs to be trimmed off */
+        if (number_bits <= 32) {
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0], &range[0][0][4-number_bits/32], number_bits);
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32], number_bits);
+        }
+        else {
+            if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0],&range[0][0][4-number_bits/32],number_bits);
+            if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32],number_bits);
+        }
+    }
+    //printf("\nhs free add4 = %p\n",tempRuleNumList);
     //printf("\nhs free add4\n");
     free (tempRuleNumList);
     tempRuleNumList = NULL;
 #ifdef DEBUGv2
-	  printf("\n>>depth #%d 1subrules# %d:",depth+1, num);
-	  for(i=0;i<num;i++)printf("%d ", childRuleSet->ruleList[i].pri);
+      printf("\n>>depth #%d 1subrules# %d:",depth+1, num);
+      for(i=0;i<num;i++)printf("%d ", childRuleSet->ruleList[i].pri);
 #endif
     gettimeofday(&end, NULL);
 
@@ -1523,63 +1523,63 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
         build_time[ruleset->ruleList[i].rule_id] += duration;
     }
     */
-	PreBuildHSTree(childRuleSet, currNode->child[0], depth+1,second,dir,p_rule_complex);
+    PreBuildHSTree(childRuleSet, currNode->child[0], depth+1,second,dir,p_rule_complex);
 
     release_ruleset(childRuleSet);
-	/**** Generate right child rule list ****/
-	currNode->child[1] = (hs_node_t *) malloc(sizeof(hs_node_t));
-	//printf("\nmalloc9 = %p\n",currNode->child[1]);
+    /**** Generate right child rule list ****/
+    currNode->child[1] = (hs_node_t *) malloc(sizeof(hs_node_t));
+    //printf("\nmalloc9 = %p\n",currNode->child[1]);
     tempRuleNumList = (uint32_t*) malloc(ruleset->num * sizeof(uint32_t)); /* need to be free */
-	//printf("\nmalloc10 = %p\n",tempRuleNumList);
+    //printf("\nmalloc10 = %p\n",tempRuleNumList);
     pos = 0;
 
     //sleep(20);
-	number_bits = BITNUMBER[FLAG[d2s]];
-	for (num = 0; num < ruleset->num; num++) {
-		int temp1, temp2;
-		if (number_bits <= 32) {
-			temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
-			temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
-		}
-		else {
-			temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
-			temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
-		}
-		if ( temp1<=0 && temp2 >= 0)
-		{
-			tempRuleNumList[pos] = num;
-			pos++;
-		}
-	}
+    number_bits = BITNUMBER[FLAG[d2s]];
+    for (num = 0; num < ruleset->num; num++) {
+        int temp1, temp2;
+        if (number_bits <= 32) {
+            temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
+            temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
+        }
+        else {
+            temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
+            temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
+        }
+        if ( temp1<=0 && temp2 >= 0)
+        {
+            tempRuleNumList[pos] = num;
+            pos++;
+        }
+    }
 
-	childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
-	//printf("\nmalloc11 = %p\n",childRuleSet);
+    childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
+    //printf("\nmalloc11 = %p\n",childRuleSet);
     childRuleSet->num = pos;
-	childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
+    childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
     //printf("\nmalloc12 = %p\n",childRuleSet->ruleList);
     //printf("\nnum = %u\n",childRuleSet->num);
     num2++;
     mem_stat2 += childRuleSet->num * sizeof(rule_t);
     //sleep(20);
-	for (num = 0; num < childRuleSet->num; num++) {
-		Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
-		/* printf("\n>>ruleset->num %u", tempRuleNumList[num]); */
-		/* in d2s dim, the search space needs to be trimmed off */
-		if (number_bits <= 32) {
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
-		}
-		else {
-			if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
-			if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
-		}
-	}
+    for (num = 0; num < childRuleSet->num; num++) {
+        Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
+        /* printf("\n>>ruleset->num %u", tempRuleNumList[num]); */
+        /* in d2s dim, the search space needs to be trimmed off */
+        if (number_bits <= 32) {
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
+        }
+        else {
+            if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
+            if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
+        }
+    }
     //printf("\nhs free add5 = %p\n",tempRuleNumList);
-	//printf("\nhs free add5\n");
+    //printf("\nhs free add5\n");
     free(tempRuleNumList);
     tempRuleNumList = NULL;
 #ifdef DEBUGv2
@@ -1587,140 +1587,140 @@ int	PreBuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth, ti
     for(i=0;i<num;i++)printf("%d ", childRuleSet->ruleList[i].pri);
 #endif
     PreBuildHSTree(childRuleSet, currNode->child[1], depth+1,second,dir,p_rule_complex);
-	release_ruleset(childRuleSet);
-    return	HS_SUCCESS;
+    release_ruleset(childRuleSet);
+    return  HS_SUCCESS;
 }
 
  
-int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
+int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
 {
 
-	printf("in BuildHSTree !\n");
+    printf("in BuildHSTree !\n");
     if(0 == depth)
     {
         hs_init();
     }
     /* generate segments for input filtset */
-	//printf("\nBuild tree\n");
+    //printf("\nBuild tree\n");
     uint32_t i;
-	uint32_t	dim, num, pos;
-	uint32_t	maxDiffSegPts = 1;	/* maximum different segment points */
-	uint32_t    maxDiffSegPts_All = 1;
-	uint32_t	d2s = 0;		/* dimension to split (with max diffseg) */
-	uint32_t	p2s[4];
-	uint32_t	*t_p2s;
-	//uint32_t	if_start_is_end[DIM], if_end_is_start[DIM];
-	uint32_t	range[2][2][4];	/* sub-space ranges for child-nodes */
-	uint32_t	diffSegPts = 1; /* at least there are one differnt segment point */
-	uint32_t    diffSegPts_All = 1;
-    uint32_t	*segPoints;
-	uint32_t	*tempSegPoints;
+    uint32_t    dim, num, pos;
+    uint32_t    maxDiffSegPts = 1;  /* maximum different segment points */
+    uint32_t    maxDiffSegPts_All = 1;
+    uint32_t    d2s = 0;        /* dimension to split (with max diffseg) */
+    uint32_t    p2s[4];
+    uint32_t    *t_p2s;
+    //uint32_t  if_start_is_end[DIM], if_end_is_start[DIM];
+    uint32_t    range[2][2][4]; /* sub-space ranges for child-nodes */
+    uint32_t    diffSegPts = 1; /* at least there are one differnt segment point */
+    uint32_t    diffSegPts_All = 1;
+    uint32_t    *segPoints;
+    uint32_t    *tempSegPoints;
     uint32_t    *SegFlag;
-	uint32_t	*tempRuleNumList;
-	rule_set_t	*childRuleSet;
+    uint32_t    *tempRuleNumList;
+    rule_set_t  *childRuleSet;
 
     //printf("\nrule num = %u\n",ruleset->num);
 #ifdef DEBUGv2
-	printf("\n\n>>--------------new node in depth=%u -----------------", depth);
-	printf("\n>>current rules:");
-	for(num=0; num < ruleset->num; num++) {
-		printf("\n>>rules#%u", num+1);
-		ShowRule(ruleset, num);
-	}
+    printf("\n\n>>--------------new node in depth=%u -----------------", depth);
+    printf("\n>>current rules:");
+    for(num=0; num < ruleset->num; num++) {
+        printf("\n>>rules#%u", num+1);
+        ShowRule(ruleset, num);
+    }
 #endif
 
-	/*Initialize the worst-case range */
-	if(depth == 0) {
-		for(dim=0; dim < DIM; dim ++) {
-			Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0],number_bits);
-			Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1],number_bits);
-		}
-	}
-	
+    /*Initialize the worst-case range */
+    if(depth == 0) {
+        for(dim=0; dim < DIM; dim ++) {
+            Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0],number_bits);
+            Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1],number_bits);
+        }
+    }
+    
     if(ruleset->num <= Rule_Num_Threshold){
         currNode->flag = 1;
-		currNode->d2s = 0;
-		currNode->depth = depth;
-		currNode->p2s = NULL;
+        currNode->d2s = 0;
+        currNode->depth = depth;
+        currNode->p2s = NULL;
 
-		currNode->num_rule = ruleset->num;
+        currNode->num_rule = ruleset->num;
         currNode->rule = (uint32_t*) malloc(ruleset->num*sizeof(uint32_t));
 
-		uint32_t i;
+        uint32_t i;
         for(i=0;i<ruleset->num;i++){
             currNode->rule[i] = ruleset->ruleList[i].pri;
         }
 
-		currNode->child[0] = NULL;
-		currNode->child[1] = NULL;
+        currNode->child[0] = NULL;
+        currNode->child[1] = NULL;
 
 
-		gChildCount ++;
-		gNumLeafNode ++;
-		if ((gNumLeafNode & 0xFFFF) == 0) {
+        gChildCount ++;
+        gNumLeafNode ++;
+        if ((gNumLeafNode & 0xFFFF) == 0) {
 #ifdef DEBUGv2
-			printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
+            printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
 #endif
         }
-		/* worst-case depth and range update */
-		if (gWstDepth < depth){
-			gWstDepth = depth;
-			/*TODO: worst-case range setup */
-			for(dim=0; dim < DIM; dim ++) {
-				number_bits = BITNUMBER[FLAG[dim]];
-				/* getting the worst from the last ^_^ */
-				Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
-				Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
-			}
-		}
-		gAvgDepth += depth;
+        /* worst-case depth and range update */
+        if (gWstDepth < depth){
+            gWstDepth = depth;
+            /*TODO: worst-case range setup */
+            for(dim=0; dim < DIM; dim ++) {
+                number_bits = BITNUMBER[FLAG[dim]];
+                /* getting the worst from the last ^_^ */
+                Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
+                Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
+            }
+        }
+        gAvgDepth += depth;
 
-		/* freeing */
-		/* for(num=0; num<ruleset->num; num ++) { */
-			/* free(ruleset->ruleList[num] */
-		return	HS_SUCCESS;
+        /* freeing */
+        /* for(num=0; num<ruleset->num; num ++) { */
+            /* free(ruleset->ruleList[num] */
+        return  HS_SUCCESS;
     }
-	/*** find the splitting dimension ***/
-	for(dim=0; dim < DIM; dim++) {
-		//printf("\nzwz005 dim = %u\n",dim);
+    /*** find the splitting dimension ***/
+    for(dim=0; dim < DIM; dim++) {
+        //printf("\nzwz005 dim = %u\n",dim);
         number_bits = BITNUMBER[FLAG[dim]]; /* int BITNUMBER[4] = {32, 32, 128, 64}; */
-		diffSegPts = 1; /* at least there are one differnt segment point */
+        diffSegPts = 1; /* at least there are one differnt segment point */
         diffSegPts_All = 1;
         
-		segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
-		tempSegPoints  = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
+        segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
+        tempSegPoints  = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         memset(segPoints,0,(ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         memset(tempSegPoints,0,(ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         //printf("\nzwz dim = %u,malloc seg = %p, temp = %p\n",dim,segPoints[dim],tempSegPoints);
         //printf("\nzwz dim = %u\n",dim);
         //mem_stat2 += (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t) * 2;
         //sleep(20);
-		SegFlag = (uint32_t*)malloc((ruleset->num<<1)*sizeof(uint32_t));
-		for (num=0; num<ruleset->num; num++) {
-			for(i=0;i<(number_bits>>5);i++){
-				segPoints[(number_bits>>4)*num + i] = ruleset->ruleList[num].range[dim][0][i];
-				segPoints[(number_bits>>4)*num + i + (number_bits>>5)] = ruleset->ruleList[num].range[dim][1][i];
-			}
-		}
-//		Show(segPoints, (ruleset->num)<<1, number_bits);
-		Assign(&tempSegPoints[0], &segPoints[0], number_bits);
-		SegFlag[0] = 1;
+        SegFlag = (uint32_t*)malloc((ruleset->num<<1)*sizeof(uint32_t));
+        for (num=0; num<ruleset->num; num++) {
+            for(i=0;i<(number_bits>>5);i++){
+                segPoints[(number_bits>>4)*num + i] = ruleset->ruleList[num].range[dim][0][i];
+                segPoints[(number_bits>>4)*num + i + (number_bits>>5)] = ruleset->ruleList[num].range[dim][1][i];
+            }
+        }
+//      Show(segPoints, (ruleset->num)<<1, number_bits);
+        Assign(&tempSegPoints[0], &segPoints[0], number_bits);
+        SegFlag[0] = 1;
 
-		/* count number of different segment points */
-		number_bits = BITNUMBER[FLAG[dim]];
-		for(num=1; num < 2*ruleset->num; num++) {
-			//printf("\ndim = %u,num = %u,number_bits = %u\n",dim,num,number_bits);
+        /* count number of different segment points */
+        number_bits = BITNUMBER[FLAG[dim]];
+        for(num=1; num < 2*ruleset->num; num++) {
+            //printf("\ndim = %u,num = %u,number_bits = %u\n",dim,num,number_bits);
 
             int if_unique = 1;
-			for(pos=0; pos < diffSegPts; pos++) {
-				//printf("zz = %u, %u, %u\n",zz,((uint32_t*)(&segPoints[dim][num*number_bits/32]))[zz],((uint32_t*)(&tempSegPoints[pos*number_bits/32]))[zz]);
+            for(pos=0; pos < diffSegPts; pos++) {
+                //printf("zz = %u, %u, %u\n",zz,((uint32_t*)(&segPoints[dim][num*number_bits/32]))[zz],((uint32_t*)(&tempSegPoints[pos*number_bits/32]))[zz]);
                 if (number_bits <= 32) {
-					if(SegPointCompare32(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
-						if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
-						if_unique = 0; 
-							break;
-						}
-						else{
+                    if(SegPointCompare32(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
+                        if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
+                        if_unique = 0; 
+                            break;
+                        }
+                        else{
                             if((SegFlag[pos] | ((num & 1)+1))!=3){
                                 printf(">>[err] SegFlag has a problem!\n");
                                 exit(-1);
@@ -1729,16 +1729,16 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
                             diffSegPts_All++;
                             if_unique = 0;
                             break;
-						}
-					}
-				}
-				else {
-					if(SegPointCompare_64_128(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
-						if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
+                        }
+                    }
+                }
+                else {
+                    if(SegPointCompare_64_128(&segPoints[num*number_bits/32], &tempSegPoints[pos*number_bits/32]) == 0){
+                        if(SegFlag[pos] == 3 || ((SegFlag[pos] == ((num & 1)+1)))){
                             if_unique = 0;
                             break;
-						}
-						else{
+                        }
+                        else{
                             if((SegFlag[pos] | ((num & 1)+1))!=3){
                                 printf(">>[err] SegFlag has a problem!\n");
                                 exit(-1);
@@ -1747,48 +1747,48 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
                             diffSegPts_All++;
                             if_unique = 0;
                             break;
-						}
-					}
-				}
-			}
-			if(if_unique) {
-				Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[num*number_bits/32], number_bits);
-				SegFlag[diffSegPts] = (num & 1)+1;
-				diffSegPts++;
-				diffSegPts_All++;
-			}
-		}
+                        }
+                    }
+                }
+            }
+            if(if_unique) {
+                Assign(&tempSegPoints[diffSegPts*number_bits/32], &segPoints[num*number_bits/32], number_bits);
+                SegFlag[diffSegPts] = (num & 1)+1;
+                diffSegPts++;
+                diffSegPts_All++;
+            }
+        }
 
 #ifdef DEBUGv2
-		printf("\n>>different seg: dim=%u, diffsegpts#=%u, diffsegpts_all#=%u, diffsegvalue(flag)=", dim, diffSegPts, diffSegPts_All);
-		for(pos=0; pos < diffSegPts; pos++) {
-			Show(&tempSegPoints[pos*number_bits/32], 1, number_bits);
-			printf("(%u)", SegFlag[pos]);
-		}
-		printf("\n");
+        printf("\n>>different seg: dim=%u, diffsegpts#=%u, diffsegpts_all#=%u, diffsegvalue(flag)=", dim, diffSegPts, diffSegPts_All);
+        for(pos=0; pos < diffSegPts; pos++) {
+            Show(&tempSegPoints[pos*number_bits/32], 1, number_bits);
+            printf("(%u)", SegFlag[pos]);
+        }
+        printf("\n");
 #endif
 
-		//printf("\ndim = %d, diffSegPts = %d, diffSegPts_All = %d", dim, diffSegPts, diffSegPts_All);
-		if (maxDiffSegPts_All < diffSegPts_All) {
-			maxDiffSegPts_All = diffSegPts_All;
-			maxDiffSegPts     = diffSegPts;
-			d2s = dim;
-		}
-		free(segPoints);
-		free(SegFlag);
-		free(tempSegPoints);
-	}
+        //printf("\ndim = %d, diffSegPts = %d, diffSegPts_All = %d", dim, diffSegPts, diffSegPts_All);
+        if (maxDiffSegPts_All < diffSegPts_All) {
+            maxDiffSegPts_All = diffSegPts_All;
+            maxDiffSegPts     = diffSegPts;
+            d2s = dim;
+        }
+        free(segPoints);
+        free(SegFlag);
+        free(tempSegPoints);
+    }
 
-	number_bits = BITNUMBER[FLAG[d2s]];
+    number_bits = BITNUMBER[FLAG[d2s]];
 
 
-	/**Have not refind the following code... Go to sleep for a while... Dorm! I am coming! **/
-	/* For 3 points, directly split at the center */
-	if(maxDiffSegPts_All >= 3){
+    /**Have not refind the following code... Go to sleep for a while... Dorm! I am coming! **/
+    /* For 3 points, directly split at the center */
+    if(maxDiffSegPts_All >= 3){
         segmentpt32_t* tempPoints_32 = NULL;
         segmentpt64_t* tempPoints_64 = NULL;
         segmentpt128_t* tempPoints_128 = NULL;
-	    segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
+        segPoints = (uint32_t*) malloc( (ruleset->num<<1) * (number_bits>>5) * sizeof(uint32_t));
         if(number_bits == 32){
             tempPoints_32 = (segmentpt32_t*)malloc(maxDiffSegPts * sizeof(segmentpt32_t));
             Assign_SegmentPoints_32(ruleset, d2s, segPoints, tempPoints_32);
@@ -1807,10 +1807,10 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
         }
 
 
-		/*Sort the Segment Points*/
-		if (number_bits == 32) //forgive me...
-			qsort(&(tempPoints_32[0]), maxDiffSegPts, sizeof(segmentpt32_t), TempSegPointCompare32);
-		else{
+        /*Sort the Segment Points*/
+        if (number_bits == 32) //forgive me...
+            qsort(&(tempPoints_32[0]), maxDiffSegPts, sizeof(segmentpt32_t), TempSegPointCompare32);
+        else{
             if(number_bits == 64){
                 //printf("%u\n", maxDiffSegPts);
                 //ShowSeg(&(tempPoints_64[0]), maxDiffSegPts);
@@ -1823,23 +1823,23 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
                 qsort(&(tempPoints_128[0]), maxDiffSegPts, sizeof(segmentpt128_t), TempSegPointCompare128);
             }
 
-		}
+        }
 
 
 #ifdef DEBUGv2
-		/* printf("\n>>different seg points after qsort:"); */
-		/* for(num=0; num < 2*ruleset->num; num++) { */
-		/* Show(&segPoints[d2s][num*number_bits/32], 1, number_bits); */
-		/* } */
+        /* printf("\n>>different seg points after qsort:"); */
+        /* for(num=0; num < 2*ruleset->num; num++) { */
+        /* Show(&segPoints[d2s][num*number_bits/32], 1, number_bits); */
+        /* } */
 #endif
 
 #ifdef DEBUGv2
-//		printf("\n>>unique seg points after qsort:");
-//		for(num=0; num < maxDiffSegPts; num++) {
+//      printf("\n>>unique seg points after qsort:");
+//      for(num=0; num < maxDiffSegPts; num++) {
 //
-//			Show(&tempSegPoints[num*number_bits/32], 1, number_bits);
-//		}
-		//printf("\n>>maxDiffseg=%u", maxDiffSegPts);
+//          Show(&tempSegPoints[num*number_bits/32], 1, number_bits);
+//      }
+        //printf("\n>>maxDiffseg=%u", maxDiffSegPts);
 #endif
 
         uint32_t temp_pos = (maxDiffSegPts_All>>1);
@@ -1934,194 +1934,194 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
         if(number_bits == 128)free(tempPoints_128);
 
 #ifdef DEBUGv2
-		printf("\n>>split decision: d2s=%u, p2s=", d2s);
-		Show(p2s, 1, 128);
-		printf("\n>>left child range:");
-		Show(range[0][0], 1, 128); printf("\t");
-		Show(range[0][1], 1, 128);
-		printf("\n>>right child range:");
-		Show(range[1][0], 1, 128); printf("\t");
-		Show(range[1][1], 1, 128);
+        printf("\n>>split decision: d2s=%u, p2s=", d2s);
+        Show(p2s, 1, 128);
+        printf("\n>>left child range:");
+        Show(range[0][0], 1, 128); printf("\t");
+        Show(range[0][1], 1, 128);
+        printf("\n>>right child range:");
+        Show(range[1][0], 1, 128); printf("\t");
+        Show(range[1][1], 1, 128);
 #endif
         free(segPoints);
-	}
+    }
 
 
 
-	/*Update Leaf node*/
-	if ( maxDiffSegPts_All <= 2) {
-	    currNode->flag = 0;
-		currNode->d2s = 0;
-		currNode->depth = depth;
-		currNode->p2s = NULL;
+    /*Update Leaf node*/
+    if ( maxDiffSegPts_All <= 2) {
+        currNode->flag = 0;
+        currNode->d2s = 0;
+        currNode->depth = depth;
+        currNode->p2s = NULL;
         currNode->num_rule = ruleset->num;
         currNode->rule = (uint32_t*) malloc(ruleset->num*sizeof(uint32_t));
         uint32_t i;
         for(i=0;i<ruleset->num;i++){
             currNode->rule[i] = ruleset->ruleList[i].pri;
         }
-		currNode->child[0] = NULL;
-		currNode->child[1] = NULL;
+        currNode->child[0] = NULL;
+        currNode->child[1] = NULL;
 
 
-		gChildCount ++;
-		gNumLeafNode ++;
-		if ((gNumLeafNode & 0xFFFF) == 0) {
+        gChildCount ++;
+        gNumLeafNode ++;
+        if ((gNumLeafNode & 0xFFFF) == 0) {
 #ifdef DEBUGv2
-			printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
+            printf("\n>>number leaf-nodes: %u (k)", gNumLeafNode>>10); fflush(stdout);
 #endif
         }
 
-		/* worst-case depth and range update */
-		if (gWstDepth < depth){
-			gWstDepth = depth;
-			/*TODO: worst-case range setup */
-			for(dim=0; dim < DIM; dim ++) {
-				number_bits = BITNUMBER[FLAG[dim]];
-				/* getting the worst from the last ^_^ */
-				Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
-				Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
-			}
-		}
-		gAvgDepth += depth;
+        /* worst-case depth and range update */
+        if (gWstDepth < depth){
+            gWstDepth = depth;
+            /*TODO: worst-case range setup */
+            for(dim=0; dim < DIM; dim ++) {
+                number_bits = BITNUMBER[FLAG[dim]];
+                /* getting the worst from the last ^_^ */
+                Assign_DiffBits(gWstRange[dim][0], 128, ruleset->ruleList[ruleset->num-1].range[dim][0], number_bits);
+                Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1], number_bits);
+            }
+        }
+        gAvgDepth += depth;
 
-		/* freeing */
-		/* for(num=0; num<ruleset->num; num ++) { */
-			/* free(ruleset->ruleList[num] */
-		return	HS_SUCCESS;
-	}
+        /* freeing */
+        /* for(num=0; num<ruleset->num; num ++) { */
+            /* free(ruleset->ruleList[num] */
+        return  HS_SUCCESS;
+    }
 
-	/**** Update currNode ****/
-	number_bits = BITNUMBER[FLAG[d2s]];
-	gNumTreeNode ++;
-	currNode->d2s = (uint8_t) d2s;
-	currNode->depth = (uint8_t) depth;
-	currNode->p2s = (uint32_t*) malloc(number_bits/32 * sizeof(uint32_t));
+    /**** Update currNode ****/
+    number_bits = BITNUMBER[FLAG[d2s]];
+    gNumTreeNode ++;
+    currNode->d2s = (uint8_t) d2s;
+    currNode->depth = (uint8_t) depth;
+    currNode->p2s = (uint32_t*) malloc(number_bits/32 * sizeof(uint32_t));
     //printf("\nmalloc4 = %p\n",currNode->p2s);
     int j;
     for(j=number_bits/32-1; j >= 0; j--){
-		currNode->p2s[j] = p2s[j+4-number_bits/32];
-	}
+        currNode->p2s[j] = p2s[j+4-number_bits/32];
+    }
 
-	currNode->num_rule = 0;
-	currNode->rule = NULL;
-	currNode->child[0] = (hs_node_t *) malloc(sizeof(hs_node_t));
+    currNode->num_rule = 0;
+    currNode->rule = NULL;
+    currNode->child[0] = (hs_node_t *) malloc(sizeof(hs_node_t));
     //printf("\nmalloc5 = %p\n",currNode->child[0]);
-	/*Generate left child rule list*/
-	tempRuleNumList = (uint32_t*) malloc(ruleset->num * sizeof(uint32_t)); /* need to be freed */
-	//printf("\nmalloc6 = %p\n",tempRuleNumList);
+    /*Generate left child rule list*/
+    tempRuleNumList = (uint32_t*) malloc(ruleset->num * sizeof(uint32_t)); /* need to be freed */
+    //printf("\nmalloc6 = %p\n",tempRuleNumList);
     //sleep(20);
     pos = 0;
     //printf("\npos ruleset num = %u\n",ruleset->num);
-	for (num = 0; num < ruleset->num; num++) {
-		int temp1, temp2;
-		if (number_bits <= 32) {
-			temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
-			temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
-		} 
-		else {
-			temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
-			temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
-		}
+    for (num = 0; num < ruleset->num; num++) {
+        int temp1, temp2;
+        if (number_bits <= 32) {
+            temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
+            temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
+        } 
+        else {
+            temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[0][1][4-number_bits/32]);
+            temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[0][0][4-number_bits/32]);
+        }
 
-		if (temp1 <=0 && temp2 >= 0)
-		{
-			tempRuleNumList[pos] = num;
+        if (temp1 <=0 && temp2 >= 0)
+        {
+            tempRuleNumList[pos] = num;
             pos++;
             //printf("\nnum = %u,pos = %u\n",num,pos);
-		}
-	}
+        }
+    }
 
-	childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
-	//printf("\nmalloc7 = %p\n",childRuleSet);
+    childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
+    //printf("\nmalloc7 = %p\n",childRuleSet);
     childRuleSet->num = pos;
-	childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
-	//printf("\nmalloc8 = %p\n",childRuleSet->ruleList);
+    childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
+    //printf("\nmalloc8 = %p\n",childRuleSet->ruleList);
     num1++;
     mem_stat1 += childRuleSet->num * sizeof(rule_t);
     number_bits = BITNUMBER[FLAG[d2s]];
     //sleep(20);
-	for (num = 0; num < childRuleSet->num; num++) {
-		Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
-		/* in d2s dim, the search space needs to be trimmed off */
-		if (number_bits <= 32) {
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0], &range[0][0][4-number_bits/32], number_bits);
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32], number_bits);
-		}
-		else {
-			if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0],&range[0][0][4-number_bits/32],number_bits);
-			if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32],number_bits);
-		}
-	}
-	//printf("\nhs free add4 = %p\n",tempRuleNumList);
+    for (num = 0; num < childRuleSet->num; num++) {
+        Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
+        /* in d2s dim, the search space needs to be trimmed off */
+        if (number_bits <= 32) {
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0], &range[0][0][4-number_bits/32], number_bits);
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32], number_bits);
+        }
+        else {
+            if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][0] ,&range[0][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0],&range[0][0][4-number_bits/32],number_bits);
+            if (SegPointCompare128(childRuleSet->ruleList[num].range[d2s][1], &range[0][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[0][1][4-number_bits/32],number_bits);
+        }
+    }
+    //printf("\nhs free add4 = %p\n",tempRuleNumList);
     //printf("\nhs free add4\n");
     free (tempRuleNumList);
     tempRuleNumList = NULL;
 #ifdef DEBUGv2
-	  printf("\n>>depth #%d 1subrules# %d:",depth+1, num);
-	  for(i=0;i<num;i++)printf("%d ", childRuleSet->ruleList[i].pri);
+      printf("\n>>depth #%d 1subrules# %d:",depth+1, num);
+      for(i=0;i<num;i++)printf("%d ", childRuleSet->ruleList[i].pri);
 #endif
-	BuildHSTree(childRuleSet, currNode->child[0], depth+1);
+    BuildHSTree(childRuleSet, currNode->child[0], depth+1);
 
     release_ruleset(childRuleSet);
-	/**** Generate right child rule list ****/
-	currNode->child[1] = (hs_node_t *) malloc(sizeof(hs_node_t));
-	//printf("\nmalloc9 = %p\n",currNode->child[1]);
+    /**** Generate right child rule list ****/
+    currNode->child[1] = (hs_node_t *) malloc(sizeof(hs_node_t));
+    //printf("\nmalloc9 = %p\n",currNode->child[1]);
     tempRuleNumList = (uint32_t*) malloc(ruleset->num * sizeof(uint32_t)); /* need to be free */
-	//printf("\nmalloc10 = %p\n",tempRuleNumList);
+    //printf("\nmalloc10 = %p\n",tempRuleNumList);
     pos = 0;
 
     //sleep(20);
-	number_bits = BITNUMBER[FLAG[d2s]];
-	for (num = 0; num < ruleset->num; num++) {
-		int temp1, temp2;
-		if (number_bits <= 32) {
-			temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
-			temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
-		}
-		else {
-			temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
-			temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
-		}
-		if ( temp1<=0 && temp2 >= 0)
-		{
-			tempRuleNumList[pos] = num;
-			pos++;
-		}
-	}
+    number_bits = BITNUMBER[FLAG[d2s]];
+    for (num = 0; num < ruleset->num; num++) {
+        int temp1, temp2;
+        if (number_bits <= 32) {
+            temp1 = SegPointCompare32(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
+            temp2 = SegPointCompare32(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
+        }
+        else {
+            temp1 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][0], &range[1][1][4-number_bits/32]);
+            temp2 = SegPointCompare_64_128(ruleset->ruleList[num].range[d2s][1], &range[1][0][4-number_bits/32]);
+        }
+        if ( temp1<=0 && temp2 >= 0)
+        {
+            tempRuleNumList[pos] = num;
+            pos++;
+        }
+    }
 
-	childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
-	//printf("\nmalloc11 = %p\n",childRuleSet);
+    childRuleSet = (rule_set_t*) malloc(sizeof(rule_set_t));
+    //printf("\nmalloc11 = %p\n",childRuleSet);
     childRuleSet->num = pos;
-	childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
+    childRuleSet->ruleList = (rule_t*) malloc( childRuleSet->num * sizeof(rule_t) );
     //printf("\nmalloc12 = %p\n",childRuleSet->ruleList);
     //printf("\nnum = %u\n",childRuleSet->num);
     num2++;
     mem_stat2 += childRuleSet->num * sizeof(rule_t);
     //sleep(20);
-	for (num = 0; num < childRuleSet->num; num++) {
-		Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
-		/* printf("\n>>ruleset->num %u", tempRuleNumList[num]); */
-		/* in d2s dim, the search space needs to be trimmed off */
-		if (number_bits <= 32) {
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
-			if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
-		}
-		else {
-			if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
-				Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
-			if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
-				Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
-		}
-	}
+    for (num = 0; num < childRuleSet->num; num++) {
+        Assign_RuleList(&childRuleSet->ruleList[num], &ruleset->ruleList[tempRuleNumList[num]]);
+        /* printf("\n>>ruleset->num %u", tempRuleNumList[num]); */
+        /* in d2s dim, the search space needs to be trimmed off */
+        if (number_bits <= 32) {
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
+            if (SegPointCompare32(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
+        }
+        else {
+            if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][0] ,&range[1][0][4-number_bits/32])<0)
+                Assign(childRuleSet->ruleList[num].range[d2s][0],&range[1][0][4-number_bits/32],number_bits);
+            if (SegPointCompare_64_128(childRuleSet->ruleList[num].range[d2s][1], &range[1][1][4-number_bits/32])>0)
+                Assign(childRuleSet->ruleList[num].range[d2s][1] ,&range[1][1][4-number_bits/32],number_bits);
+        }
+    }
     //printf("\nhs free add5 = %p\n",tempRuleNumList);
-	//printf("\nhs free add5\n");
+    //printf("\nhs free add5\n");
     free(tempRuleNumList);
     tempRuleNumList = NULL;
 #ifdef DEBUGv2
@@ -2129,8 +2129,8 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
     for(i=0;i<num;i++)printf("%d ", childRuleSet->ruleList[i].pri);
 #endif
     BuildHSTree(childRuleSet, currNode->child[1], depth+1);
-	release_ruleset(childRuleSet);
-    return	HS_SUCCESS;
+    release_ruleset(childRuleSet);
+    return  HS_SUCCESS;
 }
 
 
@@ -2166,19 +2166,19 @@ int Matched(rule_t rule, uint32_t packet[DIM][4]){
     int i;
     int temp1, temp2;
     for(i=0;i<DIM;i++)
-	{
+    {
         number_bits = BITNUMBER[FLAG[i]];
         temp1 = SegPointCompare_64_128(&packet[i][4-(number_bits>>5)], rule.range[i][0]);
         temp2 = SegPointCompare_64_128(rule.range[i][1], &packet[i][4-(number_bits>>5)]);
         if((temp1!=-1) && (temp2!=-1))
-			continue;
+            continue;
         return(0);
     }
     return(1);
 }
 
  
-int	LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* root, hs_node_t** hitnode,unsigned int* pdepth)
+int LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* root, hs_node_t** hitnode,unsigned int* pdepth)
 {
    
     printf("\npacket[9] = %u,[10] = %u\n",((unsigned int)packet[9][3]),((unsigned int)packet[10][3]));
@@ -2189,35 +2189,35 @@ int	LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* ro
         return 0;
     }
     /*for (ruleNum = ruleset->num-1; ruleNum < ruleset->num; ruleNum ++) {*/
-	if(!ruleset || !root || !hitnode)
+    if(!ruleset || !root || !hitnode)
     {
         printf("\nLookupHSTree erro\n");
         return 0;
     }
 
-    hs_node_t*	node = root;
+    hs_node_t*  node = root;
     int loop = 0;
         
     while (node->child[0] != NULL) {
             number_bits = BITNUMBER[FLAG[node->d2s]];
             loop++;
-			//printf("\nthresh = %u %u %u %u\n",node->thresh[0],node->thresh[1],node->thresh[2],node->thresh[3]);
-			printf("\nd2s = %u\n",node->d2s);
+            //printf("\nthresh = %u %u %u %u\n",node->thresh[0],node->thresh[1],node->thresh[2],node->thresh[3]);
+            printf("\nd2s = %u\n",node->d2s);
 #ifdef DEBUGv2
-			printf("\n>>depth=%u, packet[%u]=", node->depth, node->d2s);
-			Show(packet[node->d2s], 1, 128);
-			printf(" p2s=");
-			Show(node->p2s,1, number_bits);
+            printf("\n>>depth=%u, packet[%u]=", node->depth, node->d2s);
+            Show(packet[node->d2s], 1, 128);
+            printf(" p2s=");
+            Show(node->p2s,1, number_bits);
 #endif
-			if(SegPointCompare_64_128_nsf(&packet[node->d2s][4-number_bits/32], node->p2s,number_bits) <= 0) {
+            if(SegPointCompare_64_128_nsf(&packet[node->d2s][4-number_bits/32], node->p2s,number_bits) <= 0) {
                 node = node->child[0];
             }
-			else
+            else
             {
-				node = node->child[1];
+                node = node->child[1];
             }
             printf("\nnode num = %u\n",node->num_rule);
-		}
+        }
          
         //printf("loop = %u",loop);
         if(!node->rule)
@@ -2228,20 +2228,20 @@ int	LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* ro
         
          //printf("\nzwz matched\n");
         *hitnode = node;
-		
-	return	HS_SUCCESS;
+        
+    return  HS_SUCCESS;
 }
 
 
 
 int LookupPacket(rule_set_t* ruleset, hs_node_t* root, uint32_t packet[DIM][4], hs_node_t** hitnode)
 {
-	
-	hs_node_t*	node = root;
+    
+    hs_node_t*  node = root;
     unsigned int number_bits;
 
 #ifdef DEBUGv2
-	uint32_t i;
+    uint32_t i;
 #endif
 
     node = root;
@@ -2318,8 +2318,8 @@ static int _FreeRootNode(hs_node_t *rootnode, int depth);
 
 int FreeRootNode(hs_node_t *rootnode)
 {
-	_FreeRootNode(rootnode, 0);
-	return HS_SUCCESS;
+    _FreeRootNode(rootnode, 0);
+    return HS_SUCCESS;
 }
 
 static int _FreeRootNode(hs_node_t *rootnode, int depth)
@@ -2374,21 +2374,21 @@ static int _FreeRootNode(hs_node_t *rootnode, int depth)
 
 int FreeRuleSet(rule_set_t *ruleset)
 {
-	uint32_t i;
-	
-	if (0 != ruleset->num)
-	{
-		for(i = 0; i < ruleset->num; i++)
-		{
-			range_free(ruleset->ruleList[i].range);
-		}
-	
-		free(ruleset->ruleList);
-		ruleset->ruleList = NULL;
-		ruleset->num = 0;
-	}
+    uint32_t i;
+    
+    if (0 != ruleset->num)
+    {
+        for(i = 0; i < ruleset->num; i++)
+        {
+            range_free(ruleset->ruleList[i].range);
+        }
+    
+        free(ruleset->ruleList);
+        ruleset->ruleList = NULL;
+        ruleset->num = 0;
+    }
 
-	return 1;
+    return 1;
 }
 
 
@@ -2441,10 +2441,10 @@ bool acltree_lookup(mbuf_t* p, rule_set_t* ruleset, hs_node_t* root,rule_t** hit
             continue;
         }
 
-		if((*hitrule)->pri == ruleset->num - 1)
-		{
-			return false;
-		}
+        if((*hitrule)->pri == ruleset->num - 1)
+        {
+            return false;
+        }
         
         //add check other info of the acl rule,like time etc.
         return true;
@@ -2463,19 +2463,19 @@ bool firewall_pass_rule(mbuf_t* p)
     
     if(!ruleset->num)
     {
-    	printf("no rule\n");
+        printf("no rule\n");
         return false; //no rule,default deny.
     }
     
     if(acltree_lookup(p,ruleset,root,&hitrule))
     {
-    	printf("hit it\n");
+        printf("hit it\n");
         pass_flag = true; 
     }
     else //not hit any rule,default deny.
     {
-    	printf("not hit any\n");
-    	return false;
+        printf("not hit any\n");
+        return false;
     }
 
     if(pass_flag)
@@ -2484,85 +2484,85 @@ bool firewall_pass_rule(mbuf_t* p)
         {
             return false;
         }
-		printf("id is %d\n", hitrule->id);
-		if (hitrule->action == 1)
-		{
-			 printf("action is 1\n");
-			 
-			 return false; //hit the rule ,rule action is deny
-		}
-		else
-		{
-			printf("action is 0\n");
+        printf("id is %d\n", hitrule->id);
+        if (hitrule->action == 1)
+        {
+             printf("action is 1\n");
+             
+             return false; //hit the rule ,rule action is deny
+        }
+        else
+        {
+            printf("action is 0\n");
 
-			 return true; //hit the rule ,rule action is pass
-		}  
+             return true; //hit the rule ,rule action is pass
+        }  
     }
     return false;
 }
 
 void ReadIPRange(uint32_t ipnet, uint32_t ipmask, unsigned int* IPrange, unsigned int* IPrange1)
 {
-	/*asindmemacces IPv4 prefixes*/
-	/*temporary variables to store IP range */
-	unsigned int trange[4];	
-	unsigned int mask;
-	int masklit1;
-	unsigned int masklit2,masklit3;
-	unsigned int ptrange[4];
-	int i;
-	
-    mask = ipmask;
-	trange[0] = ipnet>>24;
-	trange[1] = ipnet>>16 & 0x00FF;
-    trange[2] = ipnet>>8 & 0x0000FF;
-	trange[3] = ipnet & 0x000000FF;
+    /*asindmemacces IPv4 prefixes*/
+    /*temporary variables to store IP range */
+    unsigned int trange[4]; 
+    unsigned int mask;
+    int masklit1;
+    unsigned int masklit2,masklit3;
+    unsigned int ptrange[4];
+    int i;
     
-	mask = 32 - mask;
-	masklit1 = mask / 8;
-	masklit2 = mask % 8;
-	
-	for(i=0;i<4;i++)
-		ptrange[i] = trange[i];
+    mask = ipmask;
+    trange[0] = ipnet>>24;
+    trange[1] = ipnet>>16 & 0x00FF;
+    trange[2] = ipnet>>8 & 0x0000FF;
+    trange[3] = ipnet & 0x000000FF;
+    
+    mask = 32 - mask;
+    masklit1 = mask / 8;
+    masklit2 = mask % 8;
+    
+    for(i=0;i<4;i++)
+        ptrange[i] = trange[i];
 
-	/*count the start IP */
-	for(i=3;i>3-masklit1;i--)
-		ptrange[i] = 0;
-	if(masklit2 != 0){
-		masklit3 = 1;
-		masklit3 <<= masklit2;
-		masklit3 -= 1;
-		masklit3 = ~masklit3;
-		ptrange[3-masklit1] &= masklit3;
-	}
-	/*store start IP */
-	IPrange[0] = ptrange[0];
-	IPrange[0] <<= 8;
-	IPrange[0] += ptrange[1];
-	IPrange[0] <<= 8;
-	IPrange[0] += ptrange[2];
-	IPrange[0] <<= 8;
-	IPrange[0] += ptrange[3];
+    /*count the start IP */
+    for(i=3;i>3-masklit1;i--)
+        ptrange[i] = 0;
+    if(masklit2 != 0){
+        masklit3 = 1;
+        masklit3 <<= masklit2;
+        masklit3 -= 1;
+        masklit3 = ~masklit3;
+        ptrange[3-masklit1] &= masklit3;
+    }
+    /*store start IP */
+    IPrange[0] = ptrange[0];
+    IPrange[0] <<= 8;
+    IPrange[0] += ptrange[1];
+    IPrange[0] <<= 8;
+    IPrange[0] += ptrange[2];
+    IPrange[0] <<= 8;
+    IPrange[0] += ptrange[3];
 #ifdef DEBUGv2
-	printf("%x\n", IPrange[0]);
+    printf("%x\n", IPrange[0]);
 #endif
-	/*count the end IP*/
-	for(i=3;i>3-masklit1;i--)
-		ptrange[i] = 255;
-	if(masklit2 != 0){
-		masklit3 = 1;
-		masklit3 <<= masklit2;
-		masklit3 -= 1;
-		ptrange[3-masklit1] |= masklit3;
-	}
-	/*store end IP*/
-	IPrange1[0] = ptrange[0];
-	IPrange1[0] <<= 8;
-	IPrange1[0] += ptrange[1];
-	IPrange1[0] <<= 8;
-	IPrange1[0] += ptrange[2];
-	IPrange1[0] <<= 8;
-	IPrange1[0] += ptrange[3];
+    /*count the end IP*/
+    for(i=3;i>3-masklit1;i--)
+        ptrange[i] = 255;
+    if(masklit2 != 0){
+        masklit3 = 1;
+        masklit3 <<= masklit2;
+        masklit3 -= 1;
+        ptrange[3-masklit1] |= masklit3;
+    }
+    /*store end IP*/
+    IPrange1[0] = ptrange[0];
+    IPrange1[0] <<= 8;
+    IPrange1[0] += ptrange[1];
+    IPrange1[0] <<= 8;
+    IPrange1[0] += ptrange[2];
+    IPrange1[0] <<= 8;
+    IPrange1[0] += ptrange[3];
 #ifdef DEBUGv2
     printf("%x\n", IPrange1[0]);
 #endif
@@ -2571,76 +2571,76 @@ void ReadIPRange(uint32_t ipnet, uint32_t ipmask, unsigned int* IPrange, unsigne
 
 bool add_guard(rule_t* guard)
 {
-	if(!guard)
-	{
-		return false;
-	}
-	guard->rule_id = 0;
-	if(!range_alloc(guard->range))
-	{
-		return false;
-	}
-	
-	
-	memset(guard->range[0][0],0,16);
-	memset(guard->range[0][1],255,16);
-	memset(guard->range[1][0],0,16);
-	memset(guard->range[1][1],255,16);
-	
+    if(!guard)
+    {
+        return false;
+    }
+    guard->rule_id = 0;
+    if(!range_alloc(guard->range))
+    {
+        return false;
+    }
+    
+    
+    memset(guard->range[0][0],0,16);
+    memset(guard->range[0][1],255,16);
+    memset(guard->range[1][0],0,16);
+    memset(guard->range[1][1],255,16);
+    
 
-	((uint32_t *)(guard->range[2][0]))[0] = 0;
-	((uint32_t *)(guard->range[2][0]))[1] = 0;
-	((uint32_t *)(guard->range[2][1]))[0] = 255*256+255;
-	//((unsigned int*)(guard->range[2][1]))[1] = (unsigned int)(255*16777216 + 255*65536 + 255*256 + 255);
-	((uint32_t *)(guard->range[2][1]))[1] = 0xFFFFFFFF;
-	
-	((uint32_t *)(guard->range[3][0]))[0] = 0;
-	((uint32_t *)(guard->range[3][0]))[1] = 0;
-	((uint32_t *)(guard->range[3][1]))[0] = 255*256+255;
-	//((unsigned int*)(guard->range[3][1]))[1] = (unsigned int)(255*16777216 + 255*65536 + 255*256 + 255);
-	((uint32_t *)(guard->range[3][1]))[1] = 0xFFFFFFFF;
-	
-	*guard->range[4][0] = 0;
-	*guard->range[4][1] = 65535;
-	*guard->range[5][0] = 0;
-	*guard->range[5][1] = 65535;
-	
-	*guard->range[6][0] = 0;
-	*guard->range[6][1] = 0;
-	
-	((uint32_t *)(guard->range[7][0]))[0] = 0;
-	((uint32_t *)(guard->range[7][0]))[1] = 0;
-	((uint32_t *)(guard->range[7][1]))[0] = (uint32_t)(-1);
-	((uint32_t *)(guard->range[7][1]))[1] = (uint32_t)(-1);
-	
-	*guard->range[8][0] = 0;
-	*guard->range[8][1] = (uint8_t)(-1);
-	
-	*guard->range[9][0] = 0;
-	*guard->range[9][1] = (uint32_t)(-1);
-	
-	*guard->range[10][0] = 0;
-	*guard->range[10][1] = (uint32_t)(-1);
-	
-	return true;
+    ((uint32_t *)(guard->range[2][0]))[0] = 0;
+    ((uint32_t *)(guard->range[2][0]))[1] = 0;
+    ((uint32_t *)(guard->range[2][1]))[0] = 255*256+255;
+    //((unsigned int*)(guard->range[2][1]))[1] = (unsigned int)(255*16777216 + 255*65536 + 255*256 + 255);
+    ((uint32_t *)(guard->range[2][1]))[1] = 0xFFFFFFFF;
+    
+    ((uint32_t *)(guard->range[3][0]))[0] = 0;
+    ((uint32_t *)(guard->range[3][0]))[1] = 0;
+    ((uint32_t *)(guard->range[3][1]))[0] = 255*256+255;
+    //((unsigned int*)(guard->range[3][1]))[1] = (unsigned int)(255*16777216 + 255*65536 + 255*256 + 255);
+    ((uint32_t *)(guard->range[3][1]))[1] = 0xFFFFFFFF;
+    
+    *guard->range[4][0] = 0;
+    *guard->range[4][1] = 65535;
+    *guard->range[5][0] = 0;
+    *guard->range[5][1] = 65535;
+    
+    *guard->range[6][0] = 0;
+    *guard->range[6][1] = 0;
+    
+    ((uint32_t *)(guard->range[7][0]))[0] = 0;
+    ((uint32_t *)(guard->range[7][0]))[1] = 0;
+    ((uint32_t *)(guard->range[7][1]))[0] = (uint32_t)(-1);
+    ((uint32_t *)(guard->range[7][1]))[1] = (uint32_t)(-1);
+    
+    *guard->range[8][0] = 0;
+    *guard->range[8][1] = (uint8_t)(-1);
+    
+    *guard->range[9][0] = 0;
+    *guard->range[9][1] = (uint32_t)(-1);
+    
+    *guard->range[10][0] = 0;
+    *guard->range[10][1] = (uint32_t)(-1);
+    
+    return true;
 }
 
 
 
 uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
 {
-	uint32_t i = 0;
-	int count = 0;
-	unsigned int v = 0;
-	struct FILTER *tempfilt,tempfilt1;
-	tempfilt = &tempfilt1;
+    uint32_t i = 0;
+    int count = 0;
+    unsigned int v = 0;
+    struct FILTER *tempfilt,tempfilt1;
+    tempfilt = &tempfilt1;
 
-	if(ruleset == NULL || node == NULL)
+    if(ruleset == NULL || node == NULL)
     {
         printf("\nwrong parameters\n");
         return SEC_NO;
     }
-	
+    
     struct FILTSET* filtset = (struct FILTSET*)malloc(sizeof(struct FILTSET));
     if(NULL == filtset)
     {
@@ -2648,56 +2648,56 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
     }
    
     memset(filtset, 0, sizeof(struct FILTSET));
-	
-	FreeRuleSet(ruleset);
-	FreeRootNode(node);
+    
+    FreeRuleSet(ruleset);
+    FreeRootNode(node);
 
-	
-	for( i = 0; i < RULE_ENTRY_MAX; i++ )
-	{
-		if(rule_list->rule_entry[i].entry_status == RULE_ENTRY_STATUS_FREE)
-		{
-			continue;
-		}
+    
+    for( i = 0; i < RULE_ENTRY_MAX; i++ )
+    {
+        if(rule_list->rule_entry[i].entry_status == RULE_ENTRY_STATUS_FREE)
+        {
+            continue;
+        }
 
-		memset(tempfilt->dim, 0, DIM*2*sizeof(uint32_t *));
-	    range_alloc(tempfilt->dim);
+        memset(tempfilt->dim, 0, DIM*2*sizeof(uint32_t *));
+        range_alloc(tempfilt->dim);
 
-		count++;
-		tempfilt->action = (unsigned int)rule_list->rule_entry[i].rule_tuple.action;
-		tempfilt->id = i;
-		tempfilt->rule_id = i;
+        count++;
+        tempfilt->action = (unsigned int)rule_list->rule_entry[i].rule_tuple.action;
+        tempfilt->id = i;
+        tempfilt->rule_id = i;
 
-		*tempfilt->dim[2][0] = rule_list->rule_entry[i].rule_tuple.smac[0] * 256 + rule_list->rule_entry[i].rule_tuple.smac[1];
-		*tempfilt->dim[2][1] = rule_list->rule_entry[i].rule_tuple.smac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.smac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.smac[4] * 256 + rule_list->rule_entry[i].rule_tuple.smac[5];
-		*tempfilt->dim[3][0] = rule_list->rule_entry[i].rule_tuple.dmac[0] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[1];
-		*tempfilt->dim[3][1] = rule_list->rule_entry[i].rule_tuple.dmac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.dmac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.dmac[4] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[5];
-		
-		*tempfilt->dim[4][0] = rule_list->rule_entry[i].rule_tuple.sport_start;
-		*tempfilt->dim[4][1] = rule_list->rule_entry[i].rule_tuple.sport_end;
-		*tempfilt->dim[5][0] = rule_list->rule_entry[i].rule_tuple.dport_start;
-		*tempfilt->dim[5][1] = rule_list->rule_entry[i].rule_tuple.dport_end;
+        *tempfilt->dim[2][0] = rule_list->rule_entry[i].rule_tuple.smac[0] * 256 + rule_list->rule_entry[i].rule_tuple.smac[1];
+        *tempfilt->dim[2][1] = rule_list->rule_entry[i].rule_tuple.smac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.smac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.smac[4] * 256 + rule_list->rule_entry[i].rule_tuple.smac[5];
+        *tempfilt->dim[3][0] = rule_list->rule_entry[i].rule_tuple.dmac[0] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[1];
+        *tempfilt->dim[3][1] = rule_list->rule_entry[i].rule_tuple.dmac[2]*16777216 + rule_list->rule_entry[i].rule_tuple.dmac[3] * 65536 + rule_list->rule_entry[i].rule_tuple.dmac[4] * 256 + rule_list->rule_entry[i].rule_tuple.dmac[5];
+        
+        *tempfilt->dim[4][0] = rule_list->rule_entry[i].rule_tuple.sport_start;
+        *tempfilt->dim[4][1] = rule_list->rule_entry[i].rule_tuple.sport_end;
+        *tempfilt->dim[5][0] = rule_list->rule_entry[i].rule_tuple.dport_start;
+        *tempfilt->dim[5][1] = rule_list->rule_entry[i].rule_tuple.dport_end;
 
-		*tempfilt->dim[8][0] = rule_list->rule_entry[i].rule_tuple.protocol_start;
-		*tempfilt->dim[8][1] = rule_list->rule_entry[i].rule_tuple.protocol_end;
+        *tempfilt->dim[8][0] = rule_list->rule_entry[i].rule_tuple.protocol_start;
+        *tempfilt->dim[8][1] = rule_list->rule_entry[i].rule_tuple.protocol_end;
 
-		ReadIPRange(rule_list->rule_entry[i].rule_tuple.sip,rule_list->rule_entry[i].rule_tuple.sip_mask, tempfilt->dim[9][0], tempfilt->dim[9][1]);
-		ReadIPRange(rule_list->rule_entry[i].rule_tuple.dip,rule_list->rule_entry[i].rule_tuple.dip_mask, tempfilt->dim[10][0], tempfilt->dim[10][1]);	
+        ReadIPRange(rule_list->rule_entry[i].rule_tuple.sip,rule_list->rule_entry[i].rule_tuple.sip_mask, tempfilt->dim[9][0], tempfilt->dim[9][1]);
+        ReadIPRange(rule_list->rule_entry[i].rule_tuple.dip,rule_list->rule_entry[i].rule_tuple.dip_mask, tempfilt->dim[10][0], tempfilt->dim[10][1]);  
 
-		memcpy(&(filtset->filtArr[filtset->numFilters]), tempfilt, sizeof(struct FILTER));
-			
-		filtset->numFilters++;
-		
-	}
+        memcpy(&(filtset->filtArr[filtset->numFilters]), tempfilt, sizeof(struct FILTER));
+            
+        filtset->numFilters++;
+        
+    }
     
     ruleset->num = filtset->numFilters;
     ruleset->ruleList = (rule_t *) malloc((ruleset->num + 1) * sizeof(rule_t));
-	
+    
     memset(ruleset->ruleList, 0, (ruleset->num + 1) * sizeof(rule_t));
 
-	
+    
     for (i = 0; i < ruleset->num; i++) 
-	{
+    {
         ruleset->ruleList[i].pri = i;
         ruleset->ruleList[i].action = filtset->filtArr[i].action;
         ruleset->ruleList[i].id = filtset->filtArr[i].id;
@@ -2706,14 +2706,14 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
         for (v = 0; v < DIM; v++) {
             ruleset->ruleList[i].range[v][0] = filtset->filtArr[i].dim[v][0];
             ruleset->ruleList[i].range[v][1] = filtset->filtArr[i].dim[v][1];
-			
+            
         }
     }
 
-	add_guard(&ruleset->ruleList[ruleset->num]);
+    add_guard(&ruleset->ruleList[ruleset->num]);
     ruleset->ruleList[ruleset->num].pri = ruleset->num;
     ruleset->num++;
-	
+    
     if(BuildHSTree(ruleset,node,0) != HS_SUCCESS)
     {
         free(filtset);
