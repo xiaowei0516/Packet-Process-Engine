@@ -84,13 +84,12 @@ typedef struct SEGMENTPT128
 
 struct FILTER
 {
-	uint32_t cost;
-	uint32_t* dim[DIM][2];
-	uint8_t act;
-  uint32_t action;
-  uint32_t     id;
-  uint32_t rule_id;
-
+	uint32_t  cost;
+	uint32_t *dim[DIM][2];
+	uint8_t   act;
+	uint32_t  action;
+	uint32_t  id;
+	uint32_t  rule_id;
 };
 
 

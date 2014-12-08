@@ -64,7 +64,7 @@ unit_tree g_acltree;
 
 
 
-bool range_alloc(unsigned int* dim[DIM][2])    
+bool range_alloc(uint32_t* dim[DIM][2])    
 {
     int i,j;
     bool fail_flag = false;
@@ -77,71 +77,71 @@ bool range_alloc(unsigned int* dim[DIM][2])
         }
     }
 
-	dim[0][0] = (unsigned int*)malloc(16);
+	dim[0][0] = (uint32_t *)malloc(16);
 	memset((void *)dim[0][0], 0, 16);
 	
-	dim[0][1] = (unsigned int*)malloc(16);
+	dim[0][1] = (uint32_t *)malloc(16);
 	memset((void *)dim[0][1], 0, 16);
 	
-	dim[1][0] = (unsigned int*)malloc(16);
+	dim[1][0] = (uint32_t *)malloc(16);
 	memset((void *)dim[1][0], 0, 16);
 	
-	dim[1][1] = (unsigned int*)malloc(16);
+	dim[1][1] = (uint32_t *)malloc(16);
 	memset((void *)dim[1][1], 0, 16);
 	
-	dim[2][0] = (unsigned int*)malloc(8);
+	dim[2][0] = (uint32_t *)malloc(8);
 	memset((void *)dim[2][0], 0, 8);
 	
-	dim[2][1] = (unsigned int*)malloc(8);
+	dim[2][1] = (uint32_t *)malloc(8);
 	memset((void *)dim[2][1], 0, 8);
 	
-	dim[3][0] = (unsigned int*)malloc(8);
+	dim[3][0] = (uint32_t *)malloc(8);
 	memset((void *)dim[3][0], 0, 8);
 	
-	dim[3][1] = (unsigned int*)malloc(8);
+	dim[3][1] = (uint32_t *)malloc(8);
 	memset((void *)dim[3][1], 0, 8);
 	
-	dim[4][0] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[4][0], 0, sizeof(int));
+	dim[4][0] = (uint32_t *)malloc(4);
+	memset((void *)dim[4][0], 0, 4);
 	
-	dim[4][1] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[4][1], 0, sizeof(int));
+	dim[4][1] = (uint32_t *)malloc(4);
+	memset((void *)dim[4][1], 0, 4);
 	
-	dim[5][0] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[5][0], 0, sizeof(int));
+	dim[5][0] = (uint32_t *)malloc(4);
+	memset((void *)dim[5][0], 0, 4);
 	
-	dim[5][1] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[5][1], 0, sizeof(int));
+	dim[5][1] = (uint32_t *)malloc(4);
+	memset((void *)dim[5][1], 0, 4);
 	
-	dim[6][0] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[6][0], 0, sizeof(int));
+	dim[6][0] = (uint32_t *)malloc(4);
+	memset((void *)dim[6][0], 0, 4);
 
-	dim[6][1] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[6][1], 0, sizeof(int));
+	dim[6][1] = (uint32_t *)malloc(4);
+	memset((void *)dim[6][1], 0, 4);
 	
-	dim[7][0] = (unsigned int*)malloc(8);
+	dim[7][0] = (uint32_t *)malloc(8);
 	memset((void *)dim[7][0], 0, 8);
 	
-	dim[7][1] = (unsigned int*)malloc(8);
+	dim[7][1] = (uint32_t *)malloc(8);
 	memset((void *)dim[7][1], 0, 8);
 	
-	dim[8][0] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[8][0], 0, sizeof(int));
+	dim[8][0] = (uint32_t *)malloc(4);
+	memset((void *)dim[8][0], 0, 4);
 	
-	dim[8][1] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[8][1], 0, sizeof(int));
+	dim[8][1] = (uint32_t *)malloc(4);
+	memset((void *)dim[8][1], 0, 4);
 	
-	dim[9][0] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[9][0], 0, sizeof(int));
+	dim[9][0] = (uint32_t *)malloc(4);
+	memset((void *)dim[9][0], 0, 4);
 	
-	dim[9][1] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[9][1], 0, sizeof(int));
+	dim[9][1] = (uint32_t *)malloc(4);
+	memset((void *)dim[9][1], 0, 4);
 	
-	dim[10][0] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[10][0], 0, sizeof(int));
+	dim[10][0] = (uint32_t *)malloc(4);
+	memset((void *)dim[10][0], 0, 4);
 	
-	dim[10][1] = (unsigned int*)malloc(sizeof(int));
-	memset((void *)dim[10][1], 0, sizeof(int));
+	dim[10][1] = (uint32_t *)malloc(4);
+	memset((void *)dim[10][1], 0, 4);
 
 
     for(i=0;i<DIM;i++)
@@ -155,23 +155,22 @@ bool range_alloc(unsigned int* dim[DIM][2])
         }
     }
 
-    //printf("\ncheck over\n");
     if(true == fail_flag)
     {
+    #ifdef DEBUGv2
         printf("\nload rule malloc erro,begin to clear\n");
-        for(i=0;i<DIM;i++)
+	#endif
+		for(i=0;i<DIM;i++)
         {
-            for(j=0;j<2;j++)
+			for(j=0;j<2;j++)
             {
                 if( NULL != dim[i][j] )
                 {
-
-                	  free(dim[i][j]);
-                      dim[i][j] = NULL;
+					free(dim[i][j]);
+                    dim[i][j] = NULL;
                 }
             }
         }
-
         return false;
     }
     else
@@ -493,14 +492,17 @@ void ShowRule(rule_set_t* ruleset, uint32_t ruleNum)
         return;
     }
 
-    for(i=0; i < DIM; i++) {
+    for(i=0; i < DIM; i++) 
+	{
 		printf("\ndim=%d:",i);
-		if(FLAG[i] == 0) {
+		if(FLAG[i] == 0) 
+		{
 			printf("[%x %x]", 
 					ruleset->ruleList[ruleNum].range[i][0][0], 
 					ruleset->ruleList[ruleNum].range[i][1][0]);
 		}
-		else if(FLAG[i] == 1){
+		else if(FLAG[i] == 1)
+		{
 			printf("[%u:%u:%u:%u %u:%u:%u:%u]", 
 					ruleset->ruleList[ruleNum].range[i][0][0],
 					ruleset->ruleList[ruleNum].range[i][0][1], 
@@ -511,23 +513,26 @@ void ShowRule(rule_set_t* ruleset, uint32_t ruleNum)
 					ruleset->ruleList[ruleNum].range[i][1][2],
 					ruleset->ruleList[ruleNum].range[i][1][3]);
 		}
-		else if (FLAG[i] == 2){
+		else if (FLAG[i] == 2)
+		{
 			printf("[%x%x %x%x]", 
 					ruleset->ruleList[ruleNum].range[i][0][0], 
 					ruleset->ruleList[ruleNum].range[i][0][1],
 					ruleset->ruleList[ruleNum].range[i][1][0], 
 					ruleset->ruleList[ruleNum].range[i][1][1]);
 		} 
-                else
-                {
-                        printf("[%u-%u %u-%u]", 
+        else
+        {
+			printf("[%u-%u %u-%u]", 
 					ruleset->ruleList[ruleNum].range[i][0][0], 
 					ruleset->ruleList[ruleNum].range[i][0][1],
 					ruleset->ruleList[ruleNum].range[i][1][0], 
 					ruleset->ruleList[ruleNum].range[i][1][1]);
-                }
-    }
+		}
+	}
 }
+
+
 
 int Assign_SegmentPoints_32(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoints, segmentpt32_t* tempPoints_32)
 {
@@ -1631,6 +1636,7 @@ int	BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, uint32_t depth)
 			Assign_DiffBits(gWstRange[dim][1], 128, ruleset->ruleList[ruleset->num-1].range[dim][1],number_bits);
 		}
 	}
+	
     if(ruleset->num <= Rule_Num_Threshold){
         currNode->flag = 1;
 		currNode->d2s = 0;
@@ -2227,15 +2233,7 @@ int	LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* ro
 }
 
 
-/*****************************************************************************/
-/* Function     : LookupPacket                                             */
-/* Description  :  Lookup single packet. if expect_flag = 1, means we have an expect rule.*/
-/*                if expect_flag = 0, we do not have an expect rule match        */
-/* Input        :                                                            */
-/* Output       :                                                            */
-/* return       :                                                            */
-/* others       :                                                            */
-/*****************************************************************************/ 
+
 int LookupPacket(rule_set_t* ruleset, hs_node_t* root, uint32_t packet[DIM][4], hs_node_t** hitnode)
 {
 	
@@ -2318,45 +2316,10 @@ int LookupPacket(rule_set_t* ruleset, hs_node_t* root, uint32_t packet[DIM][4], 
 static int _FreeRootNode(hs_node_t *rootnode, int depth);
 
 
-int FreeRuleset(rule_set_t * ruleset) 
-{
-    //return HS_SUCCESS;
-    uint32_t i,j;
-    printf("\nfree ruleset = %p, ruleList add = %p\n",ruleset,ruleset->ruleList);
-    if(ruleset && ruleset->ruleList) {
-        //printf("\nenter\n");
-        for(i = 0;i < ruleset->num;i++)
-        {
-            free(ruleset->ruleList[i].range[0][0]);
-            printf("$$$$$$$$$$$$$$$$$$$$$$$ free add1 = %p $$$$$$$$$$$$$$$$$$$$$$$",ruleset->ruleList[i].range[0][0]);
-            for(j = 0;j < DIM;j++)
-            {
-                if(ruleset->ruleList[i].range[j][0])
-                {
-                    //printf("$$$$$$$$$$$$$$$$$$$$$$$ free add1 = %p $$$$$$$$$$$$$$$$$$$$$$$",ruleset->ruleList[i].range[j][0]);
-                    //free(ruleset->ruleList[i].range[j][0]);
-                    ruleset->ruleList[i].range[j][0] = NULL;
-                }
-                if(ruleset->ruleList[i].range[j][1])
-                {
-                    //printf("$$$$$$$$$$$$$$$$$$$$$$$ free add2 = %p $$$$$$$$$$$$$$$$$$$$$$$",ruleset->ruleList[i].range[j][1]);
-                    //free(ruleset->ruleList[i].range[j][1]);
-                    ruleset->ruleList[i].range[j][1] = NULL;
-                }
-            }
-            printf("\n");
-        }
-        printf("\nHS free = %p\n",ruleset->ruleList);
-        free(ruleset->ruleList);
-        ruleset->ruleList = NULL;
-    }
-    return HS_SUCCESS;
-}
-
 int FreeRootNode(hs_node_t *rootnode)
 {
-    _FreeRootNode(rootnode, 0);
-    return HS_SUCCESS;
+	_FreeRootNode(rootnode, 0);
+	return HS_SUCCESS;
 }
 
 static int _FreeRootNode(hs_node_t *rootnode, int depth)
@@ -2406,6 +2369,26 @@ static int _FreeRootNode(hs_node_t *rootnode, int depth)
     }
 
     return HS_SUCCESS;
+}
+
+
+int FreeRuleSet(rule_set_t *ruleset)
+{
+	uint32_t i;
+	
+	if (0 != ruleset->num)
+	{
+		for(i = 0; i < ruleset->num; i++)
+		{
+			range_free(ruleset->ruleList[i].range);
+		}
+	
+		free(ruleset->ruleList);
+		ruleset->ruleList = NULL;
+		ruleset->num = 0;
+	}
+
+	return 1;
 }
 
 
@@ -2560,7 +2543,9 @@ void ReadIPRange(uint32_t ipnet, uint32_t ipmask, unsigned int* IPrange, unsigne
 	IPrange[0] += ptrange[2];
 	IPrange[0] <<= 8;
 	IPrange[0] += ptrange[3];
+#ifdef DEBUGv2
 	printf("%x\n", IPrange[0]);
+#endif
 	/*count the end IP*/
 	for(i=3;i>3-masklit1;i--)
 		ptrange[i] = 255;
@@ -2578,7 +2563,10 @@ void ReadIPRange(uint32_t ipnet, uint32_t ipmask, unsigned int* IPrange, unsigne
 	IPrange1[0] += ptrange[2];
 	IPrange1[0] <<= 8;
 	IPrange1[0] += ptrange[3];
+#ifdef DEBUGv2
     printf("%x\n", IPrange1[0]);
+#endif
+
 }
 
 bool add_guard(rule_t* guard)
@@ -2605,6 +2593,7 @@ bool add_guard(rule_t* guard)
 	((uint32_t *)(guard->range[2][1]))[0] = 255*256+255;
 	//((unsigned int*)(guard->range[2][1]))[1] = (unsigned int)(255*16777216 + 255*65536 + 255*256 + 255);
 	((uint32_t *)(guard->range[2][1]))[1] = 0xFFFFFFFF;
+	
 	((uint32_t *)(guard->range[3][0]))[0] = 0;
 	((uint32_t *)(guard->range[3][0]))[1] = 0;
 	((uint32_t *)(guard->range[3][1]))[0] = 255*256+255;
@@ -2615,16 +2604,21 @@ bool add_guard(rule_t* guard)
 	*guard->range[4][1] = 65535;
 	*guard->range[5][0] = 0;
 	*guard->range[5][1] = 65535;
+	
 	*guard->range[6][0] = 0;
 	*guard->range[6][1] = 0;
+	
 	((uint32_t *)(guard->range[7][0]))[0] = 0;
 	((uint32_t *)(guard->range[7][0]))[1] = 0;
 	((uint32_t *)(guard->range[7][1]))[0] = (uint32_t)(-1);
 	((uint32_t *)(guard->range[7][1]))[1] = (uint32_t)(-1);
+	
 	*guard->range[8][0] = 0;
 	*guard->range[8][1] = (uint8_t)(-1);
+	
 	*guard->range[9][0] = 0;
 	*guard->range[9][1] = (uint32_t)(-1);
+	
 	*guard->range[10][0] = 0;
 	*guard->range[10][1] = (uint32_t)(-1);
 	
@@ -2640,37 +2634,23 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
 	unsigned int v = 0;
 	struct FILTER *tempfilt,tempfilt1;
 	tempfilt = &tempfilt1;
+
+	if(ruleset == NULL || node == NULL)
+    {
+        printf("\nwrong parameters\n");
+        return SEC_NO;
+    }
 	
     struct FILTSET* filtset = (struct FILTSET*)malloc(sizeof(struct FILTSET));
-    if(!filtset)
+    if(NULL == filtset)
     {
         return SEC_NO;
     }
    
-    memset(filtset,0,sizeof(struct FILTSET));
-
+    memset(filtset, 0, sizeof(struct FILTSET));
 	
-
-    if(ruleset == NULL || node == NULL)
-    {
-        printf("\nwrong parameters\n");
-        free(filtset);
-        return SEC_NO;
-    }
-
-	
-	if (0 != ruleset->num)
-	{
-		for(i = 0; i < ruleset->num; i++)
-		{
-			range_free(ruleset->ruleList[i].range);
-		}
-	
-		free(ruleset->ruleList);
-		ruleset->ruleList = NULL;
-		ruleset->num = 0;
-		FreeRootNode(node);
-	}
+	FreeRuleSet(ruleset);
+	FreeRootNode(node);
 
 	
 	for( i = 0; i < RULE_ENTRY_MAX; i++ )
@@ -2733,7 +2713,7 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
 	add_guard(&ruleset->ruleList[ruleset->num]);
     ruleset->ruleList[ruleset->num].pri = ruleset->num;
     ruleset->num++;
-        
+	
     if(BuildHSTree(ruleset,node,0) != HS_SUCCESS)
     {
         free(filtset);
