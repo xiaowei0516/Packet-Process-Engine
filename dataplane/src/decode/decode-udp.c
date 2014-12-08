@@ -62,8 +62,9 @@ int DecodeUDP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     
     STAT_UDP_RECV_OK;
 
-    firewall_pass_rule(mbuf);
-
+   // firewall_pass_rule(mbuf);
+    DP_Acl_Lookup(mbuf);
+   
     FlowHandlePacket(mbuf);
 
     return DECODE_OK;

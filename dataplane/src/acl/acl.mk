@@ -12,7 +12,8 @@ LIBRARY_ACL := $(OBJ_DIR)/libacl.a
 
 LIBACL_OBJ_$(d)  :=  \
     $(OBJ_DIR)/dp_acl.o \
-    $(OBJ_DIR)/acl.o
+	$(OBJ_DIR)/acl64.o
+#    $(OBJ_DIR)/acl.o
     
 
 INCLUDE_DIR := \

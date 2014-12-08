@@ -13,17 +13,17 @@
 #define RULE_BUILD_COMMIT    1
 
 typedef struct{
-	uint8_t entry_status;
-	RCP_BLOCK_ACL_RULE_TUPLE rule_tuple;
+    int8_t entry_status;
+    RCP_BLOCK_ACL_RULE_TUPLE rule_tuple;
 }rule_entry_t;
 
 
 
 typedef struct 
 {
-	int rule_entry_free;
-	int build_status;
-	rule_entry_t rule_entry[RULE_ENTRY_MAX]; 
+    int rule_entry_free;
+    int build_status;
+    rule_entry_t rule_entry[RULE_ENTRY_MAX]; 
 }rule_list_t;
 
 

@@ -4,7 +4,7 @@
 
 #include "sec-common.h"
 #include "acl_rule.h"
-#include "hs.h"
+#include "acl64.h"
 #include "mbuf.h"
 
 
@@ -21,5 +21,7 @@ extern uint32_t DP_Acl_Rule_Init();
 
 extern uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node);
 extern bool firewall_pass_rule(mbuf_t* p);
+
+extern uint32_t DP_Acl_Lookup(mbuf_t *mb);
 
 #endif

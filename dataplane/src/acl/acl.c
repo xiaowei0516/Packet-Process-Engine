@@ -18,8 +18,9 @@ extern int PreBuildHSTree(rule_set_t* ruleset, hs_node_t* node, unsigned int dep
 extern int LookupHSTree(unsigned int packet[DIM][4] ,rule_set_t* ruleset, hs_node_t* root, hs_node_t** hitnode,unsigned int* pdepth);
 
 
-int  FLAG[DIM] = {2,2,0,0,0,0,0};
+int  FLAG[DIM] = {1,1,2,2,0,0,0,2,0,0,0};
 int  BITNUMBER[] = {32,128,64};
+
 
 struct TFRAG* ptrTfrag[2];                      // released after tMT[2] is generated
 struct FRAG* ptrfrag[2];
@@ -492,47 +493,33 @@ void ShowRule(rule_set_t* ruleset, uint32_t ruleNum)
         return;
     }
 
-    for(i=0; i < DIM; i++) 
-    {
-        printf("\ndim=%d:",i);
-        if(FLAG[i] == 0) 
-        {
-            printf("[%x %x]", 
-                    ruleset->ruleList[ruleNum].range[i][0][0], 
-                    ruleset->ruleList[ruleNum].range[i][1][0]);
-        }
-        else if(FLAG[i] == 1)
-        {
-            printf("[%u:%u:%u:%u %u:%u:%u:%u]", 
-                    ruleset->ruleList[ruleNum].range[i][0][0],
-                    ruleset->ruleList[ruleNum].range[i][0][1], 
-                    ruleset->ruleList[ruleNum].range[i][0][2],
-                    ruleset->ruleList[ruleNum].range[i][0][3], 
-                    ruleset->ruleList[ruleNum].range[i][1][0], 
-                    ruleset->ruleList[ruleNum].range[i][1][1], 
-                    ruleset->ruleList[ruleNum].range[i][1][2],
-                    ruleset->ruleList[ruleNum].range[i][1][3]);
-        }
-        else if (FLAG[i] == 2)
-        {
-            printf("[%x%x %x%x]", 
-                    ruleset->ruleList[ruleNum].range[i][0][0], 
-                    ruleset->ruleList[ruleNum].range[i][0][1],
-                    ruleset->ruleList[ruleNum].range[i][1][0], 
-                    ruleset->ruleList[ruleNum].range[i][1][1]);
-        } 
-        else
-        {
-            printf("[%u-%u %u-%u]", 
-                    ruleset->ruleList[ruleNum].range[i][0][0], 
-                    ruleset->ruleList[ruleNum].range[i][0][1],
-                    ruleset->ruleList[ruleNum].range[i][1][0], 
-                    ruleset->ruleList[ruleNum].range[i][1][1]);
-        }
+    for(i=0; i < DIM; i++) {
+		printf("\ndim=%d:",i);
+		if(FLAG[i] == 0) {
+			printf("[%u %u]", 
+					ruleset->ruleList[ruleNum].range[i][0][0], 
+					ruleset->ruleList[ruleNum].range[i][1][0]);
+		}
+		else if(FLAG[i] == 1){
+			printf("[%u:%u:%u:%u %u:%u:%u:%u]", 
+					ruleset->ruleList[ruleNum].range[i][0][0],
+					ruleset->ruleList[ruleNum].range[i][0][1], 
+					ruleset->ruleList[ruleNum].range[i][0][2],
+					ruleset->ruleList[ruleNum].range[i][0][3], 
+					ruleset->ruleList[ruleNum].range[i][1][0], 
+					ruleset->ruleList[ruleNum].range[i][1][1], 
+					ruleset->ruleList[ruleNum].range[i][1][2],
+					ruleset->ruleList[ruleNum].range[i][1][3]);
+		}
+		else {
+			printf("[%u-%u %u-%u]", 
+					ruleset->ruleList[ruleNum].range[i][0][0], 
+					ruleset->ruleList[ruleNum].range[i][0][1],
+					ruleset->ruleList[ruleNum].range[i][1][0], 
+					ruleset->ruleList[ruleNum].range[i][1][1]);
+		} /*TODO: add err processing*/
     }
 }
-
-
 
 int Assign_SegmentPoints_32(rule_set_t* ruleset, uint32_t dim, uint32_t* segPoints, segmentpt32_t* tempPoints_32)
 {
@@ -2409,11 +2396,11 @@ bool acltree_lookup(mbuf_t* p, rule_set_t* ruleset, hs_node_t* root,rule_t** hit
     {
         packet[2][2] = mac_src[0] * 256 + mac_src[1];
         packet[2][3] = mac_src[2] * 16777216 + mac_src[3] * 65536 + mac_src[4] * 256 + mac_src[5];
-        //printf("\nsmac = %X-%X-%X-%X-%X-%X\n",mac_src[0],mac_src[1],mac_src[2],mac_src[3],mac_src[4],mac_src[5]);
+        printf("\nsmac = %X-%X-%X-%X-%X-%X\n",mac_src[0],mac_src[1],mac_src[2],mac_src[3],mac_src[4],mac_src[5]);
 
         packet[3][2] = mac_dst[0] * 256 + mac_dst[1];
         packet[3][3] = mac_dst[2] * 16777216 + mac_dst[3] * 65536 + mac_dst[4] * 256 + mac_dst[5];
-        //printf("\ndmac = %X-%X-%X-%X-%X-%X\n",mac_dst[0],mac_dst[1],mac_dst[2],mac_dst[3],mac_dst[4],mac_dst[5]);
+        printf("\ndmac = %X-%X-%X-%X-%X-%X\n",mac_dst[0],mac_dst[1],mac_dst[2],mac_dst[3],mac_dst[4],mac_dst[5]);
     }
     
     packet[4][3] = p->sport;
@@ -2569,13 +2556,13 @@ void ReadIPRange(uint32_t ipnet, uint32_t ipmask, unsigned int* IPrange, unsigne
 
 }
 
-bool add_guard(rule_t* guard)
+bool add_guard(rule_t* guard, uint32_t num)
 {
     if(!guard)
     {
         return false;
     }
-    guard->rule_id = 0;
+    guard->rule_id = num;
     if(!range_alloc(guard->range))
     {
         return false;
@@ -2583,9 +2570,9 @@ bool add_guard(rule_t* guard)
     
     
     memset(guard->range[0][0],0,16);
-    memset(guard->range[0][1],255,16);
+    memset(guard->range[0][1],0,16);
     memset(guard->range[1][0],0,16);
-    memset(guard->range[1][1],255,16);
+    memset(guard->range[1][1],0,16);
     
 
     ((uint32_t *)(guard->range[2][0]))[0] = 0;
@@ -2610,8 +2597,8 @@ bool add_guard(rule_t* guard)
     
     ((uint32_t *)(guard->range[7][0]))[0] = 0;
     ((uint32_t *)(guard->range[7][0]))[1] = 0;
-    ((uint32_t *)(guard->range[7][1]))[0] = (uint32_t)(-1);
-    ((uint32_t *)(guard->range[7][1]))[1] = (uint32_t)(-1);
+    ((uint32_t *)(guard->range[7][1]))[0] = 0;
+    ((uint32_t *)(guard->range[7][1]))[1] = 0;
     
     *guard->range[8][0] = 0;
     *guard->range[8][1] = (uint8_t)(-1);
@@ -2710,7 +2697,7 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
         }
     }
 
-    add_guard(&ruleset->ruleList[ruleset->num]);
+    add_guard(&ruleset->ruleList[ruleset->num], ruleset->num);
     ruleset->ruleList[ruleset->num].pri = ruleset->num;
     ruleset->num++;
     

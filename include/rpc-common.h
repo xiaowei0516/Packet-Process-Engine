@@ -17,19 +17,19 @@
 
 
 typedef struct tag_RCP_BLOCK_ACL_RULE_TUPLE{
-	uint8_t smac[6];
-	uint8_t dmac[6];
-	uint32_t sip;
-	uint32_t sip_mask;
-	uint32_t dip;
-	uint32_t dip_mask;
-	uint16_t sport_start;
-	uint16_t sport_end;
-	uint16_t dport_start;
-	uint16_t dport_end;
-	uint8_t protocol_start;
-	uint8_t protocol_end;
-	uint16_t action;
+    uint8_t smac[6];
+    uint8_t dmac[6];
+    int32_t sip;
+    int32_t sip_mask;
+    int32_t dip;
+    int32_t dip_mask;
+    int16_t sport_start;
+    int16_t sport_end;
+    int16_t dport_start;
+    int16_t dport_end;
+    int8_t protocol_start;
+    int8_t protocol_end;
+    int16_t action;
 }__attribute__ ((__packed__)) RCP_BLOCK_ACL_RULE_TUPLE;
 
 
@@ -37,9 +37,9 @@ typedef struct tag_RCP_BLOCK_ACL_RULE_TUPLE{
   *	the uniform data struct for packing/unpacking  
   */
 typedef struct {
-	uint16_t opcode;
-	uint16_t info_len;		//used by show info message
-	char info_buf[0];	//used by show info message
+    int16_t opcode;
+    int16_t info_len; //used by show info message
+    char info_buf[0]; //used by show info message
 }rpc_msg_t;
 
 typedef struct {
