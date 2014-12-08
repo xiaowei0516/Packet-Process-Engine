@@ -11,10 +11,13 @@ argc=$#
 clean_up()
 {
 	echo "clean_up"
+	rm -rf sec-fw.tar.gz
 	rm -rf secd-linux_64
 	rm -rf ./bin
 	rm -rf ./obj-linux_64-octeon3
 	cd ./mgrplane
+	rm src/client/cparser_tree.c
+	rm src/client/cparser_tree.h
 	make clean
 	exit
 }
