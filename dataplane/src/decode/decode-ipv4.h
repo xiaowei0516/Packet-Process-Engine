@@ -6,10 +6,10 @@
 
 
 /* IP flags. */
-#define IP_CE		0x8000		/* Flag: "Congestion"		*/
-#define IP_DF		0x4000		/* Flag: "Don't Fragment"	*/
-#define IP_MF		0x2000		/* Flag: "More Fragments"	*/
-#define IP_OFFSET	0x1FFF		/* "Fragment Offset" part	*/
+#define IP_CE       0x8000      /* Flag: "Congestion"       */
+#define IP_DF       0x4000      /* Flag: "Don't Fragment"   */
+#define IP_MF       0x2000      /* Flag: "More Fragments"   */
+#define IP_OFFSET   0x1FFF      /* "Fragment Offset" part   */
 
 
 #define IPV4_HEADER_LEN           20    /**< Header length */
@@ -19,16 +19,16 @@
 
 typedef struct IPV4Hdr_
 {
-	uint8_t ip_verhl;     /**< version & header length */
-	uint8_t ip_tos;       /**< type of service */
-	uint16_t ip_len;      /**< length */
-	uint16_t ip_id;       /**< id */
-	uint16_t ip_off;      /**< frag offset */
-	uint8_t ip_ttl;       /**< time to live */
-	uint8_t ip_proto;     /**< protocol (tcp, udp, etc) */
-	uint16_t ip_csum;     /**< checksum */
-	uint32_t src_addr;		/**< source address */
-	uint32_t dst_addr;		/**< destination address */
+    uint8_t ip_verhl;     /**< version & header length */
+    uint8_t ip_tos;       /**< type of service */
+    uint16_t ip_len;      /**< length */
+    uint16_t ip_id;       /**< id */
+    uint16_t ip_off;      /**< frag offset */
+    uint8_t ip_ttl;       /**< time to live */
+    uint8_t ip_proto;     /**< protocol (tcp, udp, etc) */
+    uint16_t ip_csum;     /**< checksum */
+    uint32_t src_addr;      /**< source address */
+    uint32_t dst_addr;      /**< destination address */
 } IPV4Hdr;
 
 
@@ -56,9 +56,9 @@ typedef struct IPV4Hdr_
 #define IPV4_GET_IPLEN(p) \
     IPV4_GET_RAW_IPLEN((IPV4Hdr *)((p)->network_header))
 #define IPV4_GET_IPSRC(p) \
-	(IPV4_GET_RAW_IPSRC((IPV4Hdr *)((p)->network_header)))
+    (IPV4_GET_RAW_IPSRC((IPV4Hdr *)((p)->network_header)))
 #define IPV4_GET_IPDST(p) \
-	(IPV4_GET_RAW_IPDST((IPV4Hdr *)((p)->network_header)))
+    (IPV4_GET_RAW_IPDST((IPV4Hdr *)((p)->network_header)))
 #define IPV4_GET_IPID(p) \
    (IPV4_GET_RAW_IPID((IPV4Hdr *)((p)->network_header)))
 /* _IPV4_GET_IPOFFSET: get the content of the offset header field in host order */
@@ -93,10 +93,10 @@ typedef struct IPV4Hdr_
 
 
 #define IPV4_SET_IPLEN(p, value) \
-	IPV4_SET_RAW_IPLEN((IPV4Hdr *)(p->network_header), value)
-	
+    IPV4_SET_RAW_IPLEN((IPV4Hdr *)(p->network_header), value)
+    
 #define IPV4_SET_IPCSUM(p, value) \
-	IPV4_SET_RAW_IPCSUM((IPV4Hdr *)(p->network_header), value)
+    IPV4_SET_RAW_IPCSUM((IPV4Hdr *)(p->network_header), value)
 
 
 
@@ -105,7 +105,7 @@ typedef struct IPV4Hdr_
 
 
 #define IPV4_IS_FRAGMENT(p) \
-	(IPV4_GET_IPOFFSET(p) > 0 || IPV4_GET_MF(p) == 1)
+    (IPV4_GET_IPOFFSET(p) > 0 || IPV4_GET_MF(p) == 1)
 
 
 

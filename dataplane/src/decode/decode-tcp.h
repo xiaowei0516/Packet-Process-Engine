@@ -10,15 +10,15 @@
 
 typedef struct TCPHdr_
 {
-	uint16_t th_sport;  /**< source port */
-	uint16_t th_dport;  /**< destination port */
-	uint32_t th_seq;    /**< sequence number */
-	uint32_t th_ack;    /**< acknowledgement number */
-	uint8_t th_offx2;   /**< offset and reserved */
-	uint8_t th_flags;   /**< pkt flags */
-	uint16_t th_win;    /**< pkt window */
-	uint16_t th_sum;    /**< checksum */
-	uint16_t th_urp;    /**< urgent pointer */
+    uint16_t th_sport;  /**< source port */
+    uint16_t th_dport;  /**< destination port */
+    uint32_t th_seq;    /**< sequence number */
+    uint32_t th_ack;    /**< acknowledgement number */
+    uint8_t th_offx2;   /**< offset and reserved */
+    uint8_t th_flags;   /**< pkt flags */
+    uint16_t th_win;    /**< pkt window */
+    uint16_t th_sum;    /**< checksum */
+    uint16_t th_urp;    /**< urgent pointer */
 } TCPHdr;
 
 

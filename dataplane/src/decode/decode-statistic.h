@@ -7,95 +7,95 @@
 
 struct recv_count 
 {
-	uint64_t recv_packet_count;
-	uint64_t recv_packet_bytes;
+    uint64_t recv_packet_count;
+    uint64_t recv_packet_bytes;
 
-	uint64_t recv_packet_count_sum;
-	uint64_t recv_packet_bytes_sum;
+    uint64_t recv_packet_count_sum;
+    uint64_t recv_packet_bytes_sum;
 };
 
 struct rx_stat
 {
-	uint64_t rx_err;
-	uint64_t addr_err;
-	uint64_t rx_ok;
+    uint64_t rx_err;
+    uint64_t addr_err;
+    uint64_t rx_ok;
 };
 
 struct ether_stat
 {
-	uint64_t headerlen_err;
-	uint64_t unsupport;
-	uint64_t rx_ok;
+    uint64_t headerlen_err;
+    uint64_t unsupport;
+    uint64_t rx_ok;
 };
 
 struct vlan_stat
 {
-	uint64_t headerlen_err;
-	uint64_t vlanlayer_exceed;
-	uint64_t unsupport;
-	uint64_t rx_ok;
+    uint64_t headerlen_err;
+    uint64_t vlanlayer_exceed;
+    uint64_t unsupport;
+    uint64_t rx_ok;
 };
 
 struct ipv4_stat
 {
-	uint64_t headerlen_err;
-	uint64_t version_err;
-	uint64_t pktlen_err;
-	uint64_t unsupport;
-	uint64_t rx_ok;
+    uint64_t headerlen_err;
+    uint64_t version_err;
+    uint64_t pktlen_err;
+    uint64_t unsupport;
+    uint64_t rx_ok;
 };
 
 struct frag_stat
 {
-	uint64_t fraglen_err;
-	uint64_t fcb_no;
-	uint64_t hw2sw_err;
-	uint64_t defrag_err;
-	uint64_t cache_ok;
-	uint64_t reasm_ok;
+    uint64_t fraglen_err;
+    uint64_t fcb_no;
+    uint64_t hw2sw_err;
+    uint64_t defrag_err;
+    uint64_t cache_ok;
+    uint64_t reasm_ok;
 };
 
 struct udp_stat
 {
-	uint64_t headerlen_err;
-	uint64_t pktlen_err;
-	uint64_t rx_ok;
+    uint64_t headerlen_err;
+    uint64_t pktlen_err;
+    uint64_t rx_ok;
 };
 
 struct tcp_stat
 {
-	uint64_t headerlen_err;
-	uint64_t pktlen_err;
-	uint64_t rx_ok;
+    uint64_t headerlen_err;
+    uint64_t pktlen_err;
+    uint64_t rx_ok;
 };
 
 struct flow_stat
 {
-	uint64_t getnode_err;
-	uint64_t proc_ok;
+    uint64_t getnode_err;
+    uint64_t proc_ok;
 };
 
 struct tx_stat
 {
-	uint64_t port_err;
-	uint64_t hw_send_err;
-	uint64_t sw_desc_err;
-	uint64_t sw_send_err;
-	uint64_t send_over;
+    uint64_t port_err;
+    uint64_t hw_send_err;
+    uint64_t sw_desc_err;
+    uint64_t sw_send_err;
+    uint64_t send_over;
 };
 
 typedef struct
 {
-	struct recv_count rc;
-	struct rx_stat    rxstat;
-	struct ether_stat l2stat;
-	struct vlan_stat  vlanstat;
-	struct ipv4_stat  ipv4stat;
-	struct frag_stat  fragstat;
-	struct udp_stat   udpstat;
-	struct tcp_stat   tcpstat;
-	struct flow_stat  flowstat;
-	struct tx_stat    txstat;
+    struct recv_count rc;
+    struct rx_stat    rxstat;
+    struct ether_stat l2stat;
+    struct vlan_stat  vlanstat;
+    struct ipv4_stat  ipv4stat;
+    struct frag_stat  fragstat;
+    struct udp_stat   udpstat;
+    struct tcp_stat   tcpstat;
+    struct flow_stat  flowstat;
+    struct tx_stat    txstat;
 }pkt_stat;
 
 
@@ -106,7 +106,7 @@ extern pkt_stat *pktstat[];
 
 extern int local_cpu_id;
 
-#define STAT_RECV_PC_ADD 		do { pktstat[local_cpu_id]->rc.recv_packet_count++; pktstat[local_cpu_id]->rc.recv_packet_count_sum++; } while (0)
+#define STAT_RECV_PC_ADD        do { pktstat[local_cpu_id]->rc.recv_packet_count++; pktstat[local_cpu_id]->rc.recv_packet_count_sum++; } while (0)
 #define STAT_RECV_PB_ADD(bytes) do { pktstat[local_cpu_id]->rc.recv_packet_bytes += bytes; pktstat[local_cpu_id]->rc.recv_packet_bytes_sum += bytes; } while (0)
 
 

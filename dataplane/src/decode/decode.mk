@@ -11,25 +11,25 @@ LIBRARY_DECODE := $(OBJ_DIR)/libdecode.a
 
 
 LIBDECODE_OBJ_$(d)  :=  \
-	$(OBJ_DIR)/decode.o \
-	$(OBJ_DIR)/decode-ethernet.o \
-	$(OBJ_DIR)/decode-vlan.o \
-	$(OBJ_DIR)/decode-ipv4.o \
-	$(OBJ_DIR)/decode-tcp.o \
-	$(OBJ_DIR)/decode-udp.o \
-	$(OBJ_DIR)/decode-defrag.o \
-	$(OBJ_DIR)/decode-statistic.o
-	
+    $(OBJ_DIR)/decode.o \
+    $(OBJ_DIR)/decode-ethernet.o \
+    $(OBJ_DIR)/decode-vlan.o \
+    $(OBJ_DIR)/decode-ipv4.o \
+    $(OBJ_DIR)/decode-tcp.o \
+    $(OBJ_DIR)/decode-udp.o \
+    $(OBJ_DIR)/decode-defrag.o \
+    $(OBJ_DIR)/decode-statistic.o
+    
 
 INCLUDE_DIR := \
-	-I$(d) \
-	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
-	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
-	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/acl \
-	-I$(OCTEON_ROOT)/sec-fw/include
+    -I$(d) \
+    -I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
+    -I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
+    -I$(OCTEON_ROOT)/sec-fw/dataplane/src/acl \
+    -I$(OCTEON_ROOT)/sec-fw/include
 
 $(LIBDECODE_OBJ_$(d)):  CFLAGS_LOCAL := -O2 -g -W -Wall -Werror -Wno-unused-parameter -Wundef -G0 $(INCLUDE_DIR)
-$(LIBDECODE_OBJ_$(d)):  CFLAGS_GLOBAL := $(filter-out -fprofile-%,$(CFLAGS_GLOBAL))	
+$(LIBDECODE_OBJ_$(d)):  CFLAGS_GLOBAL := $(filter-out -fprofile-%,$(CFLAGS_GLOBAL)) 
 
 
 #  standard component Makefile rules
@@ -43,14 +43,14 @@ LIBDECODE_CLEAN_LIST  :=  $(LIBDECODE_CLEAN_LIST) $(LIBDECODE_OBJ_$(d)) $(LIBDEC
 -include $(LIBDECODE_DEPS_$(d))
 
 $(LIBRARY_DECODE): $(LIBDECODE_OBJ_$(d))
-	$(AR) -cr $@ $^
+    $(AR) -cr $@ $^
 
-$(OBJ_DIR)/%.o:	$(d)/%.c
-	$(COMPILE)
+$(OBJ_DIR)/%.o: $(d)/%.c
+    $(COMPILE)
 
 
-$(OBJ_DIR)/%.o:	$(d)/%.S
-	$(ASSEMBLE)
+$(OBJ_DIR)/%.o: $(d)/%.S
+    $(ASSEMBLE)
 
 #  standard component Makefile footer
 

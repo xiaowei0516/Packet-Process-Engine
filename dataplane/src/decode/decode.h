@@ -4,8 +4,8 @@
 #include <sec-common.h>
 
 
-#define DECODE_OK   0  
-#define DECODE_DROP 1    
+#define DECODE_OK   0
+#define DECODE_DROP 1
 #define DECODE_DONE 2
 
 

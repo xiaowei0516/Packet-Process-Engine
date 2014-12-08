@@ -8,9 +8,9 @@
 #include <hlist.h>
 
 
-#define DEFRAG_FIRST_IN	  (1 << 0)
-#define DEFRAG_LAST_IN	  (1 << 1)
-#define DEFRAG_COMPLETE	  (1 << 2)
+#define DEFRAG_FIRST_IN   (1 << 0)
+#define DEFRAG_LAST_IN    (1 << 1)
+#define DEFRAG_COMPLETE   (1 << 2)
 
 
 
@@ -24,25 +24,25 @@
 
 
 typedef struct {
-	struct hlist_node	list;
-	mbuf_t            *fragments;    /* list of cached fragments */
-	mbuf_t            *fragments_tail;
-	uint64_t           cycle;
-	
-	cvmx_spinlock_t		lock;
-	
-	uint32_t             sip;
-	uint32_t             dip;
-	uint16_t  sport;             /*sport */
-	uint16_t  dport;             /*dport*/
-	uint8_t   protocol;
-	uint16_t              id;
-	
-	uint16_t          status;
-	
-	int            total_fraglen;    /* total length of orig datagram */
-	int     	        meat;
-	uint8_t          last_in;    /* first/last segment arrived? */
+    struct hlist_node   list;
+    mbuf_t            *fragments;    /* list of cached fragments */
+    mbuf_t            *fragments_tail;
+    uint64_t           cycle;
+    
+    cvmx_spinlock_t     lock;
+    
+    uint32_t             sip;
+    uint32_t             dip;
+    uint16_t  sport;             /*sport */
+    uint16_t  dport;             /*dport*/
+    uint8_t   protocol;
+    uint16_t              id;
+    
+    uint16_t          status;
+    
+    int            total_fraglen;    /* total length of orig datagram */
+    int                 meat;
+    uint8_t          last_in;    /* first/last segment arrived? */
 }fcb_t;
 
 
@@ -50,22 +50,22 @@ typedef struct {
 
 typedef struct 
 {
-	struct hlist_head hash;
-	cvmx_spinlock_t bkt_lock;
+    struct hlist_head hash;
+    cvmx_spinlock_t bkt_lock;
 }frag_bucket_t;
 
 
 typedef struct {
-	uint32_t bucket_num;
-	uint32_t bucket_size;
+    uint32_t bucket_num;
+    uint32_t bucket_size;
 
-	uint32_t item_size;
-	uint32_t item_num;
+    uint32_t item_size;
+    uint32_t item_num;
 
-	void *bucket_base_ptr;
+    void *bucket_base_ptr;
 
-	uint32_t (*match)(fcb_t * ,	mbuf_t *);
-	uint32_t (*hashfn)(mbuf_t *);
+    uint32_t (*match)(fcb_t * , mbuf_t *);
+    uint32_t (*hashfn)(mbuf_t *);
 }frag_table_info_t;
 
 
@@ -103,9 +103,9 @@ typedef struct {
 
 static inline void fcb_size_judge(void)
 {
-	BUILD_BUG_ON((sizeof(fcb_t) + sizeof(Mem_Slice_Ctrl_B)) > 256);
+    BUILD_BUG_ON((sizeof(fcb_t) + sizeof(Mem_Slice_Ctrl_B)) > 256);
 
-	return;
+    return;
 }
 
 

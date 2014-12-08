@@ -12,35 +12,35 @@ extern void FlowHandlePacket(mbuf_t *m);
 
 static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {
-	if (unlikely(len < UDP_HEADER_LEN)) {
-		STAT_UDP_HEADER_ERR;
+    if (unlikely(len < UDP_HEADER_LEN)) {
+        STAT_UDP_HEADER_ERR;
         return DECODE_DROP;
     }
 
     mbuf->transport_header= (void *)pkt;
 
-	if (unlikely(len < UDP_GET_LEN(mbuf))) {
-		STAT_UDP_LEN_ERR;
+    if (unlikely(len < UDP_GET_LEN(mbuf))) {
+        STAT_UDP_LEN_ERR;
         return DECODE_DROP;
     }
 
-	if (unlikely(len != UDP_GET_LEN(mbuf))) {
-		STAT_UDP_LEN_ERR;
+    if (unlikely(len != UDP_GET_LEN(mbuf))) {
+        STAT_UDP_LEN_ERR;
         return DECODE_DROP;
     }
 
-	mbuf->sport = UDP_GET_SRC_PORT(mbuf);
-	mbuf->dport = UDP_GET_DST_PORT(mbuf);
+    mbuf->sport = UDP_GET_SRC_PORT(mbuf);
+    mbuf->dport = UDP_GET_DST_PORT(mbuf);
 
 #ifdef SEC_UDP_DEBUG
-	printf("src port is %d\n", mbuf->sport);
-	printf("dst port is %d\n", mbuf->dport);
+    printf("src port is %d\n", mbuf->sport);
+    printf("dst port is %d\n", mbuf->dport);
 #endif
 
-	mbuf->payload = pkt + UDP_HEADER_LEN;
+    mbuf->payload = pkt + UDP_HEADER_LEN;
     mbuf->payload_len = len - UDP_HEADER_LEN;
 
-	return DECODE_OK;
+    return DECODE_OK;
 }
 
 
@@ -49,23 +49,23 @@ static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 int DecodeUDP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {
 #ifdef SEC_UDP_DEBUG
-	printf("=========>enter DecodeUDP\n");
+    printf("=========>enter DecodeUDP\n");
 #endif
 
-	
-	if (unlikely(DECODE_OK != DecodeUDPPacket(mbuf, pkt, len))) 
-	{
-		return DECODE_DROP;
-	}
+    
+    if (unlikely(DECODE_OK != DecodeUDPPacket(mbuf, pkt, len))) 
+    {
+        return DECODE_DROP;
+    }
 
 
-	
-	STAT_UDP_RECV_OK;
+    
+    STAT_UDP_RECV_OK;
 
-	firewall_pass_rule(mbuf);
+    firewall_pass_rule(mbuf);
 
-	FlowHandlePacket(mbuf);
+    FlowHandlePacket(mbuf);
 
-	return DECODE_OK;
+    return DECODE_OK;
 }
 

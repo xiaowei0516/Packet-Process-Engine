@@ -4,10 +4,10 @@
 /* UDP header structure */
 typedef struct UDPHdr_
 {
-	uint16_t uh_sport;  /* source port */
-	uint16_t uh_dport;  /* destination port */
-	uint16_t uh_len;    /* length */
-	uint16_t uh_sum;    /* checksum */
+    uint16_t uh_sport;  /* source port */
+    uint16_t uh_dport;  /* destination port */
+    uint16_t uh_len;    /* length */
+    uint16_t uh_sum;    /* checksum */
 } UDPHdr;
 
 
