@@ -23,40 +23,40 @@
 
 typedef struct flow_table_info_tag_s
 {
-	uint32_t bucket_num;
-	uint32_t bucket_size;
+    uint32_t bucket_num;
+    uint32_t bucket_size;
 
-	uint32_t item_size;
-	uint32_t item_num;
+    uint32_t item_size;
+    uint32_t item_num;
 
-	void *bucket_base_ptr;
+    void *bucket_base_ptr;
 }flow_table_info_t;
 
 
 
 typedef struct flow_bucket_tag_s
 {
-	struct hlist_head hash;
-	cvmx_spinlock_t lock;
+    struct hlist_head hash;
+    cvmx_spinlock_t lock;
 }flow_bucket_t;
 
 
 
 typedef struct flow_item_tag_s
 {
-	struct hlist_node	list;
-	cvmx_spinlock_t     item_lock;
-	uint64_t cycle;
-	int32_t use_cnt;
+    struct hlist_node   list;
+    cvmx_spinlock_t     item_lock;
+    uint64_t cycle;
+    int32_t use_cnt;
 
-	ipv4_tuple_t ipv4;
+    ipv4_tuple_t ipv4;
 
-	uint16_t  sport;
-   	uint16_t  dport;
-	uint16_t  protocol;
+    uint16_t  sport;
+    uint16_t  dport;
+    uint16_t  protocol;
 
-	uint16_t  input_port;
-	
+    uint16_t  input_port;
+    
 }flow_item_t;
 
 
@@ -81,9 +81,9 @@ typedef struct flow_item_tag_s
 
 static inline void flow_item_size_judge(void)
 {
-	BUILD_BUG_ON((sizeof(flow_item_t) + sizeof(Mem_Slice_Ctrl_B)) > 256);
+    BUILD_BUG_ON((sizeof(flow_item_t) + sizeof(Mem_Slice_Ctrl_B)) > 256);
 
-	return;
+    return;
 }
 
 
@@ -132,7 +132,7 @@ static inline void FlowReference(flow_item_t **d, flow_item_t *f) {
     if (likely(f != NULL)) {
         if (*d == f)
             return;
-		
+        
         FlowIncrUsecnt(f);
         *d = f;
     }
