@@ -16,7 +16,65 @@ unsigned long long  gNumTotalNonOverlappings = 1;
 
 struct timeval  gStartTime,gEndTime;
 
-#define LOOKUP
+
+
+HS_Node_Ring_t *hsnode_ring;
+uint32_t HS_Node_Init()
+{
+    int i = 0;
+    uint64_t start;
+
+    void *ptr = (void *)cvmx_bootmem_alloc_named(sizeof(HS_Node_Ring_t) + (HS_NODE_NUM_MAX - 1) * sizeof(hs_node_t), 128, HS_NODE_NAME);
+    if(NULL == ptr)
+    {
+        return SEC_NO;
+    }
+
+    memset(ptr, 0, sizeof(HS_Node_Ring_t) + HS_NODE_NUM_MAX * sizeof(hs_node_t));
+
+    hsnode_ring = (HS_Node_Ring_t *)ptr;
+
+    start = (uint64_t)ptr + sizeof(HS_Node_Ring_t);
+
+    for(i = 0; i < HS_NODE_NUM_MAX - 1; i++)
+    {
+        hsnode_ring->node_ptr[i] = start + sizeof(hs_node_t) * i;
+    }
+
+    hsnode_ring->rd_index = 0;
+    hsnode_ring->wr_index = HS_NODE_NUM_MAX;
+
+    return SEC_OK;
+}
+
+
+
+
+
+void *HS_NODE_ALLOC()
+{
+    void *ptr;
+    if(hsnode_ring->rd_index == hsnode_ring->wr_index)
+    {
+        return NULL;
+    }
+
+    ptr = (void *)hsnode_ring->node_ptr[hsnode_ring->rd_index];
+    hsnode_ring->rd_index = (hsnode_ring->rd_index + 1) % HS_NODE_NUM_MAX;
+    return ptr;
+}
+
+void HS_NODE_FREE(void *ptr)
+{
+    if( (hsnode_ring->wr_index + 1) % HS_NODE_NUM_MAX == hsnode_ring->rd_index)
+    {
+        return;
+    }
+
+    hsnode_ring->node_ptr[hsnode_ring->wr_index] = (uint64_t)ptr;
+
+    hsnode_ring->wr_index = (hsnode_ring->wr_index + 1) % HS_NODE_NUM_MAX;
+}
 
 
 int SegPointCompare (const void * a, const void * b)
@@ -30,20 +88,58 @@ int SegPointCompare (const void * a, const void * b)
 }
 
 
+static void _FreeRootNode(hs_node_t *rootnode, uint32_t depth)
+{
+    uint32_t i = 0;
+
+    if( NULL == rootnode )
+    {
+        return ;
+    }
+
+    if( 0 == depth && NULL == rootnode->child[0] && NULL == rootnode->child[1])
+    {
+        return ;
+    }
+
+
+    for( i = 0; i < sizeof(rootnode->child)/sizeof(hs_node_t *); i++)
+    {
+        if(NULL != rootnode->child[i])
+        {
+            _FreeRootNode(rootnode->child[i], depth+1);
+        }
+    }
+
+    if(0 != depth && rootnode)
+    {
+        free(rootnode);
+    }
+
+    return ;
+}
+
+
+
+void FreeRootNode(hs_node_t *rootnode)
+{
+    _FreeRootNode(rootnode, 0);
+}
+
+
+
 void release_ruleset(rule_set_t* childRuleSet)
 {
     if(childRuleSet->ruleList)
     {
-        free(childRuleSet->ruleList);
+        HS_NODE_FREE(childRuleSet->ruleList);
     }
 
     if(childRuleSet)
     {
-        free(childRuleSet);
+        HS_NODE_FREE(childRuleSet);
     }
 }
-
-
 
 
 
@@ -267,7 +363,8 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
     currNode->d2s = (unsigned char) d2s;
     currNode->depth = (unsigned char) depth;
     currNode->thresh = thresh;
-    currNode->child[0] = (hs_node_t *) malloc(sizeof(hs_node_t));
+    currNode->child[0] = (hs_node_t *) HS_NODE_ALLOC();
+    memset((void *)currNode->child[0], 0, sizeof(hs_node_t));
     /*Generate left child rule list*/
     tempRuleNumList = (unsigned int*) malloc(ruleset->num * sizeof(unsigned int)); /* need to be freed */
     pos = 0;
@@ -292,13 +389,11 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
     free(tempRuleNumList);
 
     BuildHSTree(childRuleSet, currNode->child[0], depth+1);
-#ifndef LOOKUP
-    free(currNode->child[0]);
-#endif
     release_ruleset(childRuleSet);
 
     /*Generate right child rule list*/
-    currNode->child[1] = (hs_node_t *) malloc(sizeof(hs_node_t));
+    currNode->child[1] = (hs_node_t *) HS_NODE_ALLOC();
+    memset((void *)currNode->child[1], 0, sizeof(hs_node_t));
     tempRuleNumList = (unsigned int*) malloc(ruleset->num * sizeof(unsigned int)); /* need to be free */
     pos = 0;
     for (num = 0; num < ruleset->num; num++) {
@@ -323,9 +418,6 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
 
     free(tempRuleNumList);
     BuildHSTree(childRuleSet, currNode->child[1], depth+1);
-#ifndef LOOKUP
-    free(currNode->child[1]);
-#endif
     release_ruleset(childRuleSet);
 
     return  SUCCESS;
@@ -453,5 +545,12 @@ int LookupHSTree(uint64_t packet[DIM], rule_set_t* ruleset,hs_node_t* root, hs_n
 
     return  SUCCESS;
 }
+
+
+
+
+
+
+
 
 

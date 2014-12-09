@@ -93,6 +93,7 @@ OBJS = $(OBJ_DIR)/main.o
 INCLUDE_DIR := \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/decode \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/acl \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/flow \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/common \

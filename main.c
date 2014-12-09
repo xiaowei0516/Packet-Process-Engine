@@ -61,6 +61,7 @@
 #include <flow.h>
 #include <dp_cmd.h>
 #include <sos_malloc.h>
+#include <dp_acl.h>
 
 
 extern flow_item_t *flow_item_alloc();
@@ -94,13 +95,13 @@ int Sec_LowLevel_Init()
             return SEC_NO;
         }
         printf("Mem_Pool_Init ok\n");
-
+#if 0
         if(SEC_OK != sos_mem_init())
         {
             return SEC_NO;
         }
         printf("sos_mem_init ok\n");
-
+#endif
         if(SEC_OK != oct_sched_init())
         {
             return SEC_NO;
@@ -130,13 +131,14 @@ int Sec_LowLevel_Init()
             return SEC_NO;
         }
         printf("mem pool info get ok!\n");
-
+#if 0
         if(SEC_OK != sos_mem_get())
         {
             printf("sos_mem_get failed!\n");
             return SEC_NO;
         }
         printf("sos_mem_get ok!\n");
+#endif
 
         if(SEC_OK != oct_sched_Get())
         {

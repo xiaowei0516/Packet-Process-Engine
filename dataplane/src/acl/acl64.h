@@ -9,6 +9,9 @@
 #include <sys/time.h>
 #include "inttypes.h"
 #include "acl_rule.h"
+#include <sec-common.h>
+#include <oct-common.h>
+
 
 /*-----------------------------------------------------------------------------
  *  constant
@@ -77,6 +80,17 @@ typedef struct {
 } unit_tree;
 
 
+#define HS_NODE_NUM_MAX 300000
+#define HS_NODE_NAME "hs_node_ring"
+typedef struct
+{
+    uint32_t rd_index;
+    uint32_t wr_index;
+
+    uint64_t node_ptr[HS_NODE_NUM_MAX];
+
+}HS_Node_Ring_t;
+
 
 
 /*-----------------------------------------------------------------------------
@@ -95,5 +109,7 @@ extern void ReadMACRange(uint8_t *mac, uint64_t *MACrange);
 extern void ReadIPRange(uint32_t ipnet, uint32_t ipmask, uint64_t* IPranges, uint64_t* IPrangee);
 extern void ReadPort(uint16_t sport_start, uint16_t sport_end, uint64_t* from, uint64_t* to);
 extern void ReadProto(uint8_t proto_start, uint8_t proto_end, uint64_t* from, uint64_t* to);
+extern uint32_t HS_Node_Init();
+extern void FreeRootNode(hs_node_t *rootnode);
 #endif   /* ----- #ifndef _HS_H ----- */
 

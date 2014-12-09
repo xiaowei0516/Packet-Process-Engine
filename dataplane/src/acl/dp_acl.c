@@ -15,7 +15,7 @@ CVMX_SHARED unit_tree g_acltree;
 
 
 
-uint32_t DP_Acl_Tree_init()
+uint32_t DP_Acl_Tree_Init()
 {
     void *ptr;
 
@@ -36,26 +36,19 @@ uint32_t DP_Acl_Tree_init()
 }
 
 
-
-
-
-
-uint32_t DP_Acl_Rule_Init()
+uint32_t DP_Acl_List_Init()
 {
     int fd;
 
     fd = shm_open(SHM_RULE_LIST_NAME, O_RDWR, 0);
 
-    if (fd < 0) {
+    if (fd < 0)
+    {
         printf("Failed to setup CVMX_SHARED(shm_open)");
         return SEC_NO;
     }
 
-    //if (shm_unlink(SHM_RULE_LIST_NAME) < 0)
-    //  printf("Failed to shm_unlink shm_name");
-
     ftruncate(fd, sizeof(rule_list_t));
-
 
     void *ptr = mmap(NULL, sizeof(rule_list_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (ptr == NULL)
@@ -66,8 +59,24 @@ uint32_t DP_Acl_Rule_Init()
 
     rule_list = (rule_list_t *)ptr;
 
+    return SEC_OK;
+}
 
-    if(SEC_OK != DP_Acl_Tree_init())
+
+
+uint32_t DP_Acl_Rule_Init()
+{
+    if(SEC_OK != DP_Acl_List_Init())
+    {
+        return SEC_NO;
+    }
+
+    if(SEC_OK != DP_Acl_Tree_Init())
+    {
+        return SEC_NO;
+    }
+
+    if(SEC_OK != HS_Node_Init())
     {
         return SEC_NO;
     }
@@ -109,7 +118,7 @@ uint32_t DP_Acl_Rule_Clean(rule_set_t* ruleset, hs_node_t* node)
 {
     ruleset->num = 0;
     memset(ruleset->ruleList, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
-    //FreeRootNode(node);
+    FreeRootNode(node);
 
     return SEC_OK;
 }
@@ -248,7 +257,6 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
         return ACL_RULE_ACTION_DROP;
     }
 
-
     for(i = 0; i < 6; i++)
     {
         z[i] = mb->eth_src[i];
@@ -273,7 +281,6 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     y += z[4] << 8;
     y += z[5];
 
-
     packet[0] = x;
     packet[1] = y;
     packet[2] = mb->ipv4.sip;
@@ -286,8 +293,6 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     root = &(g_acltree.TreeNode);
 
     LookupHSTree(packet, ruleset, root, &hit_node);
-
-
     printf("\n>>LOOKUP RESULT");
 
     printf("\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
