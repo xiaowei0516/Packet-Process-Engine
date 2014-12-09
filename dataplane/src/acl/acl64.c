@@ -436,16 +436,24 @@ void ReadMACRange(uint8_t *mac, uint64_t *MACrange)
     {
         z[i] = mac[i];
     }
+    if(z[0] == 0 && z[1] == 0 && z[2] == 0 && z[3] == 0 && z[4] == 0 && z[5] == 0)
+    {
+        MACrange[0] = 0;
+        MACrange[1] = 0xffffffffffff;
+    }
+    else
+    {
+        x = z[0] << 40;
+        x += z[1] << 32;
+        x += z[2] << 24;
+        x += z[3] << 16;
+        x += z[4] << 8;
+        x += z[5];
 
-    x = z[0] << 40;
-    x += z[1] << 32;
-    x += z[2] << 24;
-    x += z[3] << 16;
-    x += z[4] << 8;
-    x += z[5];
+        MACrange[0] = x;
+        MACrange[1] = x;
+    }
 
-    MACrange[0] = x;
-    MACrange[1] = x;
 }
 
 
@@ -460,60 +468,68 @@ void ReadIPRange(uint32_t ipnet, uint32_t ipmask, uint64_t* IPranges, uint64_t* 
     unsigned int ptrange[4];
     int i;
 
-    mask = ipmask;
-    trange[0] = ipnet>>24;
-    trange[1] = ipnet>>16 & 0x00FF;
-    trange[2] = ipnet>>8 & 0x0000FF;
-    trange[3] = ipnet & 0x000000FF;
-
-    mask = 32 - mask;
-    masklit1 = mask / 8;
-    masklit2 = mask % 8;
-
-    for(i=0;i<4;i++)
-        ptrange[i] = trange[i];
-
-    /*count the start IP */
-    for(i=3;i>3-masklit1;i--)
-        ptrange[i] = 0;
-    if(masklit2 != 0){
-        masklit3 = 1;
-        masklit3 <<= masklit2;
-        masklit3 -= 1;
-        masklit3 = ~masklit3;
-        ptrange[3-masklit1] &= masklit3;
+    if(ipnet == 0 && ipmask == 0)
+    {
+        IPranges[0] = 0;
+        IPrangee[0] = 0xffffffff;
     }
-    /*store start IP */
-    IPranges[0] = ptrange[0];
-    IPranges[0] <<= 8;
-    IPranges[0] += ptrange[1];
-    IPranges[0] <<= 8;
-    IPranges[0] += ptrange[2];
-    IPranges[0] <<= 8;
-    IPranges[0] += ptrange[3];
+    else
+    {
+        mask = ipmask;
+        trange[0] = ipnet>>24;
+        trange[1] = ipnet>>16 & 0x00FF;
+        trange[2] = ipnet>>8 & 0x0000FF;
+        trange[3] = ipnet & 0x000000FF;
+
+        mask = 32 - mask;
+        masklit1 = mask / 8;
+        masklit2 = mask % 8;
+
+        for(i=0;i<4;i++)
+            ptrange[i] = trange[i];
+
+        /*count the start IP */
+        for(i=3;i>3-masklit1;i--)
+            ptrange[i] = 0;
+        if(masklit2 != 0){
+            masklit3 = 1;
+            masklit3 <<= masklit2;
+            masklit3 -= 1;
+            masklit3 = ~masklit3;
+            ptrange[3-masklit1] &= masklit3;
+        }
+        /*store start IP */
+        IPranges[0] = ptrange[0];
+        IPranges[0] <<= 8;
+        IPranges[0] += ptrange[1];
+        IPranges[0] <<= 8;
+        IPranges[0] += ptrange[2];
+        IPranges[0] <<= 8;
+        IPranges[0] += ptrange[3];
 #ifdef DEBUGv2
-    printf("%x\n", IPranges[0]);
+        printf("%x\n", IPranges[0]);
 #endif
-    /*count the end IP*/
-    for(i=3;i>3-masklit1;i--)
-        ptrange[i] = 255;
-    if(masklit2 != 0){
-        masklit3 = 1;
-        masklit3 <<= masklit2;
-        masklit3 -= 1;
-        ptrange[3-masklit1] |= masklit3;
+        /*count the end IP*/
+        for(i=3;i>3-masklit1;i--)
+            ptrange[i] = 255;
+        if(masklit2 != 0){
+            masklit3 = 1;
+            masklit3 <<= masklit2;
+            masklit3 -= 1;
+            ptrange[3-masklit1] |= masklit3;
+        }
+        /*store end IP*/
+        IPrangee[0] = ptrange[0];
+        IPrangee[0] <<= 8;
+        IPrangee[0] += ptrange[1];
+        IPrangee[0] <<= 8;
+        IPrangee[0] += ptrange[2];
+        IPrangee[0] <<= 8;
+        IPrangee[0] += ptrange[3];
+#ifdef DEBUGv2
+        printf("%x\n", IPrangee[0]);
+#endif
     }
-    /*store end IP*/
-    IPrangee[0] = ptrange[0];
-    IPrangee[0] <<= 8;
-    IPrangee[0] += ptrange[1];
-    IPrangee[0] <<= 8;
-    IPrangee[0] += ptrange[2];
-    IPrangee[0] <<= 8;
-    IPrangee[0] += ptrange[3];
-#ifdef DEBUGv2
-    printf("%x\n", IPrangee[0]);
-#endif
 
 }
 

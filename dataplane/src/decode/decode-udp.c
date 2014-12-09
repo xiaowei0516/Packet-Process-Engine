@@ -52,19 +52,23 @@ int DecodeUDP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     printf("=========>enter DecodeUDP\n");
 #endif
 
-    
-    if (unlikely(DECODE_OK != DecodeUDPPacket(mbuf, pkt, len))) 
+
+    if (unlikely(DECODE_OK != DecodeUDPPacket(mbuf, pkt, len)))
     {
         return DECODE_DROP;
     }
 
-
-    
     STAT_UDP_RECV_OK;
 
-   // firewall_pass_rule(mbuf);
-    DP_Acl_Lookup(mbuf);
-   
+    if(ACL_RULE_ACTION_DROP == DP_Acl_Lookup(mbuf))
+    {
+        STAT_ACL_DROP;
+        PACKET_DESTROY_ALL(mbuf);
+        return DECODE_OK;
+    }
+
+    STAT_ACL_FW;
+
     FlowHandlePacket(mbuf);
 
     return DECODE_OK;

@@ -254,7 +254,7 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     if(g_acltree.TreeSet.num == 0)
     {
         printf("not any rule exist\n");
-        return ACL_RULE_ACTION_DROP;
+        return dp_acl_action_default;
     }
 
     for(i = 0; i < 6; i++)
@@ -341,7 +341,6 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
         }
     }
 
-    return SEC_OK;
 }
 
 

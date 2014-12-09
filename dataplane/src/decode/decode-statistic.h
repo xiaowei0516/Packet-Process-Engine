@@ -5,7 +5,7 @@
 #include <oct-common.h>
 
 
-struct recv_count 
+struct recv_count
 {
     uint64_t recv_packet_count;
     uint64_t recv_packet_bytes;
@@ -69,6 +69,13 @@ struct tcp_stat
     uint64_t rx_ok;
 };
 
+struct acl_stat
+{
+    uint64_t drop;
+    uint64_t fw;
+};
+
+
 struct flow_stat
 {
     uint64_t getnode_err;
@@ -94,6 +101,7 @@ typedef struct
     struct frag_stat  fragstat;
     struct udp_stat   udpstat;
     struct tcp_stat   tcpstat;
+    struct acl_stat   aclstat;
     struct flow_stat  flowstat;
     struct tx_stat    txstat;
 }pkt_stat;
@@ -147,6 +155,8 @@ extern int local_cpu_id;
 #define STAT_TCP_LEN_ERR         do { pktstat[local_cpu_id]->tcpstat.pktlen_err++;} while(0)
 #define STAT_TCP_RECV_OK         do { pktstat[local_cpu_id]->tcpstat.rx_ok++;} while(0)
 
+#define STAT_ACL_DROP            do { pktstat[local_cpu_id]->aclstat.drop++;} while(0)
+#define STAT_ACL_FW              do { pktstat[local_cpu_id]->aclstat.fw++;} while(0)
 
 #define STAT_FLOW_GETNODE_ERR    do { pktstat[local_cpu_id]->flowstat.getnode_err++;} while(0)
 #define STAT_FLOW_PROC_OK        do { pktstat[local_cpu_id]->flowstat.proc_ok++;} while(0)

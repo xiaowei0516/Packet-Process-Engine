@@ -60,12 +60,15 @@ int DecodeTCP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 
     STAT_TCP_RECV_OK;
 
+    if(ACL_RULE_ACTION_DROP == DP_Acl_Lookup(mbuf))
+    {
+        STAT_ACL_DROP;
+        PACKET_DESTROY_ALL(mbuf);
+        return DECODE_OK;
+    }
 
-    //firewall_pass_rule(mbuf);
+    STAT_ACL_FW;
 
-    DP_Acl_Lookup(mbuf);
-    
-    
     FlowHandlePacket(mbuf);
 
     return DECODE_OK;

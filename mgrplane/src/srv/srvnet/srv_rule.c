@@ -64,10 +64,10 @@ int Rule_list_init()
     //      printf("Failed to shm_unlink shm_name");
 
     ftruncate(fd, sizeof(rule_list_t));
-        
-    
+
+
     void *ptr = mmap(NULL, sizeof(rule_list_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (ptr == NULL) 
+    if (ptr == NULL)
     {
         printf("Failed to setup rule list (mmap copy)");
         return -1;
@@ -75,7 +75,7 @@ int Rule_list_init()
     rule_list = (rule_list_t *)ptr;
 
     memset((void *)rule_list, 0, sizeof(rule_list_t));
-    
+
     rule_list->rule_entry_free = RULE_ENTRY_MAX;
 
     return 0;
@@ -84,7 +84,7 @@ int Rule_list_init()
 
 int Rule_add(RCP_BLOCK_ACL_RULE_TUPLE *rule)
 {
-    int index; 
+    int index;
 
     if(rule_list->rule_entry_free == 0)
     {
@@ -119,7 +119,7 @@ int Rule_del(RCP_BLOCK_ACL_RULE_TUPLE *rule)
 {
     int i;
     int ret;
-    
+
     if(rule_list->rule_entry_free == RULE_ENTRY_MAX)
     {
         return RULE_NOT_EXIST;
@@ -160,14 +160,14 @@ int Rule_del_by_id(RCP_BLOCK_ACL_RULE_ID *id)
     {
         return RULE_NOT_EXIST;
     }
-    else 
+    else
     {
         rule_list->rule_entry[id->rule_id].entry_status = RULE_ENTRY_STATUS_FREE;
         rule_list->rule_entry_free++;
         rule_list->build_status = RULE_BUILD_UNCOMMIT;
         return RULE_OK;
     }
-    
+
 }
 
 
@@ -199,15 +199,29 @@ void Rule_Save_File(FILE *fp)
             continue;
         }
 
-        fprintf(fp, 
-            "%d:  sip:%x  sip_mask:%d, dip:%x  dip_mask:%d, sport_start:%d, sport_end:%d\n", 
+        fprintf(fp,
+            "%d: smac: %u:%u:%u:%u:%u:%u,  dmac: %u:%u:%u:%u:%u:%u, sip:%x  sip_mask:%d, dip:%x  dip_mask:%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d\n",
             i,
+            rule_list->rule_entry[i].rule_tuple.smac[0],
+            rule_list->rule_entry[i].rule_tuple.smac[1],
+            rule_list->rule_entry[i].rule_tuple.smac[2],
+            rule_list->rule_entry[i].rule_tuple.smac[3],
+            rule_list->rule_entry[i].rule_tuple.smac[4],
+            rule_list->rule_entry[i].rule_tuple.smac[5],
+            rule_list->rule_entry[i].rule_tuple.dmac[0],
+            rule_list->rule_entry[i].rule_tuple.dmac[1],
+            rule_list->rule_entry[i].rule_tuple.dmac[2],
+            rule_list->rule_entry[i].rule_tuple.dmac[3],
+            rule_list->rule_entry[i].rule_tuple.dmac[4],
+            rule_list->rule_entry[i].rule_tuple.dmac[5],
             rule_list->rule_entry[i].rule_tuple.sip,
             rule_list->rule_entry[i].rule_tuple.sip_mask,
             rule_list->rule_entry[i].rule_tuple.dip,
             rule_list->rule_entry[i].rule_tuple.dip_mask,
             rule_list->rule_entry[i].rule_tuple.sport_start,
-            rule_list->rule_entry[i].rule_tuple.sport_end);
+            rule_list->rule_entry[i].rule_tuple.sport_end,
+            rule_list->rule_entry[i].rule_tuple.protocol_start,
+            rule_list->rule_entry[i].rule_tuple.protocol_end);
     }
 }
 
@@ -240,10 +254,10 @@ int Rule_show_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *param
     {
         result_code = RCP_RESULT_FILE_ERR;
     }
-    
+
     rcp_param_p->nparam = 1;
     rcp_param_p->params_list.params[0].CliResultCode.result_code = result_code;
-    
+
     send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
 
     return 0;
@@ -278,10 +292,10 @@ int Rule_add_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *param_
     }
 
     rcp_param_p->nparam = 1;
-    
+
 
     send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
-    
+
     return 0;
 }
 
@@ -304,12 +318,12 @@ int Rule_del_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *param_
         rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
     }
     else if( RULE_NOT_EXIST == ret )
-    {   
+    {
         rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_RULE_NOT_EXIST;
     }
 
     rcp_param_p->nparam = 1;
-    
+
     send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
 
     return 0;
@@ -334,12 +348,12 @@ int Rule_del_acl_rule_id(uint8_t * from, uint32_t length, uint32_t fd, void *par
         rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
     }
     else if( RULE_NOT_EXIST == ret )
-    {   
+    {
         rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_RULE_NOT_EXIST;
     }
 
     rcp_param_p->nparam = 1;
-    
+
     send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
 
     return 0;
@@ -350,20 +364,20 @@ int Rule_del_acl_rule_id(uint8_t * from, uint32_t length, uint32_t fd, void *par
 int Rule_del_acl_rule_all(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
 {
     LOG("Rule_del_acl_rule_all\n");
-    
+
     uint8_t s_buf[MAX_BUF];
     cmd_type_t cmd_ack = DEL_ACL_RULE_ALL_ACK;
-    
+
     struct rcp_msg_params_s *rcp_param_p = (struct rcp_msg_params_s *)param_p;
-    
+
     Rule_del_all();
 
     rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
 
     rcp_param_p->nparam = 1;
-    
+
     send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
-    
+
     return 0;
 }
 
