@@ -7,6 +7,7 @@ extern "C" {
 
 #include "common.h"
 #include "rpc-common.h"
+#include "acl_rule.h"
 
 #define SERV_LOCAL 0x7f000001
 #define SERV_CLI_PORT  10001
@@ -21,8 +22,7 @@ extern "C" {
 
 #define MSG_VALID_FLAG 0x88
 
-#define ACL_RULE_ACTION_FW 0
-#define ACL_RULE_ACTION_DROP 1
+
 
 
 typedef enum
@@ -56,26 +56,26 @@ typedef enum
 
     COMMIT_ACL_RULE,      /*18*/
     COMMIT_ACL_RULE_ACK,
-    
+
     MAX_COMMAND_TYPE,
 }cmd_type_t;
 
-typedef enum tag_RCP_NISAC_RESULT_CODE { 
-    RCP_RESULT_OK = 0x0, 
-    RCP_RESULT_RULE_FULL, 
-    RCP_RESULT_RULE_EXIST, 
-    RCP_RESULT_RULE_NOT_EXIST, 
+typedef enum tag_RCP_NISAC_RESULT_CODE {
+    RCP_RESULT_OK = 0x0,
+    RCP_RESULT_RULE_FULL,
+    RCP_RESULT_RULE_EXIST,
+    RCP_RESULT_RULE_NOT_EXIST,
     RCP_RESULT_FAIL,
     RCP_RESULT_NO_MEM,
     RCP_RESULT_FILE_ERR,
-    RCP_RESULT_INVALID_FLAG, 
-    RCP_RESULT_INVALID_MSG_TYPE, 
-    RCP_RESULT_INVALID_MSG_CODE, 
-    RCP_RESULT_INVALID_USER, 
-    RCP_RESULT_INVALID_PASSWORD, 
-    RCP_RESULT_QUERY_IN_PROGRESS, 
-    RCP_RESULT_SAVE_IN_PROGRESS, 
-    RCP_RESULT_REQUEST_FORBIDDEN, 
+    RCP_RESULT_INVALID_FLAG,
+    RCP_RESULT_INVALID_MSG_TYPE,
+    RCP_RESULT_INVALID_MSG_CODE,
+    RCP_RESULT_INVALID_USER,
+    RCP_RESULT_INVALID_PASSWORD,
+    RCP_RESULT_QUERY_IN_PROGRESS,
+    RCP_RESULT_SAVE_IN_PROGRESS,
+    RCP_RESULT_REQUEST_FORBIDDEN,
     RCP_RESULT_CODE_MAX,
 } RCP_NISAC_RESULT_CODE;
 
@@ -83,8 +83,8 @@ typedef enum tag_RCP_NISAC_RESULT_CODE {
 
 
 
-typedef enum _msg_block_type_e { 
-    BLOCK_TYPE_START = 0x00, 
+typedef enum _msg_block_type_e {
+    BLOCK_TYPE_START = 0x00,
     BLOCK_IPV4_FIVE_TUPLE = 0x01,
     BLOCK_ACL_RULE_TUPLE = 0x02,
     BLOCK_RESULT_CODE = 0x3,
@@ -135,16 +135,16 @@ typedef struct TAG_RCP_DATA_BLOCK {
 
 
 typedef enum _msg_type_e {
-    MSG_TYPE_CLI_OCTEON = 0x1, 
+    MSG_TYPE_CLI_OCTEON = 0x1,
     MSG_TYPE_CLI_DEBUG = 0x2,
     MSG_TYPE_CLI_LOG = 0x3,
     MSG_TYPE_CLI_SNMP = 0x4,
 } msg_type_e;
 
 
-typedef enum _msg_code_e { 
+typedef enum _msg_code_e {
     MSG_CODE_START = 0,
-    
+
     MSG_CODE_SHOW_TEST_COMMAND = 0x101,
     MSG_CODE_SHOW_TEST_COMMAND_ACK,
 
@@ -174,7 +174,7 @@ typedef enum _msg_code_e {
 
     MSG_CODE_COMMIT_ACL_RULE,
     MSG_CODE_COMMIT_ACL_RULE_ACK,
-    
+
 }msg_code_e;
 
 

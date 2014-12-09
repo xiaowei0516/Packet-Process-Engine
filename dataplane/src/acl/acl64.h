@@ -8,7 +8,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include "inttypes.h"
-
+#include "acl_rule.h"
 
 /*-----------------------------------------------------------------------------
  *  constant
@@ -26,26 +26,20 @@
 
 
 
-/* for bitmap */
-#define MAXFILTERS  1000//65536 /* support 64K rules */   
-         
-
-
 /*-----------------------------------------------------------------------------
  *  structure
  *-----------------------------------------------------------------------------*/
-struct FILTER                       
+struct FILTER
 {
-    uint32_t cost;      
     uint64_t dim[DIM][2];
-    uint8_t act;
-	uint32_t  rule_id;
+    uint8_t  action;
+    int32_t  rule_id;
 };
 
 struct FILTSET
 {
-    uint32_t    numFilters; 
-    struct FILTER   filtArr[MAXFILTERS];
+    uint32_t    numFilters;
+    struct FILTER   filtArr[RULE_ENTRY_MAX];
 };
 
 
@@ -55,6 +49,8 @@ struct FILTSET
 typedef struct rule_s
 {
     uint32_t    pri;
+    uint8_t     action;
+    uint32_t    rule_id;
     uint64_t    range[DIM][2];
 } rule_t;
 
@@ -94,7 +90,7 @@ int BuildHSTree(rule_set_t* ruleset, hs_node_t* node, unsigned int depth); /* ma
 int SegPointCompare(const void * a, const void * b);
 
 /* lookup hyper-split-tree */
-extern int LookupHSTree(uint64_t packet[DIM], rule_set_t* ruleset,hs_node_t* root);
+extern int LookupHSTree(uint64_t packet[DIM], rule_set_t* ruleset,hs_node_t* root, hs_node_t **hitnode);
 extern void ReadMACRange(uint8_t *mac, uint64_t *MACrange);
 extern void ReadIPRange(uint32_t ipnet, uint32_t ipmask, uint64_t* IPranges, uint64_t* IPrangee);
 extern void ReadPort(uint16_t sport_start, uint16_t sport_end, uint64_t* from, uint64_t* to);

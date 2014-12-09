@@ -1,5 +1,5 @@
 /***********************license start***************
- * Copyright (c) 2003-2010  Cavium Inc.y (support@cavium.com). All rights 
+ * Copyright (c) 2003-2010  Cavium Inc.y (support@cavium.com). All rights
  * reserved.
  *
  *
@@ -18,14 +18,14 @@
  *   * Neither the name of Cavium Inc.y nor the names of
  *     its contributors may be used to endorse or promote products
  *     derived from this software without specific prior written
- *     permission.  
+ *     permission.
 
  * This Software, including technical data, may be subject to U.S. export  control
  * laws, including the U.S. Export Administration Act and its  associated
  * regulations, and may be subject to export or import  regulations in other
- * countries. 
+ * countries.
 
- * TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS" 
+ * TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
  * AND WITH ALL FAULTS AND CAVIUM INC. MAKES NO PROMISES, REPRESENTATIONS OR
  * WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH RESPECT TO
  * THE SOFTWARE, INCLUDING ITS CONDITION, ITS CONFORMITY TO ANY REPRESENTATION OR
@@ -71,163 +71,166 @@ extern cvmx_sysinfo_t *sysinfo;
 int Sec_LowLevel_Init()
 {
 
-	OCT_CPU_Init();
+    OCT_CPU_Init();
 
-	OCT_UserApp_Init();
+    OCT_UserApp_Init();
 
-	if (cvmx_is_init_core())
-	{	/* Have one core do the hardware initialization */
-		OCT_Intercept_Port_Init();
+    if (cvmx_is_init_core())
+    {   /* Have one core do the hardware initialization */
+        OCT_Intercept_Port_Init();
 
-		if (SEC_OK != OCT_Timer_Init())
-		{
-			printf("OCT_Timer_Init fail\n");
-			return SEC_NO;
-		}
-		else
-		{
-			printf("OCT_Timer_Init ok\n");
-		}
+        if (SEC_OK != OCT_Timer_Init())
+        {
+            printf("OCT_Timer_Init fail\n");
+            return SEC_NO;
+        }
+        else
+        {
+            printf("OCT_Timer_Init ok\n");
+        }
 
-		if(SEC_OK != Mem_Pool_Init())
-		{
-			return SEC_NO;
-		}
-		printf("Mem_Pool_Init ok\n");
+        if(SEC_OK != Mem_Pool_Init())
+        {
+            return SEC_NO;
+        }
+        printf("Mem_Pool_Init ok\n");
 
-		if(SEC_OK != sos_mem_init())
-		{
-			return SEC_NO;
-		}
-		printf("sos_mem_init ok\n");
+        if(SEC_OK != sos_mem_init())
+        {
+            return SEC_NO;
+        }
+        printf("sos_mem_init ok\n");
 
-		if(SEC_OK != oct_sched_init())
-		{
-			return SEC_NO;
-		}
-		printf("oct_sched_init ok\n");
+        if(SEC_OK != oct_sched_init())
+        {
+            return SEC_NO;
+        }
+        printf("oct_sched_init ok\n");
 
-		if(SEC_OK != oct_rxtx_init())
-		{
-			return SEC_NO;
-		}
+        if(SEC_OK != oct_rxtx_init())
+        {
+            return SEC_NO;
+        }
 
-		printf("oct_rxtx_init ok\n");
+        printf("oct_rxtx_init ok\n");
 
-		wd_watchdog_init();
+        wd_watchdog_init();
 
-		printf("wd_watchdog_init ok\n");
+        printf("wd_watchdog_init ok\n");
 
-	}
+    }
 
-	OCT_RX_Group_Init();
+    OCT_RX_Group_Init();
 
-	if (!cvmx_is_init_core())
-	{
-		if(SEC_OK != Mem_Pool_Get())
-		{
-			printf("mem pool info get failed!\n");
-			return SEC_NO;
-		}
-		printf("mem pool info get ok!\n");
+    if (!cvmx_is_init_core())
+    {
+        if(SEC_OK != Mem_Pool_Get())
+        {
+            printf("mem pool info get failed!\n");
+            return SEC_NO;
+        }
+        printf("mem pool info get ok!\n");
 
-		if(SEC_OK != sos_mem_get())
-		{
-			printf("sos_mem_get failed!\n");
-			return SEC_NO;
-		}
-		printf("sos_mem_get ok!\n");
-		
-		if(SEC_OK != oct_sched_Get())
-		{
-			printf("oct_sched_Get fail\n");
-			return SEC_NO;
-		}
-		printf("oct_sched_Get ok\n");
+        if(SEC_OK != sos_mem_get())
+        {
+            printf("sos_mem_get failed!\n");
+            return SEC_NO;
+        }
+        printf("sos_mem_get ok!\n");
 
-		if(SEC_OK != oct_rxtx_get())
-		{
-			printf("oct_rxtx_get fail\n");
-			return SEC_NO;
-		}
-		printf("oct_rxtx_get ok\n");
-		
-	}
+        if(SEC_OK != oct_sched_Get())
+        {
+            printf("oct_sched_Get fail\n");
+            return SEC_NO;
+        }
+        printf("oct_sched_Get ok\n");
 
-	register_watchdog();
+        if(SEC_OK != oct_rxtx_get())
+        {
+            printf("oct_rxtx_get fail\n");
+            return SEC_NO;
+        }
+        printf("oct_rxtx_get ok\n");
 
-	return SEC_OK;
+    }
+
+    register_watchdog();
+
+    return SEC_OK;
 
 }
 
 
 int Sec_HighLevel_Init()
 {
-	mbuf_size_judge();
-	flow_item_size_judge();
+    mbuf_size_judge();
+    flow_item_size_judge();
 
-	if ( cvmx_is_init_core() )
-	{
-		
-		if(SEC_OK != Decode_PktStat_Init())
-		{
-			printf("Decode_PktStat_Init failed\n");
-			return SEC_NO;
-		}
+    if ( cvmx_is_init_core() )
+    {
 
-		printf("Decode_PktStat_Init ok\n");
+        if(SEC_OK != Decode_PktStat_Init())
+        {
+            printf("Decode_PktStat_Init failed\n");
+            return SEC_NO;
+        }
 
-		if(SEC_OK != FragModule_init())
-		{
-			printf("FragMoudle_init failed\n");
-		}
-		printf("FragModule_init ok\n");
-		
-		if(SEC_OK != FlowInit())
-		{
-			printf("FlowInit failed\n");
-			return SEC_NO;
-		}
-		printf("FlowInit ok\n");
-	}
+        printf("Decode_PktStat_Init ok\n");
 
-	cvmx_coremask_barrier_sync(&sysinfo->core_mask);
-	
-	if ( !cvmx_is_init_core() )
-	{
-		if(SEC_OK != Decode_PktStat_Get())
-		{
-			printf("Decode_PktStat_Get failed\n");
-			return SEC_NO;
-		}
+        if(SEC_OK != FragModule_init())
+        {
+            printf("FragMoudle_init failed\n");
+        }
+        printf("FragModule_init ok\n");
 
-		printf("Decode_PktStat_Get ok\n");
+        if(SEC_OK != FlowInit())
+        {
+            printf("FlowInit failed\n");
+            return SEC_NO;
+        }
+        printf("FlowInit ok\n");
 
-		if(SEC_OK != FragModuleInfo_Get())
-		{
-			printf("FragModuleInfo_Get failed\n");
-			return SEC_NO;
-		}	
+        if(SEC_OK != DP_Acl_Rule_Init())
+        {
+            printf("DP_Acl_Rule_Init failed\n");
+            return SEC_NO;
+        }
+        printf("DP_Acl_Rule_Init ok\n");
+    }
 
-		printf("FragModuleInfo_Get ok\n");
+    cvmx_coremask_barrier_sync(&sysinfo->core_mask);
 
-		if(SEC_OK != FlowInfoGet())
-		{
-			printf("FlowInfoGet failed\n");
-			return SEC_NO;
-		}	
+    if ( !cvmx_is_init_core() )
+    {
+        if(SEC_OK != Decode_PktStat_Get())
+        {
+            printf("Decode_PktStat_Get failed\n");
+            return SEC_NO;
+        }
 
-		printf("FlowInfoGet ok\n");
-	}
+        printf("Decode_PktStat_Get ok\n");
 
-	if(SEC_OK != DP_Acl_Rule_Init())
-	{
-		printf("DP_Acl_Rule_Init failed\n");
-		return SEC_NO;
-	}
-	
+        if(SEC_OK != FragModuleInfo_Get())
+        {
+            printf("FragModuleInfo_Get failed\n");
+            return SEC_NO;
+        }
 
-	return SEC_OK;
+        printf("FragModuleInfo_Get ok\n");
+
+        if(SEC_OK != FlowInfoGet())
+        {
+            printf("FlowInfoGet failed\n");
+            return SEC_NO;
+        }
+
+        printf("FlowInfoGet ok\n");
+    }
+
+
+
+
+    return SEC_OK;
 }
 
 
@@ -237,51 +240,51 @@ uint32_t global_time = 0;
 
 void mainloop()
 {
-	mbuf_t *mb;
-	int grp;
-	cvmx_wqe_t *work;
-	while(1){
+    mbuf_t *mb;
+    int grp;
+    cvmx_wqe_t *work;
+    while(1){
 
-		if(unlikely(oct_tx_entries)) {
-			oct_tx_done_check();
-		}
-		
-		work = cvmx_pow_work_request_sync(CVMX_POW_WAIT);
-		if (NULL != work)
-		{
-			grp = cvmx_wqe_get_grp(work);
+        if(unlikely(oct_tx_entries)) {
+            oct_tx_done_check();
+        }
 
-			if ( FROM_INPUT_PORT_GROUP == grp )
-			{
-				mb = (mbuf_t *)oct_rx_process_work(work);
-				if (NULL == mb)
-				{
-					continue;
-				}
-				Decode(mb);
-			}
-			else if ( TIMER_GROUP == grp )
-			{
-				global_time++;
-				watchdog_ok();
-				OCT_Timer_Thread_Process(work);
-			}
-			else if( FROM_LINUX_GROUP == grp )
-			{
-				printf("receive packet from linux!\n");
-				oct_rx_process_command(work);
-			}
-			else
-			{
-				printf("work group error %d\n", grp);
-			}
-			
-		}
-		else
-		{
-			continue;
-		}
-	}
+        work = cvmx_pow_work_request_sync(CVMX_POW_WAIT);
+        if (NULL != work)
+        {
+            grp = cvmx_wqe_get_grp(work);
+
+            if ( FROM_INPUT_PORT_GROUP == grp )
+            {
+                mb = (mbuf_t *)oct_rx_process_work(work);
+                if (NULL == mb)
+                {
+                    continue;
+                }
+                Decode(mb);
+            }
+            else if ( TIMER_GROUP == grp )
+            {
+                global_time++;
+                watchdog_ok();
+                OCT_Timer_Thread_Process(work);
+            }
+            else if( FROM_LINUX_GROUP == grp )
+            {
+                printf("receive packet from linux!\n");
+                oct_rx_process_command(work);
+            }
+            else
+            {
+                printf("work group error %d\n", grp);
+            }
+
+        }
+        else
+        {
+            continue;
+        }
+    }
 }
 
 
@@ -295,29 +298,29 @@ void mainloop()
  */
 int main(int argc, char *argv[])
 {
-    
+
     if(SEC_OK != Sec_LowLevel_Init())
-	{
-		printf("sec lowlevel init err!\n");
-		exit(0);
-	}
-	else
-	{
-		printf("sec lowlevel init ok!\n");
-	}
+    {
+        printf("sec lowlevel init err!\n");
+        exit(0);
+    }
+    else
+    {
+        printf("sec lowlevel init ok!\n");
+    }
 
-	if(SEC_OK != Sec_HighLevel_Init())
-	{
-		printf("sec HighLevel init err!\n");
-		exit(0);
-	}
-	else
-	{
-		printf("sec HighLevel init ok!\n");
-	}
+    if(SEC_OK != Sec_HighLevel_Init())
+    {
+        printf("sec HighLevel init err!\n");
+        exit(0);
+    }
+    else
+    {
+        printf("sec HighLevel init ok!\n");
+    }
 
-	mainloop();
-	
+    mainloop();
+
 
     return 0;
 }
@@ -335,8 +338,8 @@ int old_main(int argc, char *argv[])
     /* Have one core do the hardware initialization */
     if (cvmx_is_init_core())
     {
-	if (argc > 1)
-	    port_override = strtol(argv[1], NULL, 0);
+    if (argc > 1)
+        port_override = strtol(argv[1], NULL, 0);
 
         printf("\n\nLoad the Linux ethernet driver with:\n"
                "\t $ modprobe octeon-ethernet\n"
@@ -350,9 +353,9 @@ int old_main(int argc, char *argv[])
             ipd_reg.u64 = cvmx_read_csr(CVMX_IPD_CTL_STATUS);
         } while (!ipd_reg.s.ipd_en);
 
-	/* Wait a second for things to really get started. */
+    /* Wait a second for things to really get started. */
         if (cvmx_sysinfo_get()->board_type != CVMX_BOARD_TYPE_SIM)
-	    cvmx_wait_usec(1000000);
+        cvmx_wait_usec(1000000);
 #if CVMX_PKO_USE_FAU_FOR_OUTPUT_QUEUES
         #error Linux-filter cannot be built with CVMX_PKO_USE_FAU_FOR_OUTPUT_QUEUES
 #endif
@@ -364,53 +367,53 @@ int old_main(int argc, char *argv[])
             /* Choose interface that is enabled and in RGMII mode. */
             mode.u64 = cvmx_read_csr(CVMX_GMXX_INF_MODE(0));
             if (mode.s.en && mode.s.type == 0) {
-	        /* Use interface 0 */
-	        intercept_port = 0;
+            /* Use interface 0 */
+            intercept_port = 0;
             } else {
-	        /* Use interface 1 */
-	        intercept_port = 16;
+            /* Use interface 1 */
+            intercept_port = 16;
             }
         }
 
-	/* Their is no interface 0 on nic_xle_4g card, use interface 1. */
-	if (cvmx_sysinfo_get()->board_type == CVMX_BOARD_TYPE_NIC_XLE_4G)
-	    intercept_port = 16;
+    /* Their is no interface 0 on nic_xle_4g card, use interface 1. */
+    if (cvmx_sysinfo_get()->board_type == CVMX_BOARD_TYPE_NIC_XLE_4G)
+        intercept_port = 16;
 
-	if (port_override > 0)
-	    intercept_port = port_override;
+    if (port_override > 0)
+        intercept_port = port_override;
 
-	__cvmx_helper_init_port_valid();
+    __cvmx_helper_init_port_valid();
 
-	__cvmx_import_app_config_from_named_block(CVMX_APP_CONFIG);
+    __cvmx_import_app_config_from_named_block(CVMX_APP_CONFIG);
 
-	__cvmx_helper_init_port_config_data_local();
+    __cvmx_helper_init_port_config_data_local();
 
-	wqe_pool = cvmx_fpa_get_wqe_pool();
+    wqe_pool = cvmx_fpa_get_wqe_pool();
 
-	if (octeon_has_feature(OCTEON_FEATURE_PKND)) {
-	    cvmx_pip_prt_tagx_t tag_config;
-	    cvmx_gmxx_prtx_cfg_t prt_cfg;
-	    int pkind;
-	    int iface = (intercept_port >> 8) - 8;
-	    int iport = (intercept_port >> 4) & 0xf;
-	    
-	    if (iface < 0)
-		iface = 0;
+    if (octeon_has_feature(OCTEON_FEATURE_PKND)) {
+        cvmx_pip_prt_tagx_t tag_config;
+        cvmx_gmxx_prtx_cfg_t prt_cfg;
+        int pkind;
+        int iface = (intercept_port >> 8) - 8;
+        int iport = (intercept_port >> 4) & 0xf;
 
-	    prt_cfg.u64 = cvmx_read_csr(CVMX_GMXX_PRTX_CFG(iport, iface));
-	    pkind = prt_cfg.s.pknd;
+        if (iface < 0)
+        iface = 0;
 
-	    tag_config.u64 = cvmx_read_csr(CVMX_PIP_PRT_TAGX(pkind));
-	    tag_config.s.grp = FROM_INPUT_PORT_GROUP & 0xf;
-	    tag_config.s.grp_msb = (FROM_INPUT_PORT_GROUP >> 4) & 3;
-	    cvmx_write_csr(CVMX_PIP_PRT_TAGX(pkind), tag_config.u64);
-	} else {
-	    /* Change the group for only the port we're interested in */
-	    cvmx_pip_port_tag_cfg_t tag_config;
-	    tag_config.u64 = cvmx_read_csr(CVMX_PIP_PRT_TAGX(intercept_port));
-	    tag_config.s.grp = FROM_INPUT_PORT_GROUP;
-	    cvmx_write_csr(CVMX_PIP_PRT_TAGX(intercept_port), tag_config.u64);
-	}
+        prt_cfg.u64 = cvmx_read_csr(CVMX_GMXX_PRTX_CFG(iport, iface));
+        pkind = prt_cfg.s.pknd;
+
+        tag_config.u64 = cvmx_read_csr(CVMX_PIP_PRT_TAGX(pkind));
+        tag_config.s.grp = FROM_INPUT_PORT_GROUP & 0xf;
+        tag_config.s.grp_msb = (FROM_INPUT_PORT_GROUP >> 4) & 3;
+        cvmx_write_csr(CVMX_PIP_PRT_TAGX(pkind), tag_config.u64);
+    } else {
+        /* Change the group for only the port we're interested in */
+        cvmx_pip_port_tag_cfg_t tag_config;
+        tag_config.u64 = cvmx_read_csr(CVMX_PIP_PRT_TAGX(intercept_port));
+        tag_config.s.grp = FROM_INPUT_PORT_GROUP;
+        cvmx_write_csr(CVMX_PIP_PRT_TAGX(intercept_port), tag_config.u64);
+    }
         /* We need to call cvmx_cmd_queue_initialize() to get the pointer to
             the named block. The queues are already setup by the ethernet
             driver, so we don't actually need to setup a queue. Pass some
@@ -459,7 +462,7 @@ int old_main(int argc, char *argv[])
         if (work->word2.s.rcv_error)
         {
             /* Work has error, so drop */
-	    printf("error is %d\n", work->word2.s.rcv_error);
+        printf("error is %d\n", work->word2.s.rcv_error);
             cvmx_helper_dump_packet(work);
             cvmx_helper_free_packet_data(work);
             cvmx_fpa_free(work, wqe_pool, 0);
@@ -506,7 +509,7 @@ int old_main(int argc, char *argv[])
         {
             printf("Received %u byte packet. Sending to Linux.\n", cvmx_wqe_get_len(work));
 
-	    	cvmx_helper_dump_packet(work);
+            cvmx_helper_dump_packet(work);
             cvmx_wqe_set_port(work, 0);
 #ifdef __linux__
             /* If we're running under Linux userspace we can't desched since

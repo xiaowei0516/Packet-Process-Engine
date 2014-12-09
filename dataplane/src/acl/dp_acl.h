@@ -8,9 +8,17 @@
 #include "mbuf.h"
 
 
+
+
+
+
+#define DP_ACL_RULELIST_NAME "DP_ACL_RULELIST"
+
+
 extern rule_list_t *rule_list;
 
-extern unit_tree g_acltree;
+extern CVMX_SHARED unit_tree g_acltree;
+
 extern uint32_t gWstDepth;
 extern uint32_t gAvgDepth;
 extern uint32_t gChildCount;
@@ -18,10 +26,8 @@ extern uint32_t gNumTreeNode;
 extern uint32_t gNumLeafNode;
 
 extern uint32_t DP_Acl_Rule_Init();
-
-extern uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node);
+extern uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node);
 extern bool firewall_pass_rule(mbuf_t* p);
-
 extern uint32_t DP_Acl_Lookup(mbuf_t *mb);
 
 #endif

@@ -5,17 +5,17 @@
 #include <mbuf.h>
 
 
-
+CVMX_SHARED uint32_t dp_acl_action_default = ACL_RULE_ACTION_DROP;
 
 rule_list_t *rule_list;
 
-unit_tree g_acltree;
+CVMX_SHARED unit_tree g_acltree;
 
 
 uint32_t DP_Acl_Rule_Init()
 {
     int fd;
-    
+
     fd = shm_open(SHM_RULE_LIST_NAME, O_RDWR, 0);
 
     if (fd < 0) {
@@ -27,24 +27,76 @@ uint32_t DP_Acl_Rule_Init()
     //  printf("Failed to shm_unlink shm_name");
 
     ftruncate(fd, sizeof(rule_list_t));
-        
-    
+
+
     void *ptr = mmap(NULL, sizeof(rule_list_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (ptr == NULL) 
+    if (ptr == NULL)
     {
         printf("Failed to setup rule list (mmap copy)");
         return SEC_NO;
     }
     rule_list = (rule_list_t *)ptr;
 
+
+    ptr = (void *)cvmx_bootmem_alloc_named((RULE_ENTRY_MAX + 1) * sizeof(rule_t), 128, DP_ACL_RULELIST_NAME);
+    if(NULL == ptr)
+    {
+        return SEC_NO;
+    }
+
+    memset(ptr, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
+
+
+    g_acltree.TreeSet.num = 0;
+    g_acltree.TreeSet.ruleList = (rule_t *)ptr;
+
+
     return SEC_OK;
-    
+
 }
 
-uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
+
+void DP_Acl_Add_GuardRule(uint32_t id, rule_t* ruleList)
+{
+    printf("guard rule id is %d\n", id);
+
+    ruleList->pri = id;
+    ruleList->action = dp_acl_action_default;
+    ruleList->rule_id = RULE_ENTRY_MAX;
+
+    ruleList->range[0][0] = 0;
+    ruleList->range[0][1] = 0xffffffffffff;
+    ruleList->range[1][0] = 0;
+    ruleList->range[1][1] = 0xffffffffffff;
+    ruleList->range[2][0] = 0;
+    ruleList->range[2][1] = 0xffffffff;
+    ruleList->range[3][0] = 0;
+    ruleList->range[3][1] = 0xffffffff;
+    ruleList->range[4][0] = 0;
+    ruleList->range[4][1] = 0xffff;
+    ruleList->range[5][0] = 0;
+    ruleList->range[5][1] = 0xffff;
+    ruleList->range[6][0] = 0;
+    ruleList->range[6][1] = 0xff;
+
+}
+
+
+
+uint32_t DP_Acl_Rule_Clean(rule_set_t* ruleset, hs_node_t* node)
+{
+    ruleset->num = 0;
+    memset(ruleset->ruleList, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
+    //FreeRootNode(node);
+
+    return SEC_OK;
+}
+
+
+uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
 {
     uint32_t i,j;
-    uint32_t count = 0;
+
     struct FILTER *tempfilt,tempfilt1;
     tempfilt = &tempfilt1;
 
@@ -53,19 +105,18 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
         printf("\nwrong parameters\n");
         return SEC_NO;
     }
-    
+
     struct FILTSET* filtset = (struct FILTSET*)malloc(sizeof(struct FILTSET));
     if(NULL == filtset)
     {
         return SEC_NO;
     }
-   
-    memset(filtset, 0, sizeof(struct FILTSET));
-    
-    //FreeRuleSet(ruleset);
-    //FreeRootNode(node);
 
-    
+    memset(filtset, 0, sizeof(struct FILTSET));
+
+    DP_Acl_Rule_Clean(ruleset, node);
+
+
     for( i = 0; i < RULE_ENTRY_MAX; i++ )
     {
         if(rule_list->rule_entry[i].entry_status == RULE_ENTRY_STATUS_FREE)
@@ -73,79 +124,71 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
             continue;
         }
 
-        memset(tempfilt->dim, 0, DIM*2*sizeof(uint32_t *));
+        memset(tempfilt->dim, 0, DIM * 2 * sizeof(uint64_t));
 
-        //tempfilt->action = (unsigned int)rule_list->rule_entry[i].rule_tuple.action;
- 
-        ReadMACRange(rule_list->rule_entry[i].rule_tuple.smac, tempfilt->dim[0]); /*0 SMAC from to*/
-        ReadMACRange(rule_list->rule_entry[i].rule_tuple.dmac, tempfilt->dim[1]); /*1 DMAC from to*/
-        
-        ReadIPRange(rule_list->rule_entry[i].rule_tuple.sip,rule_list->rule_entry[i].rule_tuple.sip_mask, &tempfilt->dim[2][0], &tempfilt->dim[2][1]);/*2 SIP from to*/
-        ReadIPRange(rule_list->rule_entry[i].rule_tuple.dip,rule_list->rule_entry[i].rule_tuple.dip_mask, &tempfilt->dim[3][0], &tempfilt->dim[3][1]);/*3 DIP from to*/  
+        tempfilt->action = (unsigned int)rule_list->rule_entry[i].rule_tuple.action;
+        tempfilt->rule_id = i;
 
-        ReadPort(rule_list->rule_entry[i].rule_tuple.sport_start, 
-            rule_list->rule_entry[i].rule_tuple.sport_end, 
+        /*0 SMAC from to*/
+        ReadMACRange(rule_list->rule_entry[i].rule_tuple.smac, tempfilt->dim[0]);
+
+        /*1 DMAC from to*/
+        ReadMACRange(rule_list->rule_entry[i].rule_tuple.dmac, tempfilt->dim[1]);
+
+        /*2 SIP from to*/
+        ReadIPRange(rule_list->rule_entry[i].rule_tuple.sip,rule_list->rule_entry[i].rule_tuple.sip_mask, &tempfilt->dim[2][0], &tempfilt->dim[2][1]);
+
+        /*3 DIP from to*/
+        ReadIPRange(rule_list->rule_entry[i].rule_tuple.dip,rule_list->rule_entry[i].rule_tuple.dip_mask, &tempfilt->dim[3][0], &tempfilt->dim[3][1]);
+
+        /*4 SPORT from to*/
+        ReadPort(rule_list->rule_entry[i].rule_tuple.sport_start,
+            rule_list->rule_entry[i].rule_tuple.sport_end,
             &(tempfilt->dim[4][0]),
-            &(tempfilt->dim[4][1]));    /*4 SPORT from to*/ 
+            &(tempfilt->dim[4][1]));
 
-        
-        ReadPort(rule_list->rule_entry[i].rule_tuple.dport_start, 
+        /*5 DPORT  from to*/
+        ReadPort(rule_list->rule_entry[i].rule_tuple.dport_start,
             rule_list->rule_entry[i].rule_tuple.dport_end,
             &(tempfilt->dim[5][0]),
-            &(tempfilt->dim[5][1]));   /*5 DPORT  from to*/
+            &(tempfilt->dim[5][1]));
 
+        /*6 PROTO  from to*/
         ReadProto(rule_list->rule_entry[i].rule_tuple.protocol_start,
             rule_list->rule_entry[i].rule_tuple.protocol_end,
             &(tempfilt->dim[6][0]),
-            &(tempfilt->dim[6][1]));   /*6 PROTO  from to*/
+            &(tempfilt->dim[6][1]));
 
         memcpy(&(filtset->filtArr[filtset->numFilters]), tempfilt, sizeof(struct FILTER));
-            
+
         filtset->numFilters++;
-        count++;
+
     }
-    
+
     ruleset->num = filtset->numFilters;
-    ruleset->ruleList = (rule_t *) malloc((ruleset->num + 1) * sizeof(rule_t));
-    
     memset(ruleset->ruleList, 0, (ruleset->num + 1) * sizeof(rule_t));
 
-    for (i = 0; i < ruleset->num; i++) 
+    for (i = 0; i < ruleset->num; i++)
     {
         ruleset->ruleList[i].pri = i;
-        for (j = 0; j < DIM; j++) 
+        ruleset->ruleList[i].action = filtset->filtArr[i].action;
+        ruleset->ruleList[i].rule_id = filtset->filtArr[i].rule_id;
+        for (j = 0; j < DIM; j++)
         {
             ruleset->ruleList[i].range[j][0] = filtset->filtArr[i].dim[j][0];
             ruleset->ruleList[i].range[j][1] = filtset->filtArr[i].dim[j][1];
         }
     }
 
-    printf("\n>>number of rules loaded  %d\n", ruleset->num);
+    printf("number of rules loaded  %d\n", ruleset->num);
 
-    printf("gard rule id is %d\n", ruleset->num);
-    ruleset->ruleList[ruleset->num].pri = ruleset->num;
-
-    ruleset->ruleList[ruleset->num].range[0][0] = 0;
-    ruleset->ruleList[ruleset->num].range[0][1] = 0xffffffffffff;
-    ruleset->ruleList[ruleset->num].range[1][0] = 0;
-    ruleset->ruleList[ruleset->num].range[1][1] = 0xffffffffffff;
-    ruleset->ruleList[ruleset->num].range[2][0] = 0;
-    ruleset->ruleList[ruleset->num].range[2][1] = 0xffffffff;
-    ruleset->ruleList[ruleset->num].range[3][0] = 0;
-    ruleset->ruleList[ruleset->num].range[3][1] = 0xffffffff;
-    ruleset->ruleList[ruleset->num].range[4][0] = 0;
-    ruleset->ruleList[ruleset->num].range[4][1] = 0xffff;
-    ruleset->ruleList[ruleset->num].range[5][0] = 0;
-    ruleset->ruleList[ruleset->num].range[5][1] = 0xffff;
-    ruleset->ruleList[ruleset->num].range[6][0] = 0;
-    ruleset->ruleList[ruleset->num].range[6][1] = 0xff;
-
+    DP_Acl_Add_GuardRule(ruleset->num, &ruleset->ruleList[ruleset->num]);
     ruleset->num += 1;
-    
+
     uint32_t ruleNum;
-    for (ruleNum = 0; ruleNum < ruleset->num; ruleNum ++) 
+    for (ruleNum = 0; ruleNum < ruleset->num; ruleNum ++)
     {
-        printf("\n>> Rule%d: [%lx %lx] [%lx %lx] [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx]\n", ruleNum,
+        printf("\nRule%d: [%lx %lx] [%lx %lx] [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx]\n", ruleNum,
             ruleset->ruleList[ruleNum].range[0][0], ruleset->ruleList[ruleNum].range[0][1],
             ruleset->ruleList[ruleNum].range[1][0], ruleset->ruleList[ruleNum].range[1][1],
             ruleset->ruleList[ruleNum].range[2][0], ruleset->ruleList[ruleNum].range[2][1],
@@ -155,14 +198,12 @@ uint32_t load_rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t* node)
             ruleset->ruleList[ruleNum].range[6][0], ruleset->ruleList[ruleNum].range[6][1]);
     }
 
-   
-
     if(BuildHSTree(ruleset,node,0) != 1)
     {
         free(filtset);
         return SEC_NO;
     }
-   
+
     free(filtset);
     return SEC_OK;
 }
@@ -177,12 +218,13 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     int i;
     rule_set_t* ruleset;
     hs_node_t* root;
+    hs_node_t*  hit_node;
 
     for(i = 0; i < 6; i++)
     {
         z[i] = mb->eth_src[i];
     }
-    
+
     x  = z[0] << 40;
     x += z[1] << 32;
     x += z[2] << 24;
@@ -194,15 +236,15 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     {
         z[i] = mb->eth_dst[i];
     }
-    
+
     y  = z[0] << 40;
     y += z[1] << 32;
     y += z[2] << 24;
     y += z[3] << 16;
     y += z[4] << 8;
-    y += z[5]; 
-    
-    
+    y += z[5];
+
+
     packet[0] = x;
     packet[1] = y;
     packet[2] = mb->ipv4.sip;
@@ -214,7 +256,52 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     ruleset = &(g_acltree.TreeSet);
     root = &(g_acltree.TreeNode);
 
-    LookupHSTree(packet, ruleset, root);
+    LookupHSTree(packet, ruleset, root, &hit_node);
+
+
+    printf("\n>>LOOKUP RESULT");
+
+    printf("\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
+    packet[0], packet[0],
+    packet[1], packet[1],
+    packet[2], packet[2],
+    packet[3], packet[3],
+    packet[4], packet[4],
+    packet[5], packet[5],
+    packet[6], packet[6]);
+
+    printf("\nnode->thresh: ""%" PRId64 "\n",  hit_node->thresh);
+
+    if(hit_node->thresh == ruleset->num - 1)
+    {
+        printf("\n hit gard rule\n");
+    }
+    else
+    {
+
+        printf("\n>>hit Rule%ld: [%8lx %8lx] [%8lx %8lx] [%8lx %8lx], [%8lx %8lx], [%5lu %5lu], [%5lu %5lu], [%2lx %2lx]\n", hit_node->thresh+1,
+            ruleset->ruleList[hit_node->thresh].range[0][0], ruleset->ruleList[hit_node->thresh].range[0][1],
+            ruleset->ruleList[hit_node->thresh].range[1][0], ruleset->ruleList[hit_node->thresh].range[1][1],
+            ruleset->ruleList[hit_node->thresh].range[2][0], ruleset->ruleList[hit_node->thresh].range[2][1],
+            ruleset->ruleList[hit_node->thresh].range[3][0], ruleset->ruleList[hit_node->thresh].range[3][1],
+            ruleset->ruleList[hit_node->thresh].range[4][0], ruleset->ruleList[hit_node->thresh].range[4][1],
+            ruleset->ruleList[hit_node->thresh].range[5][0], ruleset->ruleList[hit_node->thresh].range[5][1],
+            ruleset->ruleList[hit_node->thresh].range[6][0], ruleset->ruleList[hit_node->thresh].range[6][1]);
+
+        printf("hit Rule id is %d\n", ruleset->ruleList[hit_node->thresh].rule_id);
+        if(ruleset->ruleList[hit_node->thresh].action == ACL_RULE_ACTION_FW)
+        {
+            printf("hit Rule action is fw\n");
+        }
+        else if(ruleset->ruleList[hit_node->thresh].action == ACL_RULE_ACTION_DROP)
+        {
+            printf("hit Rule action is drop\n");
+        }
+        else
+        {
+            printf("hit Rule action is unknow action\n");
+        }
+    }
 
     return SEC_OK;
 }

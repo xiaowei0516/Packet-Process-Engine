@@ -24,7 +24,7 @@ void oct_send_response(cvmx_wqe_t *work, uint16_t opcode, void *data, uint32_t s
     cvmx_wqe_set_len(work, work->packet_ptr.s.size);
     cvmx_wqe_set_port(work, 0);
     cvmx_wqe_set_grp(work, TO_LINUX_GROUP);
-    
+
     cvmx_pow_work_submit(work, work->word1.tag, work->word1.tag_type, cvmx_wqe_get_qos(work), TO_LINUX_GROUP);
 }
 
@@ -32,14 +32,14 @@ uint16_t oct_rx_command_get(cvmx_wqe_t *work)
 {
     uint8_t *data;
     rpc_msg_t *rpcmsg;
-    
+
     if(cvmx_wqe_get_bufs(work))
-    { 
+    {
         data = cvmx_phys_to_ptr(work->packet_ptr.s.addr);
         if(NULL == data)
             return COMMAND_INVALID;
-    } 
-    else 
+    }
+    else
     {
         return COMMAND_INVALID;
     }
@@ -75,19 +75,19 @@ void dp_show_pkt_stat(cvmx_wqe_t *wq, void *data)
     len = sprintf((void *)ptr, "packet statistic:\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "----------------------------------\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "recv_count:\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "----------------\n");
     ptr += len;
     totallen += len;
@@ -136,15 +136,15 @@ void dp_show_pkt_stat(cvmx_wqe_t *wq, void *data)
     ptr += len;
     totallen += len;
 
-    
+
     len = sprintf((void *)ptr, "\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "rx_stat:\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "----------------\n");
     ptr += len;
     totallen += len;
@@ -183,11 +183,11 @@ void dp_show_pkt_stat(cvmx_wqe_t *wq, void *data)
     ptr += len;
     totallen += len;
 
-    
+
     len = sprintf((void *)ptr, "\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "ether_stat:\n");
     ptr += len;
     totallen += len;
@@ -225,9 +225,9 @@ void dp_show_pkt_stat(cvmx_wqe_t *wq, void *data)
     len = sprintf((void *)ptr, "rx_ok: %ld\n", x);
     ptr += len;
     totallen += len;
-    
+
     printf("total len is %d\n",totallen);
-    
+
     oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, totallen);
 }
 
@@ -250,7 +250,7 @@ void dp_show_mem_pool(cvmx_wqe_t *wq, void *data)
     len = sprintf((void *)ptr, "----------------\n");
     ptr += len;
     totallen += len;
-    
+
     len = sprintf((void *)ptr, "small pool(%d bytes):\n", MEM_POOL_SMALL_BUFFER_SIZE);
     ptr += len;
     totallen += len;
@@ -277,7 +277,7 @@ void dp_show_mem_pool(cvmx_wqe_t *wq, void *data)
     len = sprintf((void *)ptr, "total slice num %d.\n", MEM_POOL_LARGE_BUFFER_NUM);
     ptr += len;
     totallen += len;
-    
+
     for(i = 0; i < MEM_POOL_INTERNAL_NUM; i++)
     {
         len = sprintf((void *)ptr, "pool %d:  free num %d(%d)\n", i, mem_pool[MEM_POOL_ID_LARGE_BUFFER]->mpc.msc[i].freenum, MEM_POOL_SMALL_BUFFER_NUM/MEM_POOL_INTERNAL_NUM);
@@ -311,9 +311,9 @@ void dp_show_mem_pool(cvmx_wqe_t *wq, void *data)
     totallen += len;
 
     printf("total len is %d\n",totallen);
-    
+
     oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, totallen);
-    
+
 }
 
 void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
@@ -326,12 +326,12 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
 
     ptr = (uint8_t *)&out;
 
-    if (SEC_OK != load_rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode)))
+    if (SEC_OK != DP_Acl_Load_Rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode)))
     {
         len = sprintf((void *)ptr, "commit failed\n");
         ptr += len;
         totallen += len;
-        
+
     }
     else
     {
@@ -341,7 +341,7 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
         printf("\nnumber of tree nodes: %d\n",gNumTreeNode);
         printf("\nnumber of leaf nodes: %d\n",gNumLeafNode);
         printf("\ntotal mem: %d(KB)\n",((gNumTreeNode*8)>>10) + ((gNumLeafNode*8)>>10));
-        
+
         printf("\nfinished\n");
 
         len = sprintf((void *)ptr, "commit ok\n");
@@ -349,11 +349,11 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
         totallen += len;
     }
 
-    
+
     printf("total len is %d\n",totallen);
-    
+
     oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, totallen);
-} 
+}
 
 
 void oct_rx_process_command(cvmx_wqe_t *wq)
@@ -367,7 +367,7 @@ void oct_rx_process_command(cvmx_wqe_t *wq)
     }
 
     data = cvmx_phys_to_ptr(wq->packet_ptr.s.addr);
-    
+
     switch(opcode)
     {
         case COMMAND_SHOW_BUILD_TIME:
