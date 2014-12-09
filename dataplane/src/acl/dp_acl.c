@@ -12,6 +12,34 @@ rule_list_t *rule_list;
 CVMX_SHARED unit_tree g_acltree;
 
 
+
+
+
+uint32_t DP_Acl_Tree_init()
+{
+    void *ptr;
+
+    ptr = (void *)cvmx_bootmem_alloc_named((RULE_ENTRY_MAX + 1) * sizeof(rule_t), 128, DP_ACL_RULELIST_NAME);
+    if(NULL == ptr)
+    {
+        return SEC_NO;
+    }
+
+    memset(ptr, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
+
+    g_acltree.TreeSet.num = 0;
+    g_acltree.TreeSet.ruleList = (rule_t *)ptr;
+
+    memset((void *)&g_acltree.TreeNode, 0, sizeof(hs_node_t));
+
+    return SEC_OK;
+}
+
+
+
+
+
+
 uint32_t DP_Acl_Rule_Init()
 {
     int fd;
@@ -35,20 +63,14 @@ uint32_t DP_Acl_Rule_Init()
         printf("Failed to setup rule list (mmap copy)");
         return SEC_NO;
     }
+
     rule_list = (rule_list_t *)ptr;
 
 
-    ptr = (void *)cvmx_bootmem_alloc_named((RULE_ENTRY_MAX + 1) * sizeof(rule_t), 128, DP_ACL_RULELIST_NAME);
-    if(NULL == ptr)
+    if(SEC_OK != DP_Acl_Tree_init())
     {
         return SEC_NO;
     }
-
-    memset(ptr, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
-
-
-    g_acltree.TreeSet.num = 0;
-    g_acltree.TreeSet.ruleList = (rule_t *)ptr;
 
 
     return SEC_OK;
@@ -220,6 +242,13 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     hs_node_t* root;
     hs_node_t*  hit_node;
 
+    if(g_acltree.TreeSet.num == 0)
+    {
+        printf("not any rule exist\n");
+        return ACL_RULE_ACTION_DROP;
+    }
+
+
     for(i = 0; i < 6; i++)
     {
         z[i] = mb->eth_src[i];
@@ -275,6 +304,7 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     if(hit_node->thresh == ruleset->num - 1)
     {
         printf("\n hit gard rule\n");
+        return ruleset->ruleList[hit_node->thresh].action;
     }
     else
     {
@@ -292,14 +322,17 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
         if(ruleset->ruleList[hit_node->thresh].action == ACL_RULE_ACTION_FW)
         {
             printf("hit Rule action is fw\n");
+            return ACL_RULE_ACTION_FW;
         }
         else if(ruleset->ruleList[hit_node->thresh].action == ACL_RULE_ACTION_DROP)
         {
             printf("hit Rule action is drop\n");
+            return ACL_RULE_ACTION_DROP;
         }
         else
         {
             printf("hit Rule action is unknow action\n");
+            return ACL_RULE_ACTION_DROP;
         }
     }
 

@@ -29,6 +29,24 @@ int SegPointCompare (const void * a, const void * b)
         return 1;
 }
 
+
+void release_ruleset(rule_set_t* childRuleSet)
+{
+    if(childRuleSet->ruleList)
+    {
+        free(childRuleSet->ruleList);
+    }
+
+    if(childRuleSet)
+    {
+        free(childRuleSet);
+    }
+}
+
+
+
+
+
 int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
 {
      /* generate segments for input filtset */
@@ -42,7 +60,7 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
     uint64_t    *tempSegPoints;
     unsigned int    *tempRuleNumList;
     float hightAvg, hightAll;
-    rule_set_t      *childRuleSet;
+    rule_set_t      *childRuleSet = NULL;
 
 #ifdef DEBUG
     /*if (depth > 10)  exit(0);*/
@@ -276,9 +294,8 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
     BuildHSTree(childRuleSet, currNode->child[0], depth+1);
 #ifndef LOOKUP
     free(currNode->child[0]);
-    free(childRuleSet->ruleList);
-    free(childRuleSet);
 #endif
+    release_ruleset(childRuleSet);
 
     /*Generate right child rule list*/
     currNode->child[1] = (hs_node_t *) malloc(sizeof(hs_node_t));
@@ -308,9 +325,8 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
     BuildHSTree(childRuleSet, currNode->child[1], depth+1);
 #ifndef LOOKUP
     free(currNode->child[1]);
-    free(childRuleSet->ruleList);
-    free(childRuleSet);
 #endif
+    release_ruleset(childRuleSet);
 
     return  SUCCESS;
 }
@@ -420,9 +436,6 @@ void ReadProto(uint8_t proto_start, uint8_t proto_end, uint64_t* from, uint64_t*
     *from = proto_start;
     *to = proto_end;
 }
-
-
-
 
 
 int LookupHSTree(uint64_t packet[DIM], rule_set_t* ruleset,hs_node_t* root, hs_node_t **hitnode)
