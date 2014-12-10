@@ -17,6 +17,8 @@
 
 
 typedef struct tag_RCP_BLOCK_ACL_RULE_TUPLE{
+    uint64_t time_start;
+    uint64_t time_end;
     uint8_t smac[6];
     uint8_t dmac[6];
     uint16_t sport_start;
@@ -29,9 +31,7 @@ typedef struct tag_RCP_BLOCK_ACL_RULE_TUPLE{
     int16_t dport_end;
     int8_t protocol_start;
     int8_t protocol_end;
-    uint64_t time_start;
-    uint64_t time_end;
-    int32_t action;
+    int16_t action;
 }__attribute__ ((__packed__)) RCP_BLOCK_ACL_RULE_TUPLE;
 
 

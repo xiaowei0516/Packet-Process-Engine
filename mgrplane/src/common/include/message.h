@@ -123,9 +123,8 @@ typedef struct tag_RCP_BLOCK_ACL_RULE_ID {
 } __attribute__ ((__packed__)) RCP_BLOCK_ACL_RULE_ID;
 
 
-typedef struct TAG_RCP_DATA_BLOCK {
+typedef struct TAG_RCP_DATA_BLOCK {//mush be 4 bytes align
     union {
-        RCP_BLOCK_IPV4_FIVE_TUPLE Ipv4FiveTuple;
         RCP_BLOCK_ACL_RULE_TUPLE  AclRuleTuple;
         RCP_BLOCK_ACL_RULE_ID   AclRuleId;
         RCP_BLOCK_RESULT ResultCode;
@@ -160,7 +159,7 @@ typedef enum _msg_code_e {
     MSG_CODE_SHOW_ACL_RULE,
     MSG_CODE_SHOW_ACL_RULE_ACK,
 
-    MSG_CODE_ADD_ACL_RULE,
+    MSG_CODE_ADD_ACL_RULE,       //0x10b
     MSG_CODE_ADD_ACL_RULE_ACK,
 
     MSG_CODE_DEL_ACL_RULE,

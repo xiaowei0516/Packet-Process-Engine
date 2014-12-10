@@ -113,7 +113,7 @@ static void _FreeRootNode(hs_node_t *rootnode, uint32_t depth)
 
     if(0 != depth && rootnode)
     {
-        free(rootnode);
+        HS_NODE_FREE(rootnode);
     }
 
     return ;
@@ -132,12 +132,12 @@ void release_ruleset(rule_set_t* childRuleSet)
 {
     if(childRuleSet->ruleList)
     {
-        HS_NODE_FREE(childRuleSet->ruleList);
+        free(childRuleSet->ruleList);
     }
 
     if(childRuleSet)
     {
-        HS_NODE_FREE(childRuleSet);
+        free(childRuleSet);
     }
 }
 

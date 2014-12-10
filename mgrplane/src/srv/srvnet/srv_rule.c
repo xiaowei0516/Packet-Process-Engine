@@ -196,23 +196,34 @@ void Rule_Save_File(FILE *fp)
     char time_s[32] = {0};
     char time_e[32] = {0};
 
+
+    fprintf(fp, "Rule Status: %s\n", rule_list->build_status? "Commit":"UnCommit");
+
     for( i = 0; i < RULE_ENTRY_MAX; i++ )
     {
         if(rule_list->rule_entry[i].entry_status == RULE_ENTRY_STATUS_FREE)
         {
             continue;
         }
+
         memset(time_s, 0, sizeof(time_s));
         memset(time_e, 0, sizeof(time_e));
+        if(rule_list->rule_entry[i].rule_tuple.time_start == 0 && rule_list->rule_entry[i].rule_tuple.time_end == 0)
+        {
+            strcpy(time_s, "any");
+            strcpy(time_e, "any");
+        }
+        else
+        {
+            p = gmtime((const time_t *)&rule_list->rule_entry[i].rule_tuple.time_start);
+            strftime(time_s, sizeof(time_s), "%Y-%m-%d %H:%M:%S", p);
 
-        p = gmtime((const time_t *)&rule_list->rule_entry[i].rule_tuple.time_start);
-        strftime(time_s, sizeof(time_s), "%Y-%m-%d %H:%M:%S", p);
-
-        p = gmtime((const time_t *)&rule_list->rule_entry[i].rule_tuple.time_end);
-        strftime(time_e, sizeof(time_e), "%Y-%m-%d %H:%M:%S", p);
+            p = gmtime((const time_t *)&rule_list->rule_entry[i].rule_tuple.time_end);
+            strftime(time_e, sizeof(time_e), "%Y-%m-%d %H:%M:%S", p);
+        }
 
         fprintf(fp,
-            "%d: smac: %u:%u:%u:%u:%u:%u,  dmac: %u:%u:%u:%u:%u:%u, sip:%x  sip_mask:%d, dip:%x  dip_mask:%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d, time_start:%s, time_end:%s\n",
+            "%d: smac: %u:%u:%u:%u:%u:%u,  dmac: %u:%u:%u:%u:%u:%u, sip:%d.%d.%d.%d/%d, dip:%d.%d.%d.%d/%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d, time_start:%s, time_end:%s, action:%s\n",
             i,
             rule_list->rule_entry[i].rule_tuple.smac[0],
             rule_list->rule_entry[i].rule_tuple.smac[1],
@@ -226,16 +237,23 @@ void Rule_Save_File(FILE *fp)
             rule_list->rule_entry[i].rule_tuple.dmac[3],
             rule_list->rule_entry[i].rule_tuple.dmac[4],
             rule_list->rule_entry[i].rule_tuple.dmac[5],
-            rule_list->rule_entry[i].rule_tuple.sip,
+            rule_list->rule_entry[i].rule_tuple.sip >> 24 & 0xff,
+            rule_list->rule_entry[i].rule_tuple.sip >> 16 & 0xff,
+            rule_list->rule_entry[i].rule_tuple.sip >> 8 & 0xff,
+            rule_list->rule_entry[i].rule_tuple.sip & 0xff,
             rule_list->rule_entry[i].rule_tuple.sip_mask,
-            rule_list->rule_entry[i].rule_tuple.dip,
+            rule_list->rule_entry[i].rule_tuple.dip >> 24 & 0xff,
+            rule_list->rule_entry[i].rule_tuple.dip >> 16 & 0xff,
+            rule_list->rule_entry[i].rule_tuple.dip >> 8 & 0xff,
+            rule_list->rule_entry[i].rule_tuple.dip & 0xff,
             rule_list->rule_entry[i].rule_tuple.dip_mask,
             rule_list->rule_entry[i].rule_tuple.sport_start,
             rule_list->rule_entry[i].rule_tuple.sport_end,
             rule_list->rule_entry[i].rule_tuple.protocol_start,
             rule_list->rule_entry[i].rule_tuple.protocol_end,
             time_s,
-            time_e);
+            time_e,
+            rule_list->rule_entry[i].rule_tuple.action? "drop":"fw");
     }
 }
 

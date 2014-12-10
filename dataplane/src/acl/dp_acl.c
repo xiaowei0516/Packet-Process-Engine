@@ -145,9 +145,6 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
 
     memset(filtset, 0, sizeof(struct FILTSET));
 
-    DP_Acl_Rule_Clean(ruleset, node);
-
-
     for( i = 0; i < RULE_ENTRY_MAX; i++ )
     {
         if(rule_list->rule_entry[i].entry_status == RULE_ENTRY_STATUS_FREE)
@@ -241,6 +238,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
     }
 
     free(filtset);
+
     return SEC_OK;
 }
 

@@ -52,21 +52,21 @@ int32_t pow_send_fn( comm_info_t *info, void *data, uint32_t size )
 {
     int32_t len;
     struct sockaddr_ll sll;
-    
+
     bzero(&sll, sizeof(sll));
     sll.sll_family = AF_PACKET;
     sll.sll_halen = 6;
     memcpy(sll.sll_addr, info->pow.mac, 6);
     sll.sll_ifindex = info->pow.ifindex;
     len = sendto( info->pow.fd, data, size, 0, (struct sockaddr *)&sll, sizeof( sll ) );
-    printf("send len is %d, %d\n", len, errno);
-    printf("errno  %d is: %s\n", errno, strerror(errno));
-    
+    //printf("send len is %d, %d\n", len, errno);
+    //printf("errno  %d is: %s\n", errno, strerror(errno));
+
     if ( len == -1 ){
-        
+
         return -1;
     }
-    
+
     if ( len < (int32_t)size ){
         return -1;
     } else {
@@ -84,7 +84,7 @@ int32_t pow_recv_fn ( comm_info_t *info, void *data, uint32_t *size )
         printf("malloc error\n");
         return -1;
     }
-    memset(_data,0,MAX_RECV_LEN); 
+    memset(_data,0,MAX_RECV_LEN);
     len = recvfrom( info->pow.fd, _data, *size, 0, NULL, NULL);
     printf("recv len is %d, %d\n", len, errno);
     printf("errno  %d is: %s\n", errno, strerror(errno));
@@ -112,15 +112,15 @@ int32_t pow_open_fn( comm_info_t *info)
     }
 
     eth_type = ETH_P;
-    
+
     __get_macaddr( "pow0", (char*)info->pow.mac );
 
     if ( ( psfd = socket( AF_PACKET, SOCK_RAW, htons( eth_type  ) ) ) < 0 ){
         return psfd;
     }
-    info->pow.fd = psfd;    
+    info->pow.fd = psfd;
     info->pow.ifindex = ifindex;
-    return 0;   
+    return 0;
 }
 
 
@@ -135,7 +135,7 @@ int32_t pow_close_fn( comm_info_t *info )
 
 
 int pow_init(void)
-{   
+{
     memset((void *)&comm_pow, 0, sizeof(comm_info_t));
 
     return pow_open_fn(&comm_pow);
