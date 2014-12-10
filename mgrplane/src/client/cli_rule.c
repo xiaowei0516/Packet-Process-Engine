@@ -3,6 +3,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+
+#define __USE_XOPEN
+#include <time.h>
+
 #include <sys/stat.h>
 
 
@@ -148,7 +152,7 @@ cparser_cmd_delete_rule_all(cparser_context_t *context)
 
 
 cparser_result_t
-cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_action
+cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_time_start_time_end_action
     (cparser_context_t *context,
             cparser_macaddr_t *smac,
             cparser_macaddr_t *dmac,
@@ -162,6 +166,8 @@ cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_d
             uint32_t *dport_end,
             uint32_t *proto_start,
             uint32_t *proto_end,
+            char **time_start,
+            char **time_end,
             char **action)
 {
     assert(context);
@@ -242,6 +248,45 @@ cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_d
 
     rcp_para.params_list.params[0].AclRuleTuple.protocol_start = *proto_start;
     rcp_para.params_list.params[0].AclRuleTuple.protocol_end = *proto_end;
+
+    if ( ( !strcmp(*time_start, "any" ) && strcmp(*time_end, "any") ) || ( strcmp(*time_start, "any" ) && !strcmp(*time_end, "any") ))
+    {
+        printf("time invalid\n");
+        return CPARSER_NOT_OK;
+    }
+
+    if( !strcmp(*time_start, "any" ) && !strcmp(*time_end, "any") )
+    {
+        rcp_para.params_list.params[0].AclRuleTuple.time_start = 0;
+        rcp_para.params_list.params[0].AclRuleTuple.time_end = 0;
+    }
+    else
+    {
+        struct tm tm_time;
+        char *ret = NULL;
+        time_t seconds;
+        ret = strptime(*time_start, "%Y-%m-%d/%H:%M:%S", &tm_time);
+        if(NULL == ret)
+        {
+            printf("invalid time format\n");
+            return CPARSER_NOT_OK;
+        }
+
+        seconds = mktime(&tm_time);
+        rcp_para.params_list.params[0].AclRuleTuple.time_start = (uint64_t)seconds;
+
+        ret = strptime(*time_end, "%Y-%m-%d/%H:%M:%S", &tm_time);
+        if(NULL == ret)
+        {
+            printf("invalid time format\n");
+            return CPARSER_NOT_OK;
+        }
+
+        seconds = mktime(&tm_time);
+        rcp_para.params_list.params[0].AclRuleTuple.time_end = (uint64_t)seconds;
+
+    }
+
 
     if (!strcmp(*action, "fw")) {
         LOG("action is fw\n");
@@ -344,7 +389,7 @@ cparser_cmd_show_rule(cparser_context_t *context)
 
 
 cparser_result_t
-cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_action
+cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_time_start_time_end_action
         (cparser_context_t *context,
             cparser_macaddr_t *smac,
             cparser_macaddr_t *dmac,
@@ -358,6 +403,8 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
             uint32_t *dport_end,
             uint32_t *proto_start,
             uint32_t *proto_end,
+            char **time_start,
+            char **time_end,
             char **action)
 {
     assert(context);
@@ -367,6 +414,7 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
     struct rcp_msg_params_s rcp_para;
     CLI_RESULT *blocks;
     int rv = 0;
+
 
     memset(&rcp_para, 0, sizeof(struct rcp_msg_params_s));
 
@@ -438,6 +486,46 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 
     rcp_para.params_list.params[0].AclRuleTuple.protocol_start = *proto_start;
     rcp_para.params_list.params[0].AclRuleTuple.protocol_end = *proto_end;
+
+
+    if ( ( !strcmp(*time_start, "any" ) && strcmp(*time_end, "any") ) || ( strcmp(*time_start, "any" ) && !strcmp(*time_end, "any") ))
+    {
+        printf("time invalid\n");
+        return CPARSER_NOT_OK;
+    }
+
+    if( !strcmp(*time_start, "any" ) && !strcmp(*time_end, "any") )
+    {
+        rcp_para.params_list.params[0].AclRuleTuple.time_start = 0;
+        rcp_para.params_list.params[0].AclRuleTuple.time_end = 0;
+    }
+    else
+    {
+        struct tm tm_time;
+        char *ret = NULL;
+        time_t seconds;
+        ret = strptime(*time_start, "%Y-%m-%d/%H:%M:%S", &tm_time);
+        if(NULL == ret)
+        {
+            printf("invalid time format\n");
+            return CPARSER_NOT_OK;
+        }
+
+        seconds = mktime(&tm_time);
+        rcp_para.params_list.params[0].AclRuleTuple.time_start = (uint64_t)seconds;
+
+        ret = strptime(*time_end, "%Y-%m-%d/%H:%M:%S", &tm_time);
+        if(NULL == ret)
+        {
+            printf("invalid time format\n");
+            return CPARSER_NOT_OK;
+        }
+
+        seconds = mktime(&tm_time);
+        rcp_para.params_list.params[0].AclRuleTuple.time_end = (uint64_t)seconds;
+
+    }
+
 
     if (!strcmp(*action, "fw")) {
         LOG("action is fw\n");

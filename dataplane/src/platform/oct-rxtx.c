@@ -1,10 +1,10 @@
 /********************************************************************************
  *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology 
+ *        Copyright (C) 2014-2015  Beijing winicssec Technology
  *        All rights reserved
  *
  *        filename :       oct-rxtx.c
- *        description :    
+ *        description :
  *
  *        created by  luoye  at  2014-11-21
  *
@@ -15,6 +15,7 @@
 #include <mbuf.h>
 #include <sec-debug.h>
 #include <oct-port.h>
+#include "oct-time.h"
 
 
 uint32_t oct_tx_entries = 0;
@@ -41,7 +42,7 @@ oct_rx_process_work(cvmx_wqe_t *wq)
     mbuf_t *m;
 
     if (wq->word2.s.rcv_error || cvmx_wqe_get_bufs(wq) > 1){
-        /* 
+        /*
           *  Work has error, so drop
           *  and now do not support jumbo packet
           */
@@ -57,7 +58,7 @@ oct_rx_process_work(cvmx_wqe_t *wq)
         STAT_RECV_ADDR_ERR;
         return NULL;
     }
-    
+
 #ifdef SEC_RXTX_DEBUG
     printf("Received %u byte packet.\n", cvmx_wqe_get_len(wq));
     printf("Processing packet\n");
@@ -70,16 +71,18 @@ oct_rx_process_work(cvmx_wqe_t *wq)
 
     m->magic_flag = MBUF_MAGIC_NUM;
     PKTBUF_SET_HW(m);
-    
+
     m->packet_ptr.u64 = wq->packet_ptr.u64;
 
     m->input_port = cvmx_wqe_get_port(wq);
-    
+
     m->pkt_totallen = cvmx_wqe_get_len(wq);
     m->pkt_ptr = pkt_virt;
 
+    m->timestamp = OCT_TIME_SECONDS_SINCE1970;
+
     cvmx_fpa_free(wq, wqe_pool, 0);
-    
+
     STAT_RECV_PC_ADD;
     STAT_RECV_PB_ADD(m->pkt_totallen);
 
@@ -96,7 +99,7 @@ void oct_tx_done_check()
     uint16_t producer;
     oct_pko_pend_tx_done_t *pend_tx_done;
     oct_softx_stat_t *oct_stx_local = oct_stx[local_cpu_id];
-    
+
     for( port = 0; port < OCT_PHY_PORT_MAX; port++ )
     {
         if(oct_stx_local->tx_done[port].tx_entries)
@@ -113,15 +116,15 @@ void oct_tx_done_check()
 
                 /*Free the packet*/
                 PACKET_DESTROY_ALL(pend_tx_done->mb);
-                
+
                 consumer = (consumer + 1) & (OCT_PKO_TX_DESC_NUM - 1);
                 oct_stx_local->tx_done[port].tx_entries--;
                 oct_tx_entries--;
             }
-            oct_stx_local->tx_done[port].consumer = consumer;   
+            oct_stx_local->tx_done[port].consumer = consumer;
         }
     }
-    
+
     return;
 }
 
@@ -162,7 +165,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
 {
     uint64_t queue;
     cvmx_pko_return_value_t send_status;
-    
+
     if(port > OCT_PHY_PORT_MAX)
     {
         printf("Send port is invalid");
@@ -201,7 +204,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
         tx_done_t *tx_done = &(oct_stx[local_cpu_id]->tx_done[port]);
         if(tx_done->tx_entries < (OCT_PKO_TX_DESC_NUM - 1))
         {
-            dont_free_cookie = oct_pend_tx_done_add(tx_done, (void *)mbuf);         
+            dont_free_cookie = oct_pend_tx_done_add(tx_done, (void *)mbuf);
         }
         else
         {
@@ -212,7 +215,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
         /*command word0*/
         cvmx_pko_command_word0_t pko_command;
         pko_command.u64 = 0;
-        
+
         pko_command.s.segs = 1;
         pko_command.s.total_bytes = mbuf->pkt_totallen;
 
@@ -240,7 +243,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
             }
 
             printf("Failed to send packet using cvmx_pko_send_packet3\n");
-            
+
             PACKET_DESTROY_ALL(mbuf);
             STAT_TX_SW_SEND_ERR;
             return;
@@ -252,7 +255,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
     }
 
     STAT_TX_SEND_OVER;
-    
+
 }
 
 
@@ -263,9 +266,9 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
 int oct_rxtx_init(void)
 {
     int i;
-    
-    void *ptr = cvmx_bootmem_alloc_named(sizeof(oct_softx_stat_t) * CPU_HW_RUNNING_MAX, 
-                                        CACHE_LINE_SIZE, 
+
+    void *ptr = cvmx_bootmem_alloc_named(sizeof(oct_softx_stat_t) * CPU_HW_RUNNING_MAX,
+                                        CACHE_LINE_SIZE,
                                         OCT_TX_DESC_NAME);
     if(NULL == ptr)
     {

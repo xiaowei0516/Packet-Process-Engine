@@ -1,10 +1,10 @@
 /********************************************************************************
  *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology 
+ *        Copyright (C) 2014-2015  Beijing winicssec Technology
  *        All rights reserved
  *
  *        filename :       mbuf.h
- *        description :    
+ *        description :
  *
  *        created by  luoye  at  2014-11-21
  *
@@ -29,49 +29,50 @@ typedef struct {
  */
 typedef struct m_buf_
 {
-    uint32_t magic_flag;         /* mbuf memory magic num*/
+    uint32_t magic_flag;         // mbuf memory magic num
 
-    uint16_t pkt_space;          /*pkt is hw or sw buffer*/
-    uint16_t pkt_totallen;             /*pkt total len*/
+    uint16_t pkt_space;          //pkt is hw or sw buffer
+    uint16_t pkt_totallen;             //pkt total len
 
-    cvmx_buf_ptr_t packet_ptr;   /*copy from wqe packet_ptr*/
+    cvmx_buf_ptr_t packet_ptr;   //copy from wqe packet_ptr
 
-    struct m_buf_ *next;         /*for cache chain*/
-    
-    void *pkt_ptr;                /*pointer to begin of packet from wqe packet_ptr*/
-    
-    void *ethh;                  /*l2 layer header*/
+    struct m_buf_ *next;         //for cache chain
+
+    void *pkt_ptr;                //pointer to begin of packet from wqe packet_ptr
+
+    void *ethh;                  //l2 layer header
     void *vlanh;
-    void *network_header;        /*network layer header*/
-    void *transport_header;      /*transport layer header*/
-    
-    uint32_t input_port;         /*input port of phy*/
-    
-    uint8_t eth_dst[6];          /*DMAC*/
-    uint8_t eth_src[6];          /*SMAC*/
-    
-    ipv4_tuple_t ipv4;           /*sip + dip*/
+    void *network_header;        //network layer header
+    void *transport_header;      //transport layer header
 
-    uint16_t  sport;             /*sport */
-    uint16_t  dport;             /*dport*/
+    uint32_t input_port;         //input port of phy
 
-    uint8_t proto;               /*protocol , now only support TCP + UDP */
-    uint8_t vlan_idx;            /*if vlan exist, set vlan_idx = 1*/
-    uint16_t payload_len;        /*L7 payload_len */
+    uint8_t eth_dst[6];          //DMAC
+    uint8_t eth_src[6];          //SMAC
 
-    uint16_t vlan_id;            /*if vlan_idx support, vlan_id*/
-    uint16_t defrag_id;  
-  
-    void *payload;            /*L7 payload pointer*/
+    ipv4_tuple_t ipv4;           //sip + dip
 
-    int frag_offset;             /*offset of ip fragment packet*/
-    int frag_len;              /*len of ip fragment packet*/
+    uint16_t  sport;             //sport
+    uint16_t  dport;             //dport
 
-    uint32_t flags;              /*features of packet*/
+    uint8_t proto;               //protocol , now only support TCP + UDP
+    uint8_t vlan_idx;            //if vlan exist, set vlan_idx = 1
+    uint16_t payload_len;        //L7 payload_len
 
-    uint32_t flow_hash;          /*hash value, used to find flow_node*/
-    void    *flow;               /*flow node*/
-    
+    uint16_t vlan_id;            //if vlan_idx support, vlan_id
+    uint16_t defrag_id;
+
+    uint64_t timestamp;          //seconds since 1970
+    void *payload;               //L7 payload pointer
+
+    int frag_offset;             //offset of ip fragment packet
+    int frag_len;                //len of ip fragment packet
+
+    uint32_t flags;              //features of packet
+
+    uint32_t flow_hash;          //hash value, used to find flow_node
+    void    *flow;               //flow node
+
 }mbuf_t;
 
 

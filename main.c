@@ -58,6 +58,7 @@
 #include <oct-init.h>
 #include <oct-rxtx.h>
 #include <oct-sched.h>
+#include <oct-time.h>
 #include <flow.h>
 #include <dp_cmd.h>
 #include <sos_malloc.h>
@@ -237,7 +238,7 @@ int Sec_HighLevel_Init()
 
 
 
-uint32_t global_time = 0;
+
 
 
 void mainloop()
@@ -267,7 +268,7 @@ void mainloop()
             }
             else if ( TIMER_GROUP == grp )
             {
-                global_time++;
+                oct_time_update();
                 watchdog_ok();
                 OCT_Timer_Thread_Process(work);
             }

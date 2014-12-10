@@ -71,8 +71,8 @@ show fpa
 // Show mem pool
 show mem pool
 
-// Set rule SMAC DMAC SIP DIP SPORT DPORT PROTOCOL TIME_START TIME_END ACTION
-add rule smac <MACADDR:smac> dmac <MACADDR:dmac> sip <IPV4ADDR:sip> mask <UINT:sip_mask> dip <IPV4ADDR:dip> mask <UINT:dip_mask> sport_start <UINT:sport_start> sport_end <UINT:sport_end> dport_start <UINT:dport_start> dport_end <UINT:dport_end> proto_start <UINT:proto_start> proto_end <UINT:proto_end> <LIST:fw,drop:action>
+// Set rule SMAC DMAC SIP DIP SPORT DPORT PROTOCOL TIME_START TIME_END %Y-%m-%d/%H:%M:%S %Y-%m-%d/%H:%M:%S ACTION
+add rule smac <MACADDR:smac> dmac <MACADDR:dmac> sip <IPV4ADDR:sip> mask <UINT:sip_mask> dip <IPV4ADDR:dip> mask <UINT:dip_mask> sport_start <UINT:sport_start> sport_end <UINT:sport_end> dport_start <UINT:dport_start> dport_end <UINT:dport_end> proto_start <UINT:proto_start> proto_end <UINT:proto_end> <STRING:time_start> <STRING:time_end> <LIST:fw,drop:action>
 
 // Show rule
 show rule
@@ -81,7 +81,7 @@ show rule
 commit rule
 
 // delete rule
-delete rule smac <MACADDR:smac> dmac <MACADDR:dmac> sip <IPV4ADDR:sip> mask <UINT:sip_mask> dip <IPV4ADDR:dip> mask <UINT:dip_mask> sport_start <UINT:sport_start> sport_end <UINT:sport_end> dport_start <UINT:dport_start> dport_end <UINT:dport_end> proto_start <UINT:proto_start> proto_end <UINT:proto_end> <LIST:fw,drop:action>
+delete rule smac <MACADDR:smac> dmac <MACADDR:dmac> sip <IPV4ADDR:sip> mask <UINT:sip_mask> dip <IPV4ADDR:dip> mask <UINT:dip_mask> sport_start <UINT:sport_start> sport_end <UINT:sport_end> dport_start <UINT:dport_start> dport_end <UINT:dport_end> proto_start <UINT:proto_start> proto_end <UINT:proto_end> <STRING:time_start> <STRING:time_end> <LIST:fw,drop:action>
 
 // delete rule all
 delete rule all

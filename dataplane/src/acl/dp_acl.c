@@ -190,6 +190,9 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
             &(tempfilt->dim[6][0]),
             &(tempfilt->dim[6][1]));
 
+        tempfilt->time_start = rule_list->rule_entry[i].rule_tuple.time_start;
+        tempfilt->time_end = rule_list->rule_entry[i].rule_tuple.time_end;
+
         memcpy(&(filtset->filtArr[filtset->numFilters]), tempfilt, sizeof(struct FILTER));
 
         filtset->numFilters++;
@@ -204,6 +207,8 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
         ruleset->ruleList[i].pri = i;
         ruleset->ruleList[i].action = filtset->filtArr[i].action;
         ruleset->ruleList[i].rule_id = filtset->filtArr[i].rule_id;
+        ruleset->ruleList[i].time_start = filtset->filtArr[i].time_start;
+        ruleset->ruleList[i].time_end = filtset->filtArr[i].time_end;
         for (j = 0; j < DIM; j++)
         {
             ruleset->ruleList[i].range[j][0] = filtset->filtArr[i].dim[j][0];
@@ -250,6 +255,7 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     rule_set_t* ruleset;
     hs_node_t* root;
     hs_node_t*  hit_node;
+    uint32_t rule_id;
 
     if(g_acltree.TreeSet.num == 0)
     {
@@ -305,11 +311,12 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     packet[6], packet[6]);
 
     printf("\nnode->thresh: ""%" PRId64 "\n",  hit_node->thresh);
+    rule_id = (uint32_t)hit_node->thresh;
 
     if(hit_node->thresh == ruleset->num - 1)
     {
         printf("\n hit gard rule\n");
-        return ruleset->ruleList[hit_node->thresh].action;
+        return ruleset->ruleList[rule_id].action;
     }
     else
     {
@@ -323,6 +330,31 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
             ruleset->ruleList[hit_node->thresh].range[5][0], ruleset->ruleList[hit_node->thresh].range[5][1],
             ruleset->ruleList[hit_node->thresh].range[6][0], ruleset->ruleList[hit_node->thresh].range[6][1]);
 
+        uint64_t timestar;
+        uint64_t timeend;
+
+        timestar = ruleset->ruleList[hit_node->thresh].time_start;
+        timeend = ruleset->ruleList[hit_node->thresh].time_end;
+
+        if(timestar == 0 && timeend == 0)
+        {
+            goto ACTION;
+        }
+        else
+        {
+            if(mb->timestamp >= timestar && mb->timestamp <= timeend)
+            {
+                goto ACTION;
+            }
+            else
+            {
+                printf("time not match, not hit\n");
+                return dp_acl_action_default;
+            }
+        }
+
+
+ACTION:
         printf("hit Rule id is %d\n", ruleset->ruleList[hit_node->thresh].rule_id);
         if(ruleset->ruleList[hit_node->thresh].action == ACL_RULE_ACTION_FW)
         {

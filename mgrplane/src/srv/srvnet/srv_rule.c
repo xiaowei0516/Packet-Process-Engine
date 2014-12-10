@@ -4,6 +4,7 @@
 #include <pow.h>
 #include <rpc-common.h>
 #include <shm.h>
+#include <time.h>
 
 
 
@@ -191,6 +192,9 @@ int Rule_del_all()
 void Rule_Save_File(FILE *fp)
 {
     int i;
+    struct tm *p;
+    char time_s[32] = {0};
+    char time_e[32] = {0};
 
     for( i = 0; i < RULE_ENTRY_MAX; i++ )
     {
@@ -198,9 +202,17 @@ void Rule_Save_File(FILE *fp)
         {
             continue;
         }
+        memset(time_s, 0, sizeof(time_s));
+        memset(time_e, 0, sizeof(time_e));
+
+        p = gmtime((const time_t *)&rule_list->rule_entry[i].rule_tuple.time_start);
+        strftime(time_s, sizeof(time_s), "%Y-%m-%d %H:%M:%S", p);
+
+        p = gmtime((const time_t *)&rule_list->rule_entry[i].rule_tuple.time_end);
+        strftime(time_e, sizeof(time_e), "%Y-%m-%d %H:%M:%S", p);
 
         fprintf(fp,
-            "%d: smac: %u:%u:%u:%u:%u:%u,  dmac: %u:%u:%u:%u:%u:%u, sip:%x  sip_mask:%d, dip:%x  dip_mask:%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d\n",
+            "%d: smac: %u:%u:%u:%u:%u:%u,  dmac: %u:%u:%u:%u:%u:%u, sip:%x  sip_mask:%d, dip:%x  dip_mask:%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d, time_start:%s, time_end:%s\n",
             i,
             rule_list->rule_entry[i].rule_tuple.smac[0],
             rule_list->rule_entry[i].rule_tuple.smac[1],
@@ -221,7 +233,9 @@ void Rule_Save_File(FILE *fp)
             rule_list->rule_entry[i].rule_tuple.sport_start,
             rule_list->rule_entry[i].rule_tuple.sport_end,
             rule_list->rule_entry[i].rule_tuple.protocol_start,
-            rule_list->rule_entry[i].rule_tuple.protocol_end);
+            rule_list->rule_entry[i].rule_tuple.protocol_end,
+            time_s,
+            time_e);
     }
 }
 

@@ -226,6 +226,316 @@ void dp_show_pkt_stat(cvmx_wqe_t *wq, void *data)
     ptr += len;
     totallen += len;
 
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "ipv4_stat:\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->ipv4stat.headerlen_err;
+    }
+
+    len = sprintf((void *)ptr, "headerlen_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->ipv4stat.version_err;
+    }
+
+    len = sprintf((void *)ptr, "version_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->ipv4stat.pktlen_err;
+    }
+
+    len = sprintf((void *)ptr, "pktlen_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->ipv4stat.unsupport;
+    }
+
+    len = sprintf((void *)ptr, "unsupport: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->ipv4stat.rx_ok;
+    }
+
+    len = sprintf((void *)ptr, "rx_ok: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "tcp_stat:\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->tcpstat.headerlen_err;
+    }
+
+    len = sprintf((void *)ptr, "headerlen_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->tcpstat.pktlen_err;
+    }
+
+    len = sprintf((void *)ptr, "pktlen_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->tcpstat.rx_ok;
+    }
+
+    len = sprintf((void *)ptr, "rx_ok: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "udp_stat:\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->udpstat.headerlen_err;
+    }
+
+    len = sprintf((void *)ptr, "headerlen_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->udpstat.pktlen_err;
+    }
+
+    len = sprintf((void *)ptr, "pktlen_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->udpstat.rx_ok;
+    }
+
+    len = sprintf((void *)ptr, "rx_ok: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "acl_stat:\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->aclstat.drop;
+    }
+
+    len = sprintf((void *)ptr, "drop: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->aclstat.fw;
+    }
+
+    len = sprintf((void *)ptr, "fw: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "flow_stat:\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->flowstat.getnode_err;
+    }
+
+    len = sprintf((void *)ptr, "getnode_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->flowstat.proc_ok;
+    }
+
+    len = sprintf((void *)ptr, "proc_ok: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "tx_stat:\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->txstat.port_err;
+    }
+
+    len = sprintf((void *)ptr, "port_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->txstat.hw_send_err;
+    }
+
+    len = sprintf((void *)ptr, "hw_send_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->txstat.sw_desc_err;
+    }
+
+    len = sprintf((void *)ptr, "sw_desc_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->txstat.sw_send_err;
+    }
+
+    len = sprintf((void *)ptr, "sw_send_err: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->txstat.send_over;
+    }
+
+    len = sprintf((void *)ptr, "send_over: %ld\n", x);
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    len = sprintf((void *)ptr, "\n");
+    ptr += len;
+    totallen += len;
+
+
+
+
+
     printf("total len is %d\n",totallen);
 
     oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, totallen);

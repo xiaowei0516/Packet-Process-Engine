@@ -37,6 +37,8 @@ struct FILTER
     uint64_t dim[DIM][2];
     uint8_t  action;
     int32_t  rule_id;
+    uint64_t    time_start;
+    uint64_t    time_end;
 };
 
 struct FILTSET
@@ -54,6 +56,8 @@ typedef struct rule_s
     uint32_t    pri;
     uint8_t     action;
     uint32_t    rule_id;
+    uint64_t    time_start;
+    uint64_t    time_end;
     uint64_t    range[DIM][2];
 } rule_t;
 
