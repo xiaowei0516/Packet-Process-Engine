@@ -88,3 +88,6 @@ delete rule all
 
 // delete rule id
 delete rule <UINT:id>
+
+// set default action
+set default action <LIST:fw,drop:action>

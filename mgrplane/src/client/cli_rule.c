@@ -551,6 +551,11 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 
 }
 
+cparser_result_t
+cparser_cmd_set_default_action_action(cparser_context_t *context, char **action)
+{
+    return CPARSER_OK;
+}
 
 
 
