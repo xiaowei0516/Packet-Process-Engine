@@ -698,7 +698,7 @@ void dp_acl_def_act_set(cvmx_wqe_t *wq, void *data)
 
     ptr = (uint8_t *)&out;
 
-    len = sprintf((void *)ptr, "ok\n");
+    len = sprintf((void *)ptr, "ok.\n");
     ptr += len;
     totallen += len;
 

@@ -1,6 +1,6 @@
 /********************************************************************************
  *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology 
+ *        Copyright (C) 2014-2015  Beijing winicssec Technology
  *        All rights reserved
  *
  *        filename :       decode.c
@@ -27,9 +27,7 @@ extern int DecodeEthernet(mbuf_t *mbuf, uint8_t *pkt, uint16_t len);
 
 void Decode(mbuf_t *m)
 {
-#ifdef SEC_DECODE_DEBUG
-	printf("==========>enter decode()\n");
-#endif
+	LOG("==========>enter decode()\n");
 
 	if( DECODE_OK != DecodeEthernet(m, GET_PKT_DATA(m), GET_PKT_LEN(m))){
 		PACKET_DESTROY_ALL(m);

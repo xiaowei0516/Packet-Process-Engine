@@ -13,13 +13,13 @@ static int32_t __get_ifindex( const char *device )
 
     sock = socket( AF_INET,SOCK_DGRAM, 0 );
     if ( sock < 0 ){
-        perror( "socket" );
+        //perror( "socket" );
         return ( 0 );
     }
     memset( ( char * )&ifr, 0, sizeof( ifr ) );
     strcpy( ifr.ifr_name, device );
     if ( ioctl( sock, SIOCGIFINDEX, ( char * )&ifr ) < 0 ){
-        perror( "ioctl" );
+        //perror( "ioctl" );
     }
     close( sock );
     return ifr.ifr_ifindex;
@@ -34,7 +34,7 @@ static int32_t __get_macaddr( char *device,char *mac )
     memset( mac, 0x00, 6 );
     sock = socket( AF_INET, SOCK_DGRAM, 0 );
     if ( sock < 0 ){
-        perror( "socket" );
+        //perror( "socket" );
         return ( 0 );
     }
     if ( ioctl( sock, SIOCGIFHWADDR, ( caddr_t )&ifr ) < 0 ){
@@ -81,13 +81,13 @@ int32_t pow_recv_fn ( comm_info_t *info, void *data, uint32_t *size )
 
     _data = malloc(MAX_RECV_LEN);
     if(_data == NULL){
-        printf("malloc error\n");
+        //printf("malloc error\n");
         return -1;
     }
     memset(_data,0,MAX_RECV_LEN);
     len = recvfrom( info->pow.fd, _data, *size, 0, NULL, NULL);
-    printf("recv len is %d, %d\n", len, errno);
-    printf("errno  %d is: %s\n", errno, strerror(errno));
+    //printf("recv len is %d, %d\n", len, errno);
+    //printf("errno  %d is: %s\n", errno, strerror(errno));
     memcpy(data, _data+14, len-14);
     free(_data);
 

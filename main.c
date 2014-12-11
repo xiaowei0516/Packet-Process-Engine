@@ -292,7 +292,7 @@ void mainloop()
 
 
 
-
+int debugprint = 1;
 
 /**
  * Main entry point
@@ -301,6 +301,21 @@ void mainloop()
  */
 int main(int argc, char *argv[])
 {
+
+    int ch;
+
+    while ((ch = getopt(argc, argv, "d:h")) != -1) {
+        switch (ch) {
+        case 'd':
+            debugprint = 1;
+            break;
+        }
+    }
+
+    if (!debugprint) {
+        daemon(0, 1);
+    }
+
 
     if(SEC_OK != Sec_LowLevel_Init())
     {

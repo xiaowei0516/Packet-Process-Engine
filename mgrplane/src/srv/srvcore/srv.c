@@ -7,7 +7,7 @@
 int main(int argc, char *argv[])
 {
     int ch;
-    
+
     while ((ch = getopt(argc, argv, "d:h")) != -1) {
         switch (ch) {
         case 'd':
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     printf("now server running....\n");
     server_run();
-    
+
     return 0;
 }
 

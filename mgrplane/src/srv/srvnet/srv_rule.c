@@ -224,7 +224,7 @@ void Rule_Save_File(FILE *fp)
         }
 
         fprintf(fp,
-            "%d: smac: %u:%u:%u:%u:%u:%u,  dmac: %u:%u:%u:%u:%u:%u, sip:%d.%d.%d.%d/%d, dip:%d.%d.%d.%d/%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d, time_start:%s, time_end:%s, action:%s\n",
+            "%d: smac: %2x:%2x:%2x:%2x:%2x:%2x,  dmac: %2x:%2x:%2x:%2x:%2x:%2x, sip:%d.%d.%d.%d/%d, dip:%d.%d.%d.%d/%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d, time_start:%s, time_end:%s, action:%s\n",
             i,
             rule_list->rule_entry[i].rule_tuple.smac[0],
             rule_list->rule_entry[i].rule_tuple.smac[1],
@@ -432,6 +432,26 @@ int Rule_set_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, void *par
 
     return octeon_rpccall(from, length, fd, param_p, SET_ACL_DEF_ACT_ACK, COMMAND_ACL_DEF_ACT_SET);
 }
+
+int Rule_show_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
+{
+    LOG("Rule_show_acl_def_act\n");
+
+    int len;
+    uint8_t s_buf[MAX_BUF];
+    cmd_type_t cmd_ack = SHOW_ACL_DEF_ACT_ACK;
+    struct rcp_msg_params_s *rcp_param_p = (struct rcp_msg_params_s *)param_p;
+    char *ptr = rcp_param_p->params_list.info_buf + rcp_param_p->info_len;
+
+    len = sprintf(ptr, "%s.\n", rule_list->rule_def_act? "drop" : "fw");
+    ptr += len;
+    rcp_param_p->info_len += len;
+
+    send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
+
+    return 0;
+}
+
 
 
 

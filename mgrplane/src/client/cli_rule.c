@@ -551,17 +551,14 @@ cparser_cmd_set_default_action_action(cparser_context_t *context, char **action)
 {
     assert(context && action);
 
-    int sn,rn;
+    int sn;
     cmd_type_t cmd;
-    CLI_RESULT *blocks;
-    int rv = 0;
+
     struct rcp_msg_params_s rcp_para;
     memset(&rcp_para, 0, sizeof(struct rcp_msg_params_s));
 
     memset(send_buf, 0, sizeof(send_buf));
     memset(recv_buf, 0, sizeof(recv_buf));
-
-
 
     cmd = SET_ACL_DEF_ACT;
     rcp_para.nparam = 1;
@@ -582,20 +579,37 @@ cparser_cmd_set_default_action_action(cparser_context_t *context, char **action)
     cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
     LOG("after pack the message\n");
 
-    process_message(sn, &rn);
-    if (rn <= 0) {
-        LOG("%s error\n", __FUNCTION__);
-    }
-
-    blocks = (CLI_RESULT *) (recv_buf + MESSAGE_HEADER_LENGTH);
-    rv = blocks[0].result_code;
-    sec_error_print(rv, NULL);
-
-    return CPARSER_OK;
-
+    process_cli_show_cmd(recv_buf, send_buf, sn);
 
     return CPARSER_OK;
 }
 
+cparser_result_t
+cparser_cmd_show_default_action(cparser_context_t *context)
+{
+    assert(context);
 
+    int sn;
+    cmd_type_t cmd;
+    struct rcp_msg_params_s rcp_para;
+    memset(&rcp_para, 0, sizeof(struct rcp_msg_params_s));
+
+    memset(send_buf, 0, sizeof(send_buf));
+    memset(recv_buf, 0, sizeof(recv_buf));
+    cmd = SHOW_ACL_DEF_ACT;
+    rcp_para.nparam = 0;
+    rcp_para.more_flag = 0;
+    rcp_para.msg_id = g_msg_id;
+    g_msg_id++;
+    LOG("cmd=%d\n", cmd);
+
+    cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
+    LOG("after pack the message\n");
+
+    process_cli_show_cmd(recv_buf, send_buf, sn);
+
+
+    return CPARSER_OK;
+
+}
 
