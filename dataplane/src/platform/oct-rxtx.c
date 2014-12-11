@@ -46,7 +46,6 @@ oct_rx_process_work(cvmx_wqe_t *wq)
           *  Work has error, so drop
           *  and now do not support jumbo packet
           */
-        printf("recv error\n");
         oct_packet_free(wq, wqe_pool);
         STAT_RECV_ERR;
         return NULL;
@@ -168,7 +167,6 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
 
     if(port > OCT_PHY_PORT_MAX)
     {
-        printf("Send port is invalid");
         PACKET_DESTROY_ALL(mbuf);
         STAT_TX_SEND_PORT_ERR;
         return;
@@ -191,7 +189,6 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
         send_status = cvmx_pko_send_packet_finish(port, queue, pko_command, mbuf->packet_ptr, CVMX_PKO_LOCK_CMD_QUEUE);
         if (send_status != CVMX_PKO_SUCCESS)
         {
-            printf("Failed to send packet using cvmx_pko_send_packet2\n");
             STAT_TX_HW_SEND_ERR;
             PACKET_DESTROY_DATA(mbuf);
         }
@@ -242,8 +239,6 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
                 oct_pend_tx_done_remove(tx_done);
             }
 
-            printf("Failed to send packet using cvmx_pko_send_packet3\n");
-
             PACKET_DESTROY_ALL(mbuf);
             STAT_TX_SW_SEND_ERR;
             return;
@@ -255,7 +250,6 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
     }
 
     STAT_TX_SEND_OVER;
-
 }
 
 

@@ -27,6 +27,8 @@ uint32_t DP_Acl_Tree_Init()
 
     memset(ptr, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
 
+    cvmx_rwlock_wp_init(&g_acltree.rwlock_hs);
+
     g_acltree.TreeSet.num = 0;
     g_acltree.TreeSet.ruleList = (rule_t *)ptr;
 
@@ -96,19 +98,19 @@ void DP_Acl_Add_GuardRule(uint32_t id, rule_t* ruleList)
     ruleList->rule_id = RULE_ENTRY_MAX;
 
     ruleList->range[0][0] = 0;
-    ruleList->range[0][1] = 0xffffffffffff;
+    ruleList->range[0][1] = 0xffffffffffff;  // SMAC
     ruleList->range[1][0] = 0;
-    ruleList->range[1][1] = 0xffffffffffff;
+    ruleList->range[1][1] = 0xffffffffffff;  // DMAC
     ruleList->range[2][0] = 0;
-    ruleList->range[2][1] = 0xffffffff;
+    ruleList->range[2][1] = 0xffffffff;      // SIP
     ruleList->range[3][0] = 0;
-    ruleList->range[3][1] = 0xffffffff;
+    ruleList->range[3][1] = 0xffffffff;      // DIP
     ruleList->range[4][0] = 0;
-    ruleList->range[4][1] = 0xffff;
+    ruleList->range[4][1] = 0xffff;          // SPORT
     ruleList->range[5][0] = 0;
-    ruleList->range[5][1] = 0xffff;
+    ruleList->range[5][1] = 0xffff;          // DPORT
     ruleList->range[6][0] = 0;
-    ruleList->range[6][1] = 0xff;
+    ruleList->range[6][1] = 0xff;            // PROTOCOL
 
 }
 
@@ -117,7 +119,7 @@ void DP_Acl_Add_GuardRule(uint32_t id, rule_t* ruleList)
 uint32_t DP_Acl_Rule_Clean(rule_set_t* ruleset, hs_node_t* node)
 {
     ruleset->num = 0;
-    memset(ruleset->ruleList, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
+    //memset(ruleset->ruleList, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
     FreeRootNode(node);
 
     return SEC_OK;
@@ -244,7 +246,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
 
 
 
-uint32_t DP_Acl_Lookup(mbuf_t *mb)
+uint8_t DP_Acl_Lookup(mbuf_t *mb)
 {
     uint64_t packet[7] = {0};
     uint64_t z[6] = { 0 };
@@ -253,13 +255,10 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     rule_set_t* ruleset;
     hs_node_t* root;
     hs_node_t*  hit_node;
-    uint32_t rule_id;
-
-    if(g_acltree.TreeSet.num == 0)
-    {
-        printf("not any rule exist\n");
-        return dp_acl_action_default;
-    }
+    uint32_t rule;
+    uint8_t action;
+    uint64_t timestar;
+    uint64_t timeend;
 
     for(i = 0; i < 6; i++)
     {
@@ -293,84 +292,72 @@ uint32_t DP_Acl_Lookup(mbuf_t *mb)
     packet[5] = mb->dport;
     packet[6] = mb->proto;
 
+    printf("\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
+            packet[0], packet[0],
+            packet[1], packet[1],
+            packet[2], packet[2],
+            packet[3], packet[3],
+            packet[4], packet[4],
+            packet[5], packet[5],
+            packet[6], packet[6]);
+
+    if(g_acltree.TreeSet.num == 0)
+    {
+        printf("not any rule exist\n");
+        return dp_acl_action_default;
+    }
+
+    cvmx_rwlock_wp_read_lock(&g_acltree.rwlock_hs);
+
     ruleset = &(g_acltree.TreeSet);
     root = &(g_acltree.TreeNode);
 
     LookupHSTree(packet, ruleset, root, &hit_node);
-    printf("\n>>LOOKUP RESULT");
-
-    printf("\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
-    packet[0], packet[0],
-    packet[1], packet[1],
-    packet[2], packet[2],
-    packet[3], packet[3],
-    packet[4], packet[4],
-    packet[5], packet[5],
-    packet[6], packet[6]);
-
     printf("\nnode->thresh: ""%" PRId64 "\n",  hit_node->thresh);
-    rule_id = (uint32_t)hit_node->thresh;
-
-    if(hit_node->thresh == ruleset->num - 1)
+    rule = (uint32_t)hit_node->thresh;
+    if(rule == ruleset->num - 1)
     {
-        printf("\n hit gard rule\n");
-        return ruleset->ruleList[rule_id].action;
+        action = ruleset->ruleList[rule].action;
+        printf("\nhit guard rule\n");
     }
     else
     {
-
         printf("\n>>hit Rule%ld: [%8lx %8lx] [%8lx %8lx] [%8lx %8lx], [%8lx %8lx], [%5lu %5lu], [%5lu %5lu], [%2lx %2lx]\n", hit_node->thresh+1,
-            ruleset->ruleList[hit_node->thresh].range[0][0], ruleset->ruleList[hit_node->thresh].range[0][1],
-            ruleset->ruleList[hit_node->thresh].range[1][0], ruleset->ruleList[hit_node->thresh].range[1][1],
-            ruleset->ruleList[hit_node->thresh].range[2][0], ruleset->ruleList[hit_node->thresh].range[2][1],
-            ruleset->ruleList[hit_node->thresh].range[3][0], ruleset->ruleList[hit_node->thresh].range[3][1],
-            ruleset->ruleList[hit_node->thresh].range[4][0], ruleset->ruleList[hit_node->thresh].range[4][1],
-            ruleset->ruleList[hit_node->thresh].range[5][0], ruleset->ruleList[hit_node->thresh].range[5][1],
-            ruleset->ruleList[hit_node->thresh].range[6][0], ruleset->ruleList[hit_node->thresh].range[6][1]);
+                    ruleset->ruleList[rule].range[0][0], ruleset->ruleList[rule].range[0][1],
+                    ruleset->ruleList[rule].range[1][0], ruleset->ruleList[rule].range[1][1],
+                    ruleset->ruleList[rule].range[2][0], ruleset->ruleList[rule].range[2][1],
+                    ruleset->ruleList[rule].range[3][0], ruleset->ruleList[rule].range[3][1],
+                    ruleset->ruleList[rule].range[4][0], ruleset->ruleList[rule].range[4][1],
+                    ruleset->ruleList[rule].range[5][0], ruleset->ruleList[rule].range[5][1],
+                    ruleset->ruleList[rule].range[6][0], ruleset->ruleList[rule].range[6][1]);
+        printf("hit Rule Id is %d\n", ruleset->ruleList[rule].rule_id);
 
-        uint64_t timestar;
-        uint64_t timeend;
-
-        timestar = ruleset->ruleList[hit_node->thresh].time_start;
-        timeend = ruleset->ruleList[hit_node->thresh].time_end;
+        timestar = ruleset->ruleList[rule].time_start;
+        timeend = ruleset->ruleList[rule].time_end;
 
         if(timestar == 0 && timeend == 0)
         {
-            goto ACTION;
+            action = ruleset->ruleList[rule].action;
         }
         else
         {
             if(mb->timestamp >= timestar && mb->timestamp <= timeend)
             {
-                goto ACTION;
+                action = ruleset->ruleList[rule].action;
             }
             else
             {
+                action = dp_acl_action_default;
                 printf("time not match, not hit\n");
-                return dp_acl_action_default;
             }
-        }
-
-
-ACTION:
-        printf("hit Rule id is %d\n", ruleset->ruleList[hit_node->thresh].rule_id);
-        if(ruleset->ruleList[hit_node->thresh].action == ACL_RULE_ACTION_FW)
-        {
-            printf("hit Rule action is fw\n");
-            return ACL_RULE_ACTION_FW;
-        }
-        else if(ruleset->ruleList[hit_node->thresh].action == ACL_RULE_ACTION_DROP)
-        {
-            printf("hit Rule action is drop\n");
-            return ACL_RULE_ACTION_DROP;
-        }
-        else
-        {
-            printf("hit Rule action is unknow action\n");
-            return ACL_RULE_ACTION_DROP;
         }
     }
 
+    cvmx_rwlock_wp_read_unlock(&g_acltree.rwlock_hs);
+
+    printf("hit Rule action is %s\n", action ? "drop" : "fw");
+
+    return action;
 }
 
 

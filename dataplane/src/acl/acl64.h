@@ -79,6 +79,7 @@ typedef struct hs_node_s
 
 
 typedef struct {
+    cvmx_rwlock_wp_lock_t rwlock_hs;
     rule_set_t TreeSet;
     hs_node_t  TreeNode;
 } unit_tree;

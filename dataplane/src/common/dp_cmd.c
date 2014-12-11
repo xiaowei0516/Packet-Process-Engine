@@ -630,23 +630,34 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
 {
     char out[1024];
     uint32_t len, totallen = 0;
+    uint32_t ret;
     memset((void *)out, 0, sizeof(out));
     uint8_t *ptr;
 
-
     ptr = (uint8_t *)&out;
+
+    cvmx_rwlock_wp_write_lock(&g_acltree.rwlock_hs);
 
     DP_Acl_Rule_Clean(&(g_acltree.TreeSet),&(g_acltree.TreeNode));
 
-    if(rule_list->rule_entry_free == RULE_ENTRY_MAX)
+    if(rule_list->rule_entry_free == RULE_ENTRY_MAX)  // rule empty, no need to load
     {
+        rule_list->build_status = RULE_BUILD_COMMIT;
+        cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
+
         len = sprintf((void *)ptr, "no rule exist\n");
         ptr += len;
         totallen += len;
     }
     else
     {
-        if (SEC_OK != DP_Acl_Load_Rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode)))
+
+        ret = DP_Acl_Load_Rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode));
+
+        rule_list->build_status = RULE_BUILD_COMMIT;
+        cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
+
+        if(SEC_OK != ret)
         {
             len = sprintf((void *)ptr, "commit failed\n");
             ptr += len;
@@ -668,8 +679,6 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
             totallen += len;
         }
     }
-
-    rule_list->build_status = RULE_BUILD_COMMIT;
 
     printf("total len is %d\n",totallen);
 
