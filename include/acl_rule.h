@@ -26,6 +26,7 @@ typedef struct{
 
 typedef struct
 {
+    uint32_t rule_def_act;
     int rule_entry_free;
     int build_status;
     rule_entry_t rule_entry[RULE_ENTRY_MAX];

@@ -29,6 +29,9 @@ static int __get_data_block_length(int block_type, int *block_length_p)
     case BLOCK_ACL_RULE_ID:
         *block_length_p = sizeof(RCP_BLOCK_ACL_RULE_ID);
         break;
+    case BLOCK_ACL_DEF_ACT_ID:
+        *block_length_p = sizeof(RCP_BLOCK_ACL_DEF_ACTION);
+        break;
     default:
         *block_length_p = 0;
     }
@@ -134,6 +137,41 @@ int pack_acl_rule_id(cmd_type_t cmd, void *para_p, void *sbuf, int *len_p)
     block_length = sizeof(RCP_BLOCK_ACL_RULE_ID);
     for (block_index = 0; block_index < lpara_p->nparam; block_index++) {
         memcpy(ptr, &(lpara_p->params_list.params[block_index].AclRuleId), block_length);
+        ptr += block_length;
+        *len_p += block_length;
+    }
+
+    return 0;
+}
+
+int pack_acl_def_act(cmd_type_t cmd, void *para_p, void *sbuf, int *len_p)
+{
+    int rv;
+    char *ptr = (char *)sbuf;
+    int block_index;
+    int block_length;
+    MESSAGE_HEAD msg_header;
+    struct rcp_msg_params_s *lpara_p = (struct rcp_msg_params_s *)para_p;
+
+    /* make sure the cmd type is valid */
+    rv = __cmd_is_valid(cmd);
+    if (rv)
+        return rv;
+
+    /* fill the message header */
+    encap_msg_header(cmd, lpara_p, &msg_header);
+
+    /* copy the header to sbuf */
+    memcpy(ptr, &msg_header, MESSAGE_HEADER_LENGTH);
+    *len_p = MESSAGE_HEADER_LENGTH;
+    ptr += MESSAGE_HEADER_LENGTH;
+
+    LOG("cmd=%d, nparam=%d\n", cmd, lpara_p->nparam);
+
+    /* copy the data block to sbuf */
+    block_length = sizeof(RCP_BLOCK_ACL_DEF_ACTION);
+    for (block_index = 0; block_index < lpara_p->nparam; block_index++) {
+        memcpy(ptr, &(lpara_p->params_list.params[block_index].AclDefAct), block_length);
         ptr += block_length;
         *len_p += block_length;
     }
@@ -372,6 +410,9 @@ int init_msg_pack_handle(void)
     register_msg_pack_handle(COMMIT_ACL_RULE, pack_null);
     register_msg_pack_handle(COMMIT_ACL_RULE_ACK, pack_show_info);
 
+    register_msg_pack_handle(SET_ACL_DEF_ACT, pack_acl_def_act);
+    register_msg_pack_handle(SET_ACL_DEF_ACT_ACK, pack_show_info);
+
     return 0;
 }
 /*
@@ -431,6 +472,10 @@ int init_msg_header(void)
 
     register_msg_header(MSG_VALID_FLAG, COMMIT_ACL_RULE, MSG_TYPE_CLI_OCTEON, MSG_CODE_COMMIT_ACL_RULE, BLOCK_TYPE_START);
     register_msg_header(MSG_VALID_FLAG, COMMIT_ACL_RULE_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_COMMIT_ACL_RULE_ACK, BLOCK_TYPE_START);
+
+
+    register_msg_header(MSG_VALID_FLAG, SET_ACL_DEF_ACT, MSG_TYPE_CLI_OCTEON, MSG_CODE_SET_ACL_DEF_ACT, BLOCK_ACL_DEF_ACT_ID);
+    register_msg_header(MSG_VALID_FLAG, SET_ACL_DEF_ACT_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_SET_ACL_DEF_ACT_ACK, BLOCK_TYPE_START);
 
     return 0;
 }

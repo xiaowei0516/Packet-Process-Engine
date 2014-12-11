@@ -77,6 +77,7 @@ int Rule_list_init()
 
     memset((void *)rule_list, 0, sizeof(rule_list_t));
 
+    rule_list->rule_def_act = ACL_RULE_ACTION_DROP;
     rule_list->rule_entry_free = RULE_ENTRY_MAX;
 
     return 0;
@@ -421,6 +422,16 @@ int Rule_commit_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *par
     return octeon_rpccall(from, length, fd, param_p, COMMIT_ACL_RULE_ACK, COMMAND_ACL_RULE_COMMIT);
 }
 
+int Rule_set_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
+{
+    LOG("Rule_set_acl_def_act\n");
+
+    RCP_BLOCK_ACL_DEF_ACTION *blocks = (RCP_BLOCK_ACL_DEF_ACTION *)(from + MESSAGE_HEADER_LENGTH);
+
+    rule_list->rule_def_act = blocks->action;
+
+    return octeon_rpccall(from, length, fd, param_p, SET_ACL_DEF_ACT_ACK, COMMAND_ACL_DEF_ACT_SET);
+}
 
 
 

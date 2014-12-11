@@ -686,6 +686,25 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
 }
 
 
+void dp_acl_def_act_set(cvmx_wqe_t *wq, void *data)
+{
+    char out[1024];
+    uint32_t len, totallen = 0;
+
+    dp_acl_action_default = rule_list->rule_def_act;
+
+    memset((void *)out, 0, sizeof(out));
+    uint8_t *ptr;
+
+    ptr = (uint8_t *)&out;
+
+    len = sprintf((void *)ptr, "ok\n");
+    ptr += len;
+    totallen += len;
+
+    oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, totallen);
+}
+
 void oct_rx_process_command(cvmx_wqe_t *wq)
 {
     uint16_t opcode = oct_rx_command_get(wq);
@@ -718,6 +737,11 @@ void oct_rx_process_command(cvmx_wqe_t *wq)
         case COMMAND_ACL_RULE_COMMIT:
         {
             dp_acl_rule_commit(wq, data);
+            break;
+        }
+        case COMMAND_ACL_DEF_ACT_SET:
+        {
+            dp_acl_def_act_set(wq, data);
             break;
         }
         default:

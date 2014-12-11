@@ -27,35 +27,41 @@ extern "C" {
 
 typedef enum
 {
-    TEST_COMMAND = 0,
+    TEST_COMMAND = 0,      //0
     TEST_COMMAND_ACK,
 
-    SHOW_DP_BUILD_TIME,   /*2*/
+    SHOW_DP_BUILD_TIME,   // 2
     SHOW_DP_BUILD_TIME_ACK,
 
-    SHOW_DP_PKT_STAT,     /*4*/
+    SHOW_DP_PKT_STAT,     // 4
     SHOW_DP_PKT_STAT_ACK,
 
-    SHOW_MEM_POOL,        /*6*/
+    SHOW_MEM_POOL,        //6
     SHOW_MEM_POOL_ACK,
 
-    SHOW_ACL_RULE,        /*8*/
+    SHOW_ACL_RULE,        //8
     SHOW_ACL_RULE_ACK,
 
-    ADD_ACL_RULE,         /*10*/
+    ADD_ACL_RULE,         //10
     ADD_ACL_RULE_ACK,
 
-    DEL_ACL_RULE,         /*12*/
+    DEL_ACL_RULE,         //12
     DEL_ACL_RULE_ACK,
 
-    DEL_ACL_RULE_ID,      /*14*/
+    DEL_ACL_RULE_ID,      //14
     DEL_ACL_RULE_ID_ACK,
 
-    DEL_ACL_RULE_ALL,     /*16*/
+    DEL_ACL_RULE_ALL,     //16
     DEL_ACL_RULE_ALL_ACK,
 
-    COMMIT_ACL_RULE,      /*18*/
+    COMMIT_ACL_RULE,      //18
     COMMIT_ACL_RULE_ACK,
+
+    SET_ACL_DEF_ACT,
+    SET_ACL_DEF_ACT_ACK,  //20
+
+    SHOW_ACL_DEF_ACT,
+    SHOW_ACL_DEF_ACT_ACK, //22
 
     MAX_COMMAND_TYPE,
 }cmd_type_t;
@@ -89,6 +95,7 @@ typedef enum _msg_block_type_e {
     BLOCK_ACL_RULE_TUPLE = 0x02,
     BLOCK_RESULT_CODE = 0x3,
     BLOCK_ACL_RULE_ID = 0x4,
+    BLOCK_ACL_DEF_ACT_ID = 0x5,
 }msg_block_type_e;
 
 
@@ -122,11 +129,17 @@ typedef struct tag_RCP_BLOCK_ACL_RULE_ID {
     uint32_t rule_id;
 } __attribute__ ((__packed__)) RCP_BLOCK_ACL_RULE_ID;
 
+typedef struct tag_RCP_BLOCK_ACL_DEF_ACTION {
+    uint32_t action;
+} __attribute__ ((__packed__)) RCP_BLOCK_ACL_DEF_ACTION;
+
+
 
 typedef struct TAG_RCP_DATA_BLOCK {//mush be 4 bytes align
     union {
         RCP_BLOCK_ACL_RULE_TUPLE  AclRuleTuple;
         RCP_BLOCK_ACL_RULE_ID   AclRuleId;
+        RCP_BLOCK_ACL_DEF_ACTION AclDefAct;
         RCP_BLOCK_RESULT ResultCode;
         CLI_RESULT CliResultCode;
     };
@@ -173,6 +186,12 @@ typedef enum _msg_code_e {
 
     MSG_CODE_COMMIT_ACL_RULE,
     MSG_CODE_COMMIT_ACL_RULE_ACK,
+
+    MSG_CODE_SET_ACL_DEF_ACT,
+    MSG_CODE_SET_ACL_DEF_ACT_ACK,
+
+    MSG_CODE_SHOW_ACL_DEF_ACT,
+    MSG_CODE_SHOW_ACL_DEF_ACT_ACK,
 
 }msg_code_e;
 

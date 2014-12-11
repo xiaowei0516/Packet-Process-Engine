@@ -15,6 +15,8 @@ extern rule_list_t *rule_list;
 
 extern CVMX_SHARED unit_tree g_acltree;
 
+extern CVMX_SHARED uint32_t dp_acl_action_default;
+
 extern uint32_t gWstDepth;
 extern uint32_t gAvgDepth;
 extern uint32_t gChildCount;
