@@ -56,6 +56,17 @@ char *output_ptr;
 char output[2000]; /* buffer for sprintf */
 
 /**
+ * List all available commands
+ */
+cparser_result_t
+cparser_cmd_help_filter (cparser_context_t *context, char **filter)
+{
+    assert(context);
+    return cparser_help_cmd(context->parser, filter ? *filter : NULL);
+}
+
+
+/**
  * Exit the parser test program.
  */
 cparser_result_t

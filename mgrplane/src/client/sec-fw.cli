@@ -8,6 +8,10 @@
 
 #include "firewall_included.cli"
 
+
+// List all available commands with a substring 'filter' in it.
+help { <STRING:filter> }
+
 // Enable privileged mode
 enable privileged-mode
 
