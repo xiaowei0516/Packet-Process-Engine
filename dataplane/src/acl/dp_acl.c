@@ -248,8 +248,8 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
 
 uint8_t DP_Acl_Lookup(mbuf_t *mb)
 {
-    uint64_t packet[7] = {0};
-    uint64_t z[6] = { 0 };
+    uint64_t packet[7];
+    uint64_t z[6];
     uint64_t x, y;
     int i;
     rule_set_t* ruleset;

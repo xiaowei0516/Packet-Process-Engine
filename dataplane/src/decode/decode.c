@@ -27,9 +27,13 @@ extern int DecodeEthernet(mbuf_t *mbuf, uint8_t *pkt, uint16_t len);
 
 void Decode(mbuf_t *m)
 {
-	LOG("==========>enter decode()\n");
 
-	if( DECODE_OK != DecodeEthernet(m, GET_PKT_DATA(m), GET_PKT_LEN(m))){
+#ifdef SEC_DECODE_DEBUG
+	LOGDBG("==========>enter decode()\n");
+#endif
+
+	if( DECODE_OK != DecodeEthernet(m, GET_PKT_DATA(m), GET_PKT_LEN(m)))
+    {
 		PACKET_DESTROY_ALL(m);
 	}
 

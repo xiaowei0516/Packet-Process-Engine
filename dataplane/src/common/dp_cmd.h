@@ -8,6 +8,7 @@
 
 #include <sos_malloc.h>
 #include <mem_pool.h>
+#include <sec-debug.h>
 
 extern sos_mem_pool_region_t *sos_mem_pool;
 extern void oct_rx_process_command(cvmx_wqe_t *wq);

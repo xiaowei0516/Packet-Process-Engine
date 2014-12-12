@@ -59,6 +59,7 @@
 #include <oct-rxtx.h>
 #include <oct-sched.h>
 #include <oct-time.h>
+#include <oct-api.h>
 #include <flow.h>
 #include <dp_cmd.h>
 #include <sos_malloc.h>
@@ -252,10 +253,10 @@ void mainloop()
             oct_tx_done_check();
         }
 
-        work = cvmx_pow_work_request_sync(CVMX_POW_WAIT);
+        work = oct_pow_work_request_sync_nocheck(CVMX_POW_WAIT);
         if (NULL != work)
         {
-            grp = cvmx_wqe_get_grp(work);
+            grp = oct_wqe_get_grp(work);
 
             if ( FROM_INPUT_PORT_GROUP == grp )
             {
@@ -274,12 +275,18 @@ void mainloop()
             }
             else if( FROM_LINUX_GROUP == grp )
             {
-                printf("receive packet from linux!\n");
+            #ifdef SEC_RX_DEBUG
+                LOGDBG("receive packet from linux!\n");
+            #endif
                 oct_rx_process_command(work);
             }
             else
             {
-                printf("work group error %d\n", grp);
+            #ifdef SEC_RX_DEBUG
+                LOGDBG("work group error %d\n", grp);
+            #endif
+                oct_packet_free(work, wqe_pool);
+                STAT_RECV_GRP_ERR;
             }
 
         }

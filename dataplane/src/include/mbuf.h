@@ -29,23 +29,23 @@ typedef struct {
  */
 typedef struct m_buf_
 {
-    uint32_t magic_flag;         // mbuf memory magic num
+    uint32_t magic_flag;         //mbuf memory magic num
 
     uint16_t pkt_space;          //pkt is hw or sw buffer
-    uint16_t pkt_totallen;             //pkt total len
+    uint16_t pkt_totallen;       //pkt total len
 
-    cvmx_buf_ptr_t packet_ptr;   //copy from wqe packet_ptr
+    cvmx_buf_ptr_t packet_ptr;   //copy from wqe packet_ptr, packet info
 
     struct m_buf_ *next;         //for cache chain
 
-    void *pkt_ptr;                //pointer to begin of packet from wqe packet_ptr
+    void *pkt_ptr;               //pointer to begin of packet from wqe packet_ptr
 
     void *ethh;                  //l2 layer header
     void *vlanh;
     void *network_header;        //network layer header
     void *transport_header;      //transport layer header
 
-    uint32_t input_port;         //input port of phy
+    uint32_t input_port;         //input port of interface
 
     uint8_t eth_dst[6];          //DMAC
     uint8_t eth_src[6];          //SMAC

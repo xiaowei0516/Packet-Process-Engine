@@ -16,6 +16,7 @@
 #include <sec-debug.h>
 #include <oct-port.h>
 #include "oct-time.h"
+#include <oct-api.h>
 
 
 uint32_t oct_tx_entries = 0;
@@ -41,11 +42,11 @@ oct_rx_process_work(cvmx_wqe_t *wq)
     void *pkt_virt;
     mbuf_t *m;
 
-    if (wq->word2.s.rcv_error || cvmx_wqe_get_bufs(wq) > 1){
+    if (wq->word2.s.rcv_error || oct_wqe_get_bufs(wq) > 1){
         /*
-          *  Work has error, so drop
-          *  and now do not support jumbo packet
-          */
+              *  Work has error, so drop
+              *  and now do not support jumbo packet
+              */
         oct_packet_free(wq, wqe_pool);
         STAT_RECV_ERR;
         return NULL;
@@ -58,8 +59,8 @@ oct_rx_process_work(cvmx_wqe_t *wq)
         return NULL;
     }
 
-#ifdef SEC_RXTX_DEBUG
-    printf("Received %u byte packet.\n", cvmx_wqe_get_len(wq));
+#ifdef SEC_PACKET_DUMP
+    printf("Received %u byte packet.\n", oct_wqe_get_len(wq));
     printf("Processing packet\n");
     cvmx_helper_dump_packet(wq);
 #endif
@@ -73,21 +74,21 @@ oct_rx_process_work(cvmx_wqe_t *wq)
 
     m->packet_ptr.u64 = wq->packet_ptr.u64;
 
-    m->input_port = cvmx_wqe_get_port(wq);
+    m->input_port = oct_wqe_get_port(wq);
 
-    m->pkt_totallen = cvmx_wqe_get_len(wq);
+    m->pkt_totallen = oct_wqe_get_len(wq);
     m->pkt_ptr = pkt_virt;
 
     m->timestamp = OCT_TIME_SECONDS_SINCE1970;
 
-    cvmx_fpa_free(wq, wqe_pool, 0);
+    oct_fpa_free(wq, wqe_pool, 0);
 
     STAT_RECV_PC_ADD;
     STAT_RECV_PB_ADD(m->pkt_totallen);
 
     STAT_RECV_OK;
-    return (void *)m;
 
+    return (void *)m;
 }
 
 

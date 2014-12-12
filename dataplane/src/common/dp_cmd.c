@@ -1,6 +1,7 @@
 #include "dp_cmd.h"
 #include "decode-statistic.h"
 #include "dp_acl.h"
+#include <oct-rxtx.h>
 
 void oct_send_response(cvmx_wqe_t *work, uint16_t opcode, void *data, uint32_t size)
 {
@@ -146,6 +147,16 @@ void dp_show_pkt_stat(cvmx_wqe_t *wq, void *data)
     totallen += len;
 
     len = sprintf((void *)ptr, "----------------\n");
+    ptr += len;
+    totallen += len;
+
+    x = 0;
+    for(i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += pktstat[i]->rxstat.grp_err;
+    }
+
+    len = sprintf((void *)ptr, "grp_err: %ld\n", x);
     ptr += len;
     totallen += len;
 
@@ -746,7 +757,8 @@ void oct_rx_process_command(cvmx_wqe_t *wq)
         }
         default:
         {
-            printf("unsupport command\n");
+            LOGDBG("unsupport command\n");
+            oct_packet_free(wq, wqe_pool);
             break;
         }
     }

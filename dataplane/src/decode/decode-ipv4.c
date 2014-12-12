@@ -18,7 +18,7 @@ extern int DecodeUDP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len);
 
 static int DecodeIPV4Packet(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {
-    
+
     if (unlikely(len < IPV4_HEADER_LEN)) {
         STAT_IPV4_HEADER_ERR;
         return DECODE_DROP;
@@ -50,8 +50,16 @@ static int DecodeIPV4Packet(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     mbuf->ipv4.dip = IPV4_GET_IPDST(mbuf);
 
 #ifdef SEC_IPV4_DEBUG
-    printf("sip is 0x%x\n", mbuf->ipv4.sip);
-    printf("dip is 0x%x\n", mbuf->ipv4.dip);
+    LOGDBG("sip is %d.%d.%d.%d\n",
+            mbuf->ipv4.sip >> 24 & 0xff,
+            mbuf->ipv4.sip >> 16 & 0xff,
+            mbuf->ipv4.sip >> 8 & 0xff,
+            mbuf->ipv4.sip & 0xff);
+    LOGDBG("dip is %d.%d.%d.%d\n",
+            mbuf->ipv4.dip >> 24 & 0xff,
+            mbuf->ipv4.dip >> 16 & 0xff,
+            mbuf->ipv4.dip >> 8 & 0xff,
+            mbuf->ipv4.dip & 0xff);
 #endif
 
     /*TODO: DecodeIPV4Options*/
@@ -59,51 +67,52 @@ static int DecodeIPV4Packet(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     return DECODE_OK;
 }
 
-
+/*
+  *  @mbuf
+  *  @pkt:    start of network header
+  *  @len:    length of network packet
+  */
 int DecodeIPV4(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {
-    uint8_t protocol;
     int ihl;
     mbuf_t *nmbuf;
 
 #ifdef SEC_IPV4_DEBUG
-    printf("=========>enter DecodeIPV4()\n");
+    LOGDBG("=========>enter DecodeIPV4()\n");
 #endif
 
     if (unlikely(DECODE_OK != DecodeIPV4Packet (mbuf, pkt, len))) {
         return DECODE_DROP;
     }
 
-    protocol = IPV4_GET_IPPROTO(mbuf);
-    mbuf->proto = protocol;
-    
+    mbuf->proto = IPV4_GET_IPPROTO(mbuf);
+
     nmbuf = mbuf; /*maybe cache or not , so switch it*/
 
     /* If a fragment, pass off for re-assembly. */
     if(IPV4_IS_FRAGMENT(mbuf))
     {
-    
+
     #ifdef SEC_DEFRAG_DEBUG
-        printf("this is a fragment\n");
+        LOGDBG("this is a fragment\n");
     #endif
-    
-    
+
         ihl = IPV4_GET_HLEN(mbuf);
         mbuf->defrag_id = IPV4_GET_IPID(mbuf);
         mbuf->frag_offset = IPV4_GET_IPOFFSET(mbuf) << 3;
         mbuf->frag_len = len - ihl;
-        
+
     #ifdef SEC_DEFRAG_DEBUG
         printf("frag offset is %d, frag len is %d\n", mbuf->frag_offset, mbuf->frag_len);
     #endif
-    
+
         if(0 == mbuf->frag_len)
         {
             STAT_FRAG_LEN_ERR;
             return DECODE_DROP;
         }
-        
-        nmbuf = Defrag(mbuf);   
+
+        nmbuf = Defrag(mbuf);
         if(NULL == nmbuf)
         {
             return DECODE_OK;
@@ -111,35 +120,41 @@ int DecodeIPV4(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     }
 
 #ifdef SEC_IPV4_DEBUG
-    printf("protocol is %d\n", nmbuf->proto);
+    LOGDBG("protocol is %d\n", nmbuf->proto);
 #endif
-    
+
 
     /* check what next decoder to invoke */
     switch (nmbuf->proto) {
         case PROTO_TCP:
+        {
             STAT_IPV4_RECV_OK;
-            if(DECODE_OK != DecodeTCP(nmbuf, 
-                                    (void *)((uint8_t *)(nmbuf->network_header)+ IPV4_GET_HLEN(nmbuf)), 
+            if(DECODE_OK != DecodeTCP(nmbuf,
+                                    (void *)((uint8_t *)(nmbuf->network_header)+ IPV4_GET_HLEN(nmbuf)),
                                     IPV4_GET_IPLEN(nmbuf) - IPV4_GET_HLEN(nmbuf))){
                 PACKET_DESTROY_ALL(nmbuf);
             }
-            return DECODE_OK;   
+            return DECODE_OK;
+        }
         case PROTO_UDP:
+        {
             STAT_IPV4_RECV_OK;
-            if(DECODE_OK != DecodeUDP(nmbuf, 
-                                (void *)((uint8_t *)(nmbuf->network_header)+ IPV4_GET_HLEN(nmbuf)), 
+            if(DECODE_OK != DecodeUDP(nmbuf,
+                                (void *)((uint8_t *)(nmbuf->network_header)+ IPV4_GET_HLEN(nmbuf)),
                                 IPV4_GET_IPLEN(nmbuf) - IPV4_GET_HLEN(nmbuf))){
                 PACKET_DESTROY_ALL(nmbuf);
             }
             return DECODE_OK;
+        }
         default:
+        {
         #ifdef SEC_IPV4_DEBUG
             printf("unsupport protocol %d\n",IPV4_GET_IPPROTO(nmbuf));
         #endif
             STAT_IPV4_UNSUPPORT;
             PACKET_DESTROY_ALL(nmbuf);
             return DECODE_OK;
+        }
     }
 
     return DECODE_OK;

@@ -33,8 +33,8 @@ static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     mbuf->dport = UDP_GET_DST_PORT(mbuf);
 
 #ifdef SEC_UDP_DEBUG
-    printf("src port is %d\n", mbuf->sport);
-    printf("dst port is %d\n", mbuf->dport);
+    LOGDBG("src port is %d\n", mbuf->sport);
+    LOGDBG("dst port is %d\n", mbuf->dport);
 #endif
 
     mbuf->payload = pkt + UDP_HEADER_LEN;
@@ -45,13 +45,16 @@ static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 
 
 
-
+/*
+  *  @mbuf
+  *  @pkt:    start of transport header
+  *  @len:    length of transport packet
+  */
 int DecodeUDP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {
 #ifdef SEC_UDP_DEBUG
-    printf("=========>enter DecodeUDP\n");
+    LOGDBG("=========>enter DecodeUDP\n");
 #endif
-
 
     if (unlikely(DECODE_OK != DecodeUDPPacket(mbuf, pkt, len)))
     {

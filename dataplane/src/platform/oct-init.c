@@ -1,6 +1,6 @@
 /********************************************************************************
  *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology 
+ *        Copyright (C) 2014-2015  Beijing winicssec Technology
  *        All rights reserved
  *
  *        filename :       oct-init.c
@@ -14,6 +14,7 @@
 #include <oct-common.h>
 #include "oct-init.h"
 #include "oct-port.h"
+#include "oct-api.h"
 
 
 
@@ -87,7 +88,7 @@ int OCT_Intercept_Port_Init()
 /* Wait a second for things to really get started. */
     if (cvmx_sysinfo_get()->board_type != CVMX_BOARD_TYPE_SIM)
     cvmx_wait_usec(1000000);
-    
+
 #ifdef CVMX_PKO_USE_FAU_FOR_OUTPUT_QUEUES
     #error Linux-filter cannot be built with CVMX_PKO_USE_FAU_FOR_OUTPUT_QUEUES
 #endif
@@ -128,15 +129,15 @@ int OCT_Intercept_Port_Init()
     tag_config3.u64 = cvmx_read_csr(CVMX_PIP_PRT_TAGX(OCT_PHY_PORT_FOURTH));
     tag_config3.s.grp = FROM_INPUT_PORT_GROUP;
     cvmx_write_csr(CVMX_PIP_PRT_TAGX(OCT_PHY_PORT_FOURTH), tag_config3.u64);
-    
-    
+
+
     /* We need to call cvmx_cmd_queue_initialize() to get the pointer to
         the named block. The queues are already setup by the ethernet
         driver, so we don't actually need to setup a queue. Pass some
         invalid parameters to cause the queue setup to fail */
     cvmx_cmd_queue_initialize(0, 0, -1, 0);
-    printf("Waiting for packets from port %d, %d, %d, %d... \n", 
-        OCT_PHY_PORT_FIRST, 
+    printf("Waiting for packets from port %d, %d, %d, %d... \n",
+        OCT_PHY_PORT_FIRST,
         OCT_PHY_PORT_SECONDE,
         OCT_PHY_PORT_THIRD,
         OCT_PHY_PORT_FOURTH);
@@ -148,7 +149,7 @@ int OCT_Intercept_Port_Init()
 int OCT_Timer_Init()
 {
     int status;
-    
+
     status = cvmx_tim_setup(1000 , 5000);
     if (status != 0) {
         return SEC_NO;
@@ -169,9 +170,9 @@ int OCT_Timer_Create(uint32_t tag, cvmx_pow_tag_type_t tag_type, uint64_t qos, u
     {
         return SEC_NO;
     }
-    
+
     wqe_p = cvmx_fpa_alloc(CVMX_FPA_WQE_POOL);
-    if (wqe_p == NULL) 
+    if (wqe_p == NULL)
     {
         return SEC_NO;
     }
@@ -200,13 +201,13 @@ void OCT_Timer_Thread_Process(cvmx_wqe_t *wq)
 {
     Oct_Timer_Threat *o;
     o = (Oct_Timer_Threat *)wq->packet_data;
-    if( TIMER_THREAD_MAGIC != o->magic || TIMER_FLAG_OF_WORK != cvmx_wqe_get_unused8(wq))
+    if( TIMER_THREAD_MAGIC != o->magic || TIMER_FLAG_OF_WORK != oct_wqe_get_unused8(wq))
     {
         printf("this is not a valid tim work\n");
         return;
     }
 
-    if (o->fn != NULL) 
+    if (o->fn != NULL)
     {
         o->fn(o, o->param);
     }
