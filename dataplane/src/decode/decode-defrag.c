@@ -12,7 +12,7 @@ CVMX_SHARED uint64_t new_fcb[CPU_HW_RUNNING_MAX] = {0, 0, 0, 0};
 CVMX_SHARED uint64_t del_fcb[CPU_HW_RUNNING_MAX] = {0, 0, 0, 0};
 
 
-CVMX_SHARED uint32_t fcb_running_num = 0;
+CVMX_SHARED int32_t fcb_running_num = 0;
 
 
 frag_table_info_t *ip4_frags_table;

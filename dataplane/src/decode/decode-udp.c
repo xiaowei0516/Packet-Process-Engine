@@ -38,7 +38,7 @@ static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 #endif
 
     mbuf->payload = (void *)(pkt + UDP_HEADER_LEN);
-    mbuf->payload_len = (void *)(len - UDP_HEADER_LEN);
+    mbuf->payload_len = len - UDP_HEADER_LEN;
 
     return DECODE_OK;
 }

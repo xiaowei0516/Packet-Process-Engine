@@ -24,7 +24,7 @@ int debug = 0;
 extern int interactive;
 
 /**
- * Feed a string into the parser (skipping line buffering) 
+ * Feed a string into the parser (skipping line buffering)
  */
 #if 0
 static void
@@ -39,7 +39,7 @@ feed_parser (cparser_t *parser, const char *str)
 
 
 /**
- * Update pass/fail counters and display a status string 
+ * Update pass/fail counters and display a status string
  */
 static void
 update_result (char *got, const char *expected, const char *test)
@@ -50,7 +50,7 @@ update_result (char *got, const char *expected, const char *test)
     if (failed) {
         for (n = 0; n < strlen(expected); n++) {
             if (got[n] != expected[n]) {
-                printf("Index %d: expected=%c  got=%c\n", n, expected[n], 
+                printf("Index %d: expected=%c  got=%c\n", n, expected[n],
                        got[n]);
             }
         }
@@ -83,8 +83,8 @@ void parser_config(cparser_t *parser)
 {
     parser->cfg.root = &cparser_root;
     parser->cfg.ch_complete = '\t';
-    /* 
-     * Instead of making sure the terminal setting of the target and 
+    /*
+     * Instead of making sure the terminal setting of the target and
      * the host are the same. ch_erase and ch_del both are treated
      * as backspace.
      */
@@ -96,7 +96,6 @@ void parser_config(cparser_t *parser)
     parser->cfg.fd = STDOUT_FILENO;
     cparser_io_config(parser);
 }
-
 
 
 
@@ -135,6 +134,9 @@ main (int argc, char *argv[])
         }
     }
 
+    signal(SIGHUP, SIG_DFL);
+	signal(SIGINT, SIG_IGN);
+
 
     init_msg_pack_handle();
     init_msg_header();
@@ -147,13 +149,13 @@ main (int argc, char *argv[])
         printf("Fail to initialize parser.\n");
         return -1;
     }
-    
+
     if (config_file) {
         (void)cparser_load_cmd(&parser, config_file);
     }
 
     cparser_run(&parser);
-     
+
     return 0;
 }
 
@@ -188,8 +190,8 @@ oldmain (int argc, char *argv[])
 
     parser.cfg.root = &cparser_root;
     parser.cfg.ch_complete = '\t';
-    /* 
-     * Instead of making sure the terminal setting of the target and 
+    /*
+     * Instead of making sure the terminal setting of the target and
      * the host are the same. ch_erase and ch_del both are treated
      * as backspace.
      */
@@ -259,15 +261,15 @@ oldmain (int argc, char *argv[])
 
         BZERO_OUTPUT;
         feed_parser(&parser, "show employees-by-id 0x0 0x1\n");
-        update_result(output, 
-                      "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n", 
+        update_result(output,
+                      "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n",
                       "prefixing commands");
-        
+
         /* Test optional parameters */
         BZERO_OUTPUT;
         feed_parser(&parser, "show employees-by-id 0x0\n");
-        update_result(output, 
-                      "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n" 
+        update_result(output,
+                      "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n"
                       "john\n   ID: 0x00000003\n   Height:  80\"   Weight: 220 lbs.\n",
                       "optional parameter");
 
@@ -282,8 +284,8 @@ oldmain (int argc, char *argv[])
         }
         if (CPARSER_OK == rc) {
             feed_parser(&parser, "\b\bow\n");
-            update_result(output, 
-                          "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n" 
+            update_result(output,
+                          "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n"
                           "john\n   ID: 0x00000003\n   Height:  80\"   Weight: 220 lbs.\n",
                           "left arrow #1");
         } else {
@@ -307,7 +309,7 @@ oldmain (int argc, char *argv[])
             fflush(stdout);
             num_failed++;
         }
-        
+
         /* Test right arrow key */
         BZERO_OUTPUT;
         feed_parser(&parser, "shaw employees-by-id 0x0");
@@ -331,8 +333,8 @@ oldmain (int argc, char *argv[])
         }
         if (CPARSER_OK == rc) {
             feed_parser(&parser, " 0x1\n");
-            update_result(output, 
-                      "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n", 
+            update_result(output,
+                      "bob\n   ID: 0x00000001\n   Height:  70\"   Weight: 165 lbs.\n",
                       "right arrow #1");
         }
 
@@ -357,7 +359,7 @@ oldmain (int argc, char *argv[])
         }
         if (CPARSER_OK == rc) {
             feed_parser(&parser, "\n");
-            update_result(output, 
+            update_result(output,
                           "john\n   ID: 0x00000003\n   Height:  80\"   Weight: 220 lbs.\n",
                           "right arrow #2");
         }
@@ -368,7 +370,7 @@ oldmain (int argc, char *argv[])
 
         BZERO_OUTPUT;
         feed_parser(&parser, "s?");
-        update_result(output, "s\nshow\nsave\nTEST>> s", 
+        update_result(output, "s\nshow\nsave\nTEST>> s",
                       "context-sensitive help #1");
 
         /* Reset the output buffer */
@@ -376,7 +378,7 @@ oldmain (int argc, char *argv[])
         BZERO_OUTPUT;
 
         feed_parser(&parser, "s\t");
-        update_result(output, "s\nshow\nsave\nTEST>> s", 
+        update_result(output, "s\nshow\nsave\nTEST>> s",
                       "context-sensitive help #2");
 
         /* Test incomplete commands */
@@ -388,13 +390,13 @@ oldmain (int argc, char *argv[])
 
         BZERO_OUTPUT;
         feed_parser(&parser, "show \n");
-        update_result(output, 
+        update_result(output,
                       "show \n            ^Incomplete command\nTEST>> ",
                       "Incomplete command #2");
 
         BZERO_OUTPUT;
         feed_parser(&parser, "show em\n");
-        update_result(output, 
+        update_result(output,
                       "show em\n              ^Incomplete command\nTEST>> ",
                       "Incomplete command #3");
 
@@ -409,8 +411,8 @@ oldmain (int argc, char *argv[])
         feed_parser(&parser, "show xyz\n");
         update_result(output, "show xyz\n            ^Parse error\nTEST>> ",
                       "Invalid command #2");
-        
-        /* 
+
+        /*
          * Test cparser_help_cmd() with and without a filter string.
          * This implicitly tests cparser_walk() as well.
          */

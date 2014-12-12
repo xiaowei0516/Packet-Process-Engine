@@ -48,7 +48,7 @@ uint16_t oct_rx_command_get(cvmx_wqe_t *work)
 
     rpcmsg = (rpc_msg_t *)data;
 
-    LOG("opcode is 0x%x\n", rpcmsg->opcode);
+    LOGDBG("opcode is 0x%x\n", rpcmsg->opcode);
 
     return rpcmsg->opcode;
 }
