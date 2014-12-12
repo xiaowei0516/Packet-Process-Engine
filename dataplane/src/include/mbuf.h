@@ -70,9 +70,7 @@ typedef struct m_buf_
 
     uint32_t flags;              //features of packet
 
-    uint32_t flow_hash;          //hash value, used to find flow_node
     void    *flow;               //flow node
-
 }mbuf_t;
 
 

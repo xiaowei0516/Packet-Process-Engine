@@ -211,7 +211,7 @@ void FlowHandlePacket(mbuf_t *m)
 {
 
 #ifdef SEC_FLOW_DEBUG
-        LOGDBG("=========>enter FlowHandlePacket\n");
+    LOGDBG("=========>enter FlowHandlePacket\n");
 #endif
 
     flow_item_t *f;

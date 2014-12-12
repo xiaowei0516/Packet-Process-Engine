@@ -8,12 +8,14 @@
 #include <hlist.h>
 
 
+#define DEFRAG_FCB_MAX    1024
+#define DEFRAG_CACHE_MAX  8
+
+
+
 #define DEFRAG_FIRST_IN   (1 << 0)
 #define DEFRAG_LAST_IN    (1 << 1)
 #define DEFRAG_COMPLETE   (1 << 2)
-
-
-
 
 
 #define DEFRAG_OK    0
@@ -21,34 +23,27 @@
 
 
 
-
-
 typedef struct {
     struct hlist_node   list;
-    mbuf_t            *fragments;    /* list of cached fragments */
-    mbuf_t            *fragments_tail;
-    uint64_t           cycle;
-    
+    mbuf_t              *fragments;    /* list of cached fragments */
+    mbuf_t              *fragments_tail;
+    uint64_t            cycle;
     cvmx_spinlock_t     lock;
-    
-    uint32_t             sip;
-    uint32_t             dip;
-    uint16_t  sport;             /*sport */
-    uint16_t  dport;             /*dport*/
-    uint8_t   protocol;
-    uint16_t              id;
-    
-    uint16_t          status;
-    
-    int            total_fraglen;    /* total length of orig datagram */
+    uint32_t            sip;
+    uint32_t            dip;
+    uint16_t            sport;             /*sport */
+    uint16_t            dport;             /*dport*/
+    uint16_t            id;
+    uint16_t            status;
+    int                 total_fraglen;    /* total length of orig datagram */
     int                 meat;
-    uint8_t          last_in;    /* first/last segment arrived? */
+    uint16_t            cache_num;
+    uint8_t             protocol;
+    uint8_t             last_in;    /* first/last segment arrived? */
 }fcb_t;
 
 
-
-
-typedef struct 
+typedef struct
 {
     struct hlist_head hash;
     cvmx_spinlock_t bkt_lock;
@@ -98,20 +93,12 @@ typedef struct {
 
 #define FCB_UPDATE_TIMESTAMP(f)  (f->cycle = cvmx_get_cycle())
 
-
-
-
 static inline void fcb_size_judge(void)
 {
     BUILD_BUG_ON((sizeof(fcb_t) + sizeof(Mem_Slice_Ctrl_B)) > 256);
 
     return;
 }
-
-
-
-
-
 
 extern mbuf_t *Defrag(mbuf_t *mbuf);
 extern uint32_t FragModule_init();

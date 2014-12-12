@@ -46,7 +46,7 @@ uint32_t DP_Acl_List_Init()
 
     if (fd < 0)
     {
-        LOGDBG("Failed to setup CVMX_SHARED(shm_open)");
+        LOGDBG("Failed to setup CVMX_SHARED(shm_open)\n");
         return SEC_NO;
     }
 

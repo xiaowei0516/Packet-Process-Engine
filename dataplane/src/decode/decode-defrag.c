@@ -12,11 +12,10 @@ CVMX_SHARED uint64_t new_fcb[CPU_HW_RUNNING_MAX] = {0, 0, 0, 0};
 CVMX_SHARED uint64_t del_fcb[CPU_HW_RUNNING_MAX] = {0, 0, 0, 0};
 
 
+CVMX_SHARED uint32_t fcb_running_num = 0;
+
 
 frag_table_info_t *ip4_frags_table;
-
-
-
 
 
 static inline fcb_t *fcb_alloc()
@@ -55,9 +54,21 @@ static inline void fcb_free(fcb_t *fcb)
 
 static inline fcb_t *fcb_create(mbuf_t *mb)
 {
+
+    uint32_t fcb_num;
+    fcb_num = cvmx_atomic_fetch_and_add32(&fcb_running_num, 1);
+    if(fcb_num >= DEFRAG_FCB_MAX)
+    {
+        cvmx_atomic_add32(&fcb_running_num, -1);
+        LOGDBG("FCB IS FULL\n");
+        STAT_FRAG_FCB_FULL;
+        return NULL;
+    }
+
     fcb_t *fcb = fcb_alloc();
     if(NULL == fcb)
     {
+        STAT_FRAG_FCB_NO;
         return NULL;
     }
 
@@ -86,8 +97,8 @@ uint32_t ip4_frag_hashfn(mbuf_t *mb)
 
 uint32_t ip4_frag_match(fcb_t *fcb, mbuf_t *mb)
 {
-    return (fcb->id == mb->defrag_id 
-        && fcb->sip == mb->ipv4.sip 
+    return (fcb->id == mb->defrag_id
+        && fcb->sip == mb->ipv4.sip
         && fcb->dip == mb->ipv4.dip);
 }
 
@@ -97,7 +108,7 @@ fcb_t *FragFind(frag_bucket_t *fbucket, mbuf_t *mbuf, uint32_t hash)
 {
     fcb_t *fcb;
     struct hlist_node *n;
-    
+
 #ifdef SEC_DEFRAG_DEBUG
     printf("============>enter FragFind\n");
 #endif
@@ -140,16 +151,16 @@ mbuf_t *Frag_defrag_setup(mbuf_t *head, fcb_t *fcb)
 {
     mbuf_t *new_mb;
     void *packet_buffer;
-    
+
     new_mb = MBUF_ALLOC();
     if(NULL == new_mb)
     {
         return NULL;
     }
 
-    
 
-    packet_buffer = MEM_8K_ALLOC(fcb->total_fraglen + 
+
+    packet_buffer = MEM_8K_ALLOC(fcb->total_fraglen +
             ((uint64_t)(head->network_header) - (uint64_t)(head->pkt_ptr) + IPV4_GET_HLEN(head)));
     if(NULL == packet_buffer)
     {
@@ -162,7 +173,7 @@ mbuf_t *Frag_defrag_setup(mbuf_t *head, fcb_t *fcb)
     PKTBUF_SET_SW(new_mb);
     new_mb->pkt_ptr = packet_buffer;
 
-    
+
     new_mb->ethh = head->ethh;
     new_mb->vlan_idx = head->vlan_idx;
     new_mb->vlan_id = head->vlan_id;
@@ -173,10 +184,10 @@ mbuf_t *Frag_defrag_setup(mbuf_t *head, fcb_t *fcb)
 
     new_mb->magic_flag = MBUF_MAGIC_NUM;
     new_mb->input_port = head->input_port;
-    
+
     memcpy((void *)new_mb->eth_dst, (void *)head->eth_dst, sizeof(new_mb->eth_dst));
     memcpy((void *)new_mb->eth_src, (void *)head->eth_src, sizeof(new_mb->eth_src));
-    
+
     new_mb->ipv4.sip = head->ipv4.sip;
     new_mb->ipv4.dip = head->ipv4.dip;
 
@@ -225,12 +236,12 @@ mbuf_t *Frag_defrag_reasm(fcb_t *fcb)
     fcb->status |= DEFRAG_COMPLETE;
 
     Frag_defrag_freefrags(fcb);
-    
+
     STAT_FRAG_REASM_OK;
     return reasm_mb;
 setup_err:
 out_oversize:
-    
+
     return NULL;
 }
 
@@ -243,15 +254,14 @@ mbuf_t *Frag_defrag_process(mbuf_t * mbuf,fcb_t * fcb)
     mbuf_t *prev, *next;
     int offset;
     int end;
-    
+
     if(fcb->last_in & DEFRAG_COMPLETE)
         goto err;
-    
+
     /* Determine the position of this fragment. */
     offset = mbuf->frag_offset;
     end = offset + mbuf->frag_len;
 
-    
     /* Is this the final fragment? */
     if(0 == IPV4_GET_MF(mbuf))/*final*/
     {
@@ -270,7 +280,7 @@ mbuf_t *Frag_defrag_process(mbuf_t * mbuf,fcb_t * fcb)
         }
     }
 
-    /* 
+    /*
         * Find out which fragments are in front and at the back of us
         * in the chain of fragments so far.  We must know where to put
         * this fragment, right?
@@ -290,7 +300,7 @@ mbuf_t *Frag_defrag_process(mbuf_t * mbuf,fcb_t * fcb)
     }
 
 found:
-    /* 
+    /*
         * We found where to put this one.  Check for overlap with
          * preceding fragment, and, if needed, align things so that
          * any overlaps are eliminated.
@@ -316,11 +326,13 @@ found:
     else
         fcb->fragments = mbuf;
 
+    fcb->cache_num++;
+
     fcb->meat += mbuf->frag_len;
     if(offset == 0)
         fcb->last_in |= DEFRAG_FIRST_IN;
 
-    if(fcb->last_in == (DEFRAG_FIRST_IN | DEFRAG_LAST_IN) && 
+    if(fcb->last_in == (DEFRAG_FIRST_IN | DEFRAG_LAST_IN) &&
         fcb->meat == fcb->total_fraglen)
     {
     #ifdef SEC_DEFRAG_DEBUG
@@ -356,14 +368,20 @@ mbuf_t *Frag_defrag_begin(mbuf_t *mbuf, fcb_t *fcb)
         STAT_FRAG_HW2SW_ERR;
         return NULL;
     }
-    
+
     FCB_LOCK(fcb);
 
+    if(fcb->cache_num >= DEFRAG_CACHE_MAX)
+    {
+        PACKET_DESTROY_ALL(mbuf);
+        STAT_FRAG_CACHE_FULL;
+        return NULL;
+    }
+
     mb = Frag_defrag_process(mbuf, fcb);
-    
-    /*frag reassemble or frag session*/
+
     FCB_UNLOCK(fcb);
-    
+
     return mb;
 }
 
@@ -375,20 +393,20 @@ mbuf_t *Defrag(mbuf_t *mb)
     frag_bucket_t *base;
     frag_bucket_t *fb;
     fcb_t *fcb;
-    
+
     hash = ip4_frags_table->hashfn(mb);
 
 #ifdef SEC_DEFRAG_DEBUG
-    printf("frag hash is %d\n", hash);
+    LOGDBG("frag hash is %d\n", hash);
 #endif
 
     base = (frag_bucket_t *)ip4_frags_table->bucket_base_ptr;
     fb = &base[hash];
 
     FCB_TABLE_LOCK(fb);
-    
+
     fcb = FragFind(fb, mb, hash);
-    
+
     if(NULL == fcb) /*not find , create a new one and add it into table*/
     {
         fcb = fcb_create(mb);
@@ -396,12 +414,12 @@ mbuf_t *Defrag(mbuf_t *mb)
         {
             FCB_TABLE_UNLOCK(fb);
             PACKET_DESTROY_ALL(mb);
-            STAT_FRAG_FCB_NO;
             return NULL;
         }
 
         FCB_UPDATE_TIMESTAMP(fcb);
         fcb_insert(fb, fcb);
+        new_fcb[local_cpu_id]++;
     }
 
     FCB_TABLE_UNLOCK(fb);
@@ -424,41 +442,41 @@ void Frag_defrag_timeout(Oct_Timer_Threat *o, void *param)
     struct hlist_head timeout;
 
     base = (frag_bucket_t *)ip4_frags_table->bucket_base_ptr;
-    
+
     current_cycle = cvmx_get_cycle();
 
     for(i = 0; i < FRAG_BUCKET_NUM; i++)
     {
         INIT_HLIST_HEAD(&timeout);
         fb = &base[i];
-        
+
         if(FCB_TABLE_TRYLOCK(fb) != 0)
             continue;
 
-        hlist_for_each_entry_safe(fcb, t, n, &base[i].hash, list)   
+        hlist_for_each_entry_safe(fcb, t, n, &base[i].hash, list)
         {
             if((current_cycle > fcb->cycle) && ((current_cycle - fcb->cycle) > FRAG_MAX_TIMEOUT))
             {
                 hlist_del(&fcb->list);
             #ifdef SEC_DEFRAG_DEBUG
-                printf("delete one fcb %p\n", fcb);
+                LOGDBG("delete one fcb %p\n", fcb);
             #endif
                 del_fcb[local_cpu_id]++;
                 hlist_add_head(&fcb->list, &timeout);
             }
         }
-        
+
         FCB_TABLE_UNLOCK(fb);
 
-        hlist_for_each_entry_safe(tfcb, t, n, &timeout, list)   
-        {   
+        hlist_for_each_entry_safe(tfcb, t, n, &timeout, list)
+        {
             hlist_del(&tfcb->list);
 
             /*TODO: session ageing do something*/
             Frag_defrag_freefrags(tfcb);
             fcb_free(tfcb);
         }
-        
+
     }
 
     return;
@@ -472,24 +490,24 @@ uint32_t FragModule_init()
     frag_bucket_t *base;
     frag_bucket_t *f;
 
-    ip4_frags_table = (frag_table_info_t *)cvmx_bootmem_alloc_named((sizeof(frag_table_info_t) + FRAG_BUCKET_NUM * FRAG_BUCKET_SIZE),                                                                                                               CACHE_LINE_SIZE, 
+    ip4_frags_table = (frag_table_info_t *)cvmx_bootmem_alloc_named((sizeof(frag_table_info_t) + FRAG_BUCKET_NUM * FRAG_BUCKET_SIZE),                                                                                                               CACHE_LINE_SIZE,
                                                                   FRAG_HASH_TABLE_NAME);
     if(NULL == ip4_frags_table)
     {
         printf("ipfrag_init: no memory\n");
         return SEC_NO;
     }
-    
+
     ip4_frags_table->bucket_num = FRAG_BUCKET_NUM;
     ip4_frags_table->bucket_size = FRAG_BUCKET_SIZE;
-    
+
     ip4_frags_table->item_num = FRAG_ITEM_NUM;
     ip4_frags_table->item_size = FRAG_ITEM_SIZE;
-    
+
     ip4_frags_table->bucket_base_ptr = (void *)((uint8_t *)ip4_frags_table + sizeof(frag_table_info_t));
-        
+
     base = (frag_bucket_t *)ip4_frags_table->bucket_base_ptr;
-    
+
     for (i = 0; i < FRAG_BUCKET_NUM; i++)
     {
         INIT_HLIST_HEAD(&base[i].hash);
@@ -507,15 +525,15 @@ uint32_t FragModule_init()
     }
 
     printf("frag age timer create ok\n");
-    
+
     return SEC_OK;
 }
 
 
 uint32_t FragModuleInfo_Get()
 {
-    
-    const cvmx_bootmem_named_block_desc_t *block_desc = cvmx_bootmem_find_named_block(FRAG_HASH_TABLE_NAME); 
+
+    const cvmx_bootmem_named_block_desc_t *block_desc = cvmx_bootmem_find_named_block(FRAG_HASH_TABLE_NAME);
     if (block_desc)
     {
         ip4_frags_table = (frag_table_info_t *)(block_desc->base_addr);

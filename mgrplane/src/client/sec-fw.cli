@@ -6,6 +6,8 @@
 
 #include "octeon_included.cli"
 
+#include "firewall_included.cli"
+
 // Enable privileged mode
 enable privileged-mode
 

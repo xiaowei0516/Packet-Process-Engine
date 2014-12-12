@@ -51,6 +51,8 @@ struct frag_stat
     uint64_t fraglen_err;
     uint64_t fcb_no;
     uint64_t hw2sw_err;
+    uint64_t fcb_full;
+    uint64_t cache_full;
     uint64_t defrag_err;
     uint64_t cache_ok;
     uint64_t reasm_ok;
@@ -142,6 +144,8 @@ extern int local_cpu_id;
 #define STAT_FRAG_LEN_ERR        do { pktstat[local_cpu_id]->fragstat.fraglen_err++; } while(0)
 #define STAT_FRAG_FCB_NO         do { pktstat[local_cpu_id]->fragstat.fcb_no++; } while(0)
 #define STAT_FRAG_HW2SW_ERR      do { pktstat[local_cpu_id]->fragstat.hw2sw_err++; } while(0)
+#define STAT_FRAG_FCB_FULL       do { pktstat[local_cpu_id]->fragstat.fcb_full++; } while(0)
+#define STAT_FRAG_CACHE_FULL     do { pktstat[local_cpu_id]->fragstat.cache_full++; } while(0)
 #define STAT_FRAG_DEFRAG_ERR     do { pktstat[local_cpu_id]->fragstat.defrag_err++; } while(0)
 #define STAT_FRAG_REASM_OK       do { pktstat[local_cpu_id]->fragstat.reasm_ok++; } while(0)
 #define STAT_FRAG_CACHE_OK       do { pktstat[local_cpu_id]->fragstat.cache_ok++; } while(0)

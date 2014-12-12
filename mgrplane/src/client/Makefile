@@ -24,5 +24,5 @@ all:$(TARGET)
 include $(TOP)/mk/rule.mk
 
 
-cparser_tree.c: sec-fw.cli rule_included.cli octeon_included.cli
+cparser_tree.c: sec-fw.cli rule_included.cli octeon_included.cli firewall_included.cli
 	./mk_parser.py $(CLI_FLAGS) sec-fw.cli

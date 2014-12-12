@@ -200,6 +200,7 @@ int Sec_HighLevel_Init()
             return SEC_NO;
         }
         printf("DP_Acl_Rule_Init ok\n");
+
     }
 
     cvmx_coremask_barrier_sync(&sysinfo->core_mask);
