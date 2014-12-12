@@ -2,6 +2,7 @@
 #include "decode-statistic.h"
 #include "dp_acl.h"
 #include <oct-rxtx.h>
+#include <flow.h>
 
 void oct_send_response(cvmx_wqe_t *work, uint16_t opcode, void *data, uint32_t size)
 {
@@ -57,6 +58,20 @@ void dp_show_build_time(cvmx_wqe_t *wq, void *data)
     memset((void *)out, 0, sizeof(out));
 
     sprintf(out, "%s, %s\n", __DATE__, __TIME__);
+    len = strlen(out);
+
+    oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, len);
+}
+
+void dp_clear_pkt_stat(cvmx_wqe_t *wq, void *data)
+{
+    char out[1024];
+    uint32_t len;
+    memset((void *)out, 0, sizeof(out));
+
+    memset((void *)pktstat, 0, sizeof(pkt_stat) * CPU_HW_RUNNING_MAX);
+
+    sprintf(out, "ok.\n");
     len = strlen(out);
 
     oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, len);
@@ -716,6 +731,48 @@ void dp_acl_def_act_set(cvmx_wqe_t *wq, void *data)
     oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, totallen);
 }
 
+void dp_clear_flow_stat(cvmx_wqe_t *wq, void *data)
+{
+    char out[1024];
+    uint32_t len;
+    int i;
+    memset((void *)out, 0, sizeof(out));
+
+    for( i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        new_flow[i] = 0;
+        del_flow[i] = 0;
+    }
+
+    sprintf(out, "ok.\n");
+    len = strlen(out);
+
+    oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, len);
+}
+
+void dp_show_flow_stat(cvmx_wqe_t *wq, void *data)
+{
+    char out[1024];
+    uint32_t len;
+    int i;
+    uint64_t x = 0, y = 0;
+    memset((void *)out, 0, sizeof(out));
+
+    for( i = 0; i < CPU_HW_RUNNING_MAX; i++)
+    {
+        x += new_flow[i];
+        y += del_flow[i];
+    }
+
+    sprintf(out, "new flow is: ""%" PRId64 "\n""del flow is: ""%" PRId64 "\n", x, y);
+    len = strlen(out);
+
+
+    oct_send_response(wq, ((rpc_msg_t *)data)->opcode, out, len);
+}
+
+
+
 void oct_rx_process_command(cvmx_wqe_t *wq)
 {
     uint16_t opcode = oct_rx_command_get(wq);
@@ -753,6 +810,21 @@ void oct_rx_process_command(cvmx_wqe_t *wq)
         case COMMAND_ACL_DEF_ACT_SET:
         {
             dp_acl_def_act_set(wq, data);
+            break;
+        }
+        case COMMAND_CLEAR_PKT_STAT:
+        {
+            dp_clear_pkt_stat(wq, data);
+            break;
+        }
+        case COMMAND_SHOW_FW_FLOW_STAT:
+        {
+            dp_show_flow_stat(wq, data);
+            break;
+        }
+        case COMMAND_CLEAR_FW_FLOW_STAT:
+        {
+            dp_clear_flow_stat(wq, data);
             break;
         }
         default:

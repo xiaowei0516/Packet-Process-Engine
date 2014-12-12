@@ -1,0 +1,7 @@
+// Firewall feature related, such as decode, flow, fragment...
+
+// Show firewall flow stat
+show firewall flow stat
+
+// Clear firewall flow stat
+clear firewall flow stat

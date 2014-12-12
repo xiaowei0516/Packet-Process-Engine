@@ -27,7 +27,7 @@ extern "C" {
 
 typedef enum
 {
-    TEST_COMMAND = 0,      //0
+    TEST_COMMAND = 0,     //0
     TEST_COMMAND_ACK,
 
     SHOW_DP_BUILD_TIME,   // 2
@@ -62,6 +62,15 @@ typedef enum
 
     SHOW_ACL_DEF_ACT,
     SHOW_ACL_DEF_ACT_ACK, //22
+
+    CLEAR_DP_PKT_STAT,    //24
+    CLEAR_DP_PKT_STAT_ACK,
+
+    SHOW_FW_FLOW_STAT,    //26
+    SHOW_FW_FLOW_STAT_ACK,
+
+    CLEAR_FW_FLOW_STAT,   //28
+    CLEAR_FW_FLOW_STAT_ACK,
 
     MAX_COMMAND_TYPE,
 }cmd_type_t;
@@ -193,6 +202,14 @@ typedef enum _msg_code_e {
     MSG_CODE_SHOW_ACL_DEF_ACT,
     MSG_CODE_SHOW_ACL_DEF_ACT_ACK,
 
+    MSG_CODE_CLEAR_DP_PKT_STAT,
+    MSG_CODE_CLEAR_DP_PKT_STAT_ACK,
+
+    MSG_CODE_SHOW_FW_FLOW_STAT,
+    MSG_CODE_SHOW_FW_FLOW_STAT_ACK,
+
+    MSG_CODE_CLEAR_FW_FLOW_STAT,
+    MSG_CODE_CLEAR_FW_FLOW_STAT_ACK,
 }msg_code_e;
 
 

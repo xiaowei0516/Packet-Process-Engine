@@ -3,6 +3,7 @@
 
 #include <srv_octeon.h>
 #include <srv_rule.h>
+#include <srv_firewall.h>
 
 static struct rcp_msg_params_s rcp_param;
 
@@ -37,6 +38,16 @@ int process_show_dp_pkt_stat(uint8_t * from, uint32_t length, uint32_t fd)
     LOG("process_show_dp_pkt_stat \n");
 
     octeon_show_dp_pkt_stat(from, length, fd, (void *)&rcp_param);
+
+    return 0;
+}
+
+int process_clear_dp_pkt_stat(uint8_t * from, uint32_t length, uint32_t fd)
+{
+    memset(&rcp_param, 0, sizeof(struct rcp_msg_params_s));
+    LOG("process_clear_dp_pkt_stat \n");
+
+    octeon_clear_dp_pkt_stat(from, length, fd, (void *)&rcp_param);
 
     return 0;
 }
@@ -141,7 +152,29 @@ int process_show_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd)
     return 0;
 }
 
+int process_show_flow_stat(uint8_t * from, uint32_t length, uint32_t fd)
+{
+    memset(&rcp_param, 0, sizeof(struct rcp_msg_params_s));
 
+    LOG("process_show_flow_stat \n");
+
+    FW_show_flow_stat(from, length, fd, (void *)&rcp_param);
+
+    return 0;
+
+}
+
+
+int process_clear_flow_stat(uint8_t * from, uint32_t length, uint32_t fd)
+{
+    memset(&rcp_param, 0, sizeof(struct rcp_msg_params_s));
+
+    LOG("process_clear_flow_stat \n");
+
+    FW_clear_flow_stat(from, length, fd, (void *)&rcp_param);
+
+    return 0;
+}
 
 
 int32_t init_cmd_process_handle(void)
@@ -160,8 +193,9 @@ int32_t init_cmd_process_handle(void)
     register_cmd_process_handle(COMMIT_ACL_RULE, process_commit_acl_rule);
     register_cmd_process_handle(SET_ACL_DEF_ACT, process_set_acl_def_act);
     register_cmd_process_handle(SHOW_ACL_DEF_ACT, process_show_acl_def_act);
-
-
+    register_cmd_process_handle(CLEAR_DP_PKT_STAT, process_clear_dp_pkt_stat);
+    register_cmd_process_handle(SHOW_FW_FLOW_STAT, process_show_flow_stat);
+    register_cmd_process_handle(CLEAR_FW_FLOW_STAT, process_clear_flow_stat);
     return 0;
 }
 

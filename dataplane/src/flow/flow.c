@@ -324,13 +324,11 @@ void FlowAgeTimeoutCB(Oct_Timer_Threat *o, void *param)
 
 
 
-
 int FlowInit(void)
 {
     int i = 0;
 
     flow_bucket_t *base = NULL;
-
 
     flow_item_size_judge();
 
@@ -380,7 +378,7 @@ int FlowInfoGet()
     }
     else
     {
-        printf("FlowInfoGet error \n");
+        LOGDBG("FlowInfoGet error \n");
         return SEC_NO;
     }
 

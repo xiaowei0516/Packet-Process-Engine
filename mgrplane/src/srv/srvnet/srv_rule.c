@@ -1,4 +1,5 @@
 #include "srv_rule.h"
+#include "srv_octeon.h"
 #include <message.h>
 #include <trans.h>
 #include <pow.h>
@@ -12,7 +13,6 @@
 rule_list_t *rule_list;
 
 
-extern int octeon_rpccall(uint8_t * from, uint32_t length, uint32_t fd, void *param_p, cmd_type_t cmdack, uint16_t opcode);
 static inline int Rule_compare(RCP_BLOCK_ACL_RULE_TUPLE *rule1, RCP_BLOCK_ACL_RULE_TUPLE *rule2)
 {
     return memcmp((void *)rule1, (void *)rule2, sizeof(RCP_BLOCK_ACL_RULE_TUPLE));

@@ -12,32 +12,6 @@
 #include "cli_trans.h"
 
 
-cparser_result_t
-cparser_cmd_show_test_info (cparser_context_t *context)
-{
-    assert(context);
-
-    int sn;
-    cmd_type_t cmd;
-    struct rcp_msg_params_s rcp_para;
-
-    memset(send_buf, 0, sizeof(send_buf));
-    memset(recv_buf, 0, sizeof(recv_buf));
-    cmd = TEST_COMMAND;
-    rcp_para.nparam = 0;
-    rcp_para.more_flag = 0;
-    rcp_para.msg_id = g_msg_id;
-    g_msg_id++;
-    LOG("cmd=%d\n", cmd);
-
-    cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
-    LOG("after pack the message\n");
-
-    process_cli_show_cmd(recv_buf, send_buf, sn);
-
-
-    return CPARSER_OK;
-}
 
 
 cparser_result_t
@@ -53,7 +27,7 @@ cparser_cmd_show_interface_id(cparser_context_t *context, uint32_t *id)
         printf("interface %d is not exist!\n", *id);
         return CPARSER_NOT_OK;
     }
-    
+
     printf("Interface %d rx(pkts):\n", *id);
     printf("----------------------------------------------------\n");
     sprintf(command, "oct-linux-csr GMX0_RX%d_STATS_PKTS\n", *id);
@@ -79,7 +53,7 @@ cparser_cmd_show_interface_id(cparser_context_t *context, uint32_t *id)
     sprintf(command, "oct-linux-csr GMX0_TX%d_STAT2\n", *id);
     system(command);
     printf("----------------------------------------------------\n");
-    
+
     return CPARSER_OK;
 }
 
@@ -102,7 +76,7 @@ cparser_cmd_show_fpa(cparser_context_t *context)
         printf("----------------------------------------------------\n");
         printf("\n");
     }
-    
+
     return CPARSER_OK;
 }
 

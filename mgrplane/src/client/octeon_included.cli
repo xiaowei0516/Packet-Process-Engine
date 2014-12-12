@@ -1,8 +1,13 @@
+// octeon related command, such as memory, statistic...
+
 // Show dp build time
 show dp build time
 
 // Show pkt stat
 show pkt stat
+
+// Clear pkt stat
+clear pkt stat
 
 // Show interface stat
 show interface <UINT:id>

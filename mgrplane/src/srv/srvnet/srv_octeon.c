@@ -18,10 +18,10 @@ int octeon_rpccall(uint8_t * from, uint32_t length, uint32_t fd, void *param_p, 
     cmd_type_t cmd_ack = cmdack;
     struct rcp_msg_params_s *rcp_param_p = (struct rcp_msg_params_s *)param_p;
     char *ptr = rcp_param_p->params_list.info_buf + rcp_param_p->info_len;
-    
+
     rpcmsg.opcode = opcode;
     rpcmsg.info_len = 0;
-    
+
     ret = pow_rpc_syncall2dp(&comm_pow, (void *)&rpcmsg, sizeof(rpc_msg_t), recv_buf, &recv_len);
     if(ret < 0)
     {
@@ -36,7 +36,7 @@ int octeon_rpccall(uint8_t * from, uint32_t length, uint32_t fd, void *param_p, 
     ptr[info_len] = 0;
     ptr += info_len;
     rcp_param_p->info_len += info_len;
-    
+
     send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
 
     return 0;
@@ -55,7 +55,7 @@ int octeon_show_test_command(uint8_t * from, uint32_t length, uint32_t fd, void 
     ptr += len;
     rcp_param_p->info_len += len;
 
-    
+
     send_rcp_res(cmd_ack, from, s_buf, fd, param_p, 0);
     LOG("show test command\n");
     return 0;
@@ -67,7 +67,7 @@ int octeon_show_dp_build_time(uint8_t * from, uint32_t length, uint32_t fd, void
 
     LOG("octeon_show_dp_build_time\n");
     return octeon_rpccall(from, length, fd, param_p, SHOW_DP_BUILD_TIME_ACK, COMMAND_SHOW_BUILD_TIME);
-    
+
 }
 
 int octeon_show_dp_pkt_stat(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
@@ -76,6 +76,11 @@ int octeon_show_dp_pkt_stat(uint8_t * from, uint32_t length, uint32_t fd, void *
     return octeon_rpccall(from, length, fd, param_p, SHOW_DP_PKT_STAT_ACK, COMMAND_SHOW_PKT_STAT);
 }
 
+int octeon_clear_dp_pkt_stat(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
+{
+    LOG("octeon_clear_dp_pkt_stat\n");
+    return octeon_rpccall(from, length, fd, param_p, CLEAR_DP_PKT_STAT_ACK, COMMAND_CLEAR_PKT_STAT);
+}
 
 
 int octeon_show_mem_pool(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)

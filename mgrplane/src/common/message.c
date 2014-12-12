@@ -416,6 +416,15 @@ int init_msg_pack_handle(void)
     register_msg_pack_handle(SHOW_ACL_DEF_ACT, pack_null);
     register_msg_pack_handle(SHOW_ACL_DEF_ACT_ACK, pack_show_info);
 
+    register_msg_pack_handle(CLEAR_DP_PKT_STAT, pack_null);
+    register_msg_pack_handle(CLEAR_DP_PKT_STAT_ACK, pack_show_info);
+
+    register_msg_pack_handle(SHOW_FW_FLOW_STAT, pack_null);
+    register_msg_pack_handle(SHOW_FW_FLOW_STAT_ACK, pack_show_info);
+
+    register_msg_pack_handle(CLEAR_FW_FLOW_STAT, pack_null);
+    register_msg_pack_handle(CLEAR_FW_FLOW_STAT_ACK, pack_show_info);
+
     return 0;
 }
 /*
@@ -479,9 +488,20 @@ int init_msg_header(void)
     register_msg_header(MSG_VALID_FLAG, SET_ACL_DEF_ACT, MSG_TYPE_CLI_OCTEON, MSG_CODE_SET_ACL_DEF_ACT, BLOCK_ACL_DEF_ACT_ID);
     register_msg_header(MSG_VALID_FLAG, SET_ACL_DEF_ACT_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_SET_ACL_DEF_ACT_ACK, BLOCK_TYPE_START);
 
-
     register_msg_header(MSG_VALID_FLAG, SHOW_ACL_DEF_ACT, MSG_TYPE_CLI_OCTEON, MSG_CODE_SHOW_ACL_DEF_ACT, BLOCK_TYPE_START);
     register_msg_header(MSG_VALID_FLAG, SHOW_ACL_DEF_ACT_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_SHOW_ACL_DEF_ACT_ACK, BLOCK_TYPE_START);
+
+    register_msg_header(MSG_VALID_FLAG, CLEAR_DP_PKT_STAT, MSG_TYPE_CLI_OCTEON, MSG_CODE_CLEAR_DP_PKT_STAT, BLOCK_TYPE_START);
+    register_msg_header(MSG_VALID_FLAG, CLEAR_DP_PKT_STAT_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_CLEAR_DP_PKT_STAT_ACK, BLOCK_TYPE_START);
+
+    register_msg_header(MSG_VALID_FLAG, CLEAR_DP_PKT_STAT, MSG_TYPE_CLI_OCTEON, MSG_CODE_CLEAR_DP_PKT_STAT, BLOCK_TYPE_START);
+    register_msg_header(MSG_VALID_FLAG, CLEAR_DP_PKT_STAT_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_CLEAR_DP_PKT_STAT_ACK, BLOCK_TYPE_START);
+
+    register_msg_header(MSG_VALID_FLAG, SHOW_FW_FLOW_STAT, MSG_TYPE_CLI_OCTEON, MSG_CODE_SHOW_FW_FLOW_STAT, BLOCK_TYPE_START);
+    register_msg_header(MSG_VALID_FLAG, SHOW_FW_FLOW_STAT_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_SHOW_FW_FLOW_STAT_ACK, BLOCK_TYPE_START);
+
+    register_msg_header(MSG_VALID_FLAG, CLEAR_FW_FLOW_STAT, MSG_TYPE_CLI_OCTEON, MSG_CODE_CLEAR_FW_FLOW_STAT, BLOCK_TYPE_START);
+    register_msg_header(MSG_VALID_FLAG, CLEAR_FW_FLOW_STAT_ACK, MSG_TYPE_CLI_OCTEON, MSG_CODE_CLEAR_FW_FLOW_STAT_ACK, BLOCK_TYPE_START);
 
     return 0;
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
  *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology 
+ *        Copyright (C) 2014-2015  Beijing winicssec Technology
  *        All rights reserved
  *
  *        filename :       flow.h
@@ -56,7 +56,7 @@ typedef struct flow_item_tag_s
     uint16_t  protocol;
 
     uint16_t  input_port;
-    
+
 }flow_item_t;
 
 
@@ -89,7 +89,7 @@ static inline void flow_item_size_judge(void)
 
 #define FLOW_TABLE_LOCK(b)     cvmx_spinlock_lock(&b->lock)
 
-/*  trylock: 
+/*  trylock:
   *  return 0 lock
   *  return 1 unlock
   */
@@ -132,7 +132,7 @@ static inline void FlowReference(flow_item_t **d, flow_item_t *f) {
     if (likely(f != NULL)) {
         if (*d == f)
             return;
-        
+
         FlowIncrUsecnt(f);
         *d = f;
     }
@@ -149,6 +149,10 @@ static inline void FlowDeReference(flow_item_t **d) {
 extern int FlowInit(void);
 extern int FlowInfoGet();
 extern void FlowAgeTimeoutCB(Oct_Timer_Threat *o, void *param);
+
+
+extern CVMX_SHARED uint64_t new_flow[];
+extern CVMX_SHARED uint64_t del_flow[];
 
 
 #endif
