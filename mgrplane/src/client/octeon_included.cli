@@ -1,0 +1,14 @@
+// Show dp build time
+show dp build time
+
+// Show pkt stat
+show pkt stat
+
+// Show interface stat
+show interface <UINT:id>
+
+// Show FPA stat
+show fpa
+
+// Show mem pool
+show mem pool

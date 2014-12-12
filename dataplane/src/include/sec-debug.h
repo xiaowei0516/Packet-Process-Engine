@@ -15,7 +15,7 @@
 #define SEC_L7_DEBUG
 #define SEC_DEFRAG_DEBUG
 
-
+#define SEC_ACL_DEBUG
 
 
 #define DEBUG_PRINT

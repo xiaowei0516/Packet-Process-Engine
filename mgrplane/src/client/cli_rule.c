@@ -547,7 +547,7 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 }
 
 cparser_result_t
-cparser_cmd_set_default_action_action(cparser_context_t *context, char **action)
+cparser_cmd_set_rule_default_action_action(cparser_context_t *context, char **action)
 {
     assert(context && action);
 
@@ -585,7 +585,7 @@ cparser_cmd_set_default_action_action(cparser_context_t *context, char **action)
 }
 
 cparser_result_t
-cparser_cmd_show_default_action(cparser_context_t *context)
+cparser_cmd_show_rule_default_action(cparser_context_t *context)
 {
     assert(context);
 

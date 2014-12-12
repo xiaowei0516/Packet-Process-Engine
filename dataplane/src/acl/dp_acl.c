@@ -3,7 +3,7 @@
 #include <acl_rule.h>
 #include "dp_acl.h"
 #include <mbuf.h>
-
+#include <sec-debug.h>
 
 CVMX_SHARED uint32_t dp_acl_action_default = ACL_RULE_ACTION_DROP;
 
@@ -46,7 +46,7 @@ uint32_t DP_Acl_List_Init()
 
     if (fd < 0)
     {
-        printf("Failed to setup CVMX_SHARED(shm_open)");
+        LOGDBG("Failed to setup CVMX_SHARED(shm_open)");
         return SEC_NO;
     }
 
@@ -55,7 +55,7 @@ uint32_t DP_Acl_List_Init()
     void *ptr = mmap(NULL, sizeof(rule_list_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (ptr == NULL)
     {
-        printf("Failed to setup rule list (mmap copy)");
+        LOGDBG("Failed to setup rule list (mmap copy)");
         return SEC_NO;
     }
 
@@ -91,8 +91,9 @@ uint32_t DP_Acl_Rule_Init()
 
 void DP_Acl_Add_GuardRule(uint32_t id, rule_t* ruleList)
 {
-    printf("guard rule id is %d\n", id);
-
+#ifdef SEC_ACL_DEBUG
+    LOGDBG("guard rule id is %d\n", id);
+#endif
     ruleList->pri = id;
     ruleList->action = dp_acl_action_default;
     ruleList->rule_id = RULE_ENTRY_MAX;
@@ -111,7 +112,6 @@ void DP_Acl_Add_GuardRule(uint32_t id, rule_t* ruleList)
     ruleList->range[5][1] = 0xffff;          // DPORT
     ruleList->range[6][0] = 0;
     ruleList->range[6][1] = 0xff;            // PROTOCOL
-
 }
 
 
@@ -135,7 +135,9 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
 
     if(ruleset == NULL || node == NULL)
     {
-        printf("\nwrong parameters\n");
+    #ifdef SEC_ACL_DEBUG
+        LOGDBG("\nwrong parameters\n");
+    #endif
         return SEC_NO;
     }
 
@@ -215,7 +217,9 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
         }
     }
 
-    printf("number of rules loaded  %d\n", ruleset->num);
+#ifdef SEC_ACL_DEBUG
+    LOGDBG("number of rules loaded  %d\n", ruleset->num);
+#endif
 
     DP_Acl_Add_GuardRule(ruleset->num, &ruleset->ruleList[ruleset->num]);
     ruleset->num += 1;
@@ -223,7 +227,8 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
     uint32_t ruleNum;
     for (ruleNum = 0; ruleNum < ruleset->num; ruleNum ++)
     {
-        printf("\nRule%d: [%lx %lx] [%lx %lx] [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx]\n", ruleNum,
+    #ifdef SEC_ACL_DEBUG
+        LOGDBG("\nRule%d: [%lx %lx] [%lx %lx] [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx]\n", ruleNum,
             ruleset->ruleList[ruleNum].range[0][0], ruleset->ruleList[ruleNum].range[0][1],
             ruleset->ruleList[ruleNum].range[1][0], ruleset->ruleList[ruleNum].range[1][1],
             ruleset->ruleList[ruleNum].range[2][0], ruleset->ruleList[ruleNum].range[2][1],
@@ -231,6 +236,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
             ruleset->ruleList[ruleNum].range[4][0], ruleset->ruleList[ruleNum].range[4][1],
             ruleset->ruleList[ruleNum].range[5][0], ruleset->ruleList[ruleNum].range[5][1],
             ruleset->ruleList[ruleNum].range[6][0], ruleset->ruleList[ruleNum].range[6][1]);
+    #endif
     }
 
     if(BuildHSTree(ruleset,node,0) != 1)
@@ -292,7 +298,8 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
     packet[5] = mb->dport;
     packet[6] = mb->proto;
 
-    printf("\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
+#ifdef SEC_ACL_DEBUG
+    LOGDBG("\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
             packet[0], packet[0],
             packet[1], packet[1],
             packet[2], packet[2],
@@ -300,10 +307,13 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
             packet[4], packet[4],
             packet[5], packet[5],
             packet[6], packet[6]);
+#endif
 
     if(g_acltree.TreeSet.num == 0)
     {
-        printf("not any rule exist\n");
+    #ifdef SEC_ACL_DEBUG
+        LOGDBG("not any rule exist\n");
+    #endif
         return dp_acl_action_default;
     }
 
@@ -313,16 +323,23 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
     root = &(g_acltree.TreeNode);
 
     LookupHSTree(packet, ruleset, root, &hit_node);
-    printf("\nnode->thresh: ""%" PRId64 "\n",  hit_node->thresh);
+
+#ifdef SEC_ACL_DEBUG
+    LOGDBG("\nnode->thresh: ""%" PRId64 "\n",  hit_node->thresh);
+#endif
+
     rule = (uint32_t)hit_node->thresh;
     if(rule == ruleset->num - 1)
     {
         action = ruleset->ruleList[rule].action;
-        printf("\nhit guard rule\n");
+    #ifdef SEC_ACL_DEBUG
+        LOGDBG("\nhit guard rule\n");
+    #endif
     }
     else
     {
-        printf("\n>>hit Rule%ld: [%8lx %8lx] [%8lx %8lx] [%8lx %8lx], [%8lx %8lx], [%5lu %5lu], [%5lu %5lu], [%2lx %2lx]\n", hit_node->thresh+1,
+    #ifdef SEC_ACL_DEBUG
+        LOGDBG("\n>>hit Rule%ld: [%8lx %8lx] [%8lx %8lx] [%8lx %8lx], [%8lx %8lx], [%5lu %5lu], [%5lu %5lu], [%2lx %2lx]\n", hit_node->thresh+1,
                     ruleset->ruleList[rule].range[0][0], ruleset->ruleList[rule].range[0][1],
                     ruleset->ruleList[rule].range[1][0], ruleset->ruleList[rule].range[1][1],
                     ruleset->ruleList[rule].range[2][0], ruleset->ruleList[rule].range[2][1],
@@ -330,7 +347,8 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
                     ruleset->ruleList[rule].range[4][0], ruleset->ruleList[rule].range[4][1],
                     ruleset->ruleList[rule].range[5][0], ruleset->ruleList[rule].range[5][1],
                     ruleset->ruleList[rule].range[6][0], ruleset->ruleList[rule].range[6][1]);
-        printf("hit Rule Id is %d\n", ruleset->ruleList[rule].rule_id);
+        LOGDBG("hit Rule Id is %d\n", ruleset->ruleList[rule].rule_id);
+    #endif
 
         timestar = ruleset->ruleList[rule].time_start;
         timeend = ruleset->ruleList[rule].time_end;
@@ -348,14 +366,18 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
             else
             {
                 action = dp_acl_action_default;
-                printf("time not match, not hit\n");
+            #ifdef SEC_ACL_DEBUG
+                LOGDBG("time not match, not hit\n");
+            #endif
             }
         }
     }
 
     cvmx_rwlock_wp_read_unlock(&g_acltree.rwlock_hs);
 
-    printf("hit Rule action is %s\n", action ? "drop" : "fw");
+#ifdef SEC_ACL_DEBUG
+    LOGDBG("hit Rule action is %s\n", action ? "drop" : "fw");
+#endif
 
     return action;
 }

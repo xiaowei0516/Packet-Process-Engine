@@ -24,5 +24,5 @@ all:$(TARGET)
 include $(TOP)/mk/rule.mk
 
 
-cparser_tree.c: test.cli test_included.cli
-	./mk_parser.py $(CLI_FLAGS) test.cli
+cparser_tree.c: sec-fw.cli rule_included.cli octeon_included.cli
+	./mk_parser.py $(CLI_FLAGS) sec-fw.cli
