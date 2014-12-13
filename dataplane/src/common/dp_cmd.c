@@ -664,49 +664,58 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
 
     ptr = (uint8_t *)&out;
 
-    cvmx_rwlock_wp_write_lock(&g_acltree.rwlock_hs);
-
-    DP_Acl_Rule_Clean(&(g_acltree.TreeSet),&(g_acltree.TreeNode));
-
-    if(rule_list->rule_entry_free == RULE_ENTRY_MAX)  // rule empty, no need to load
+    if(rule_list->build_status == RULE_BUILD_COMMIT)
     {
-        rule_list->build_status = RULE_BUILD_COMMIT;
-        cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
-
-        len = sprintf((void *)ptr, "no rule exist\n");
+        len = sprintf((void *)ptr, "commit ok\n");
         ptr += len;
         totallen += len;
     }
     else
     {
+        cvmx_rwlock_wp_write_lock(&g_acltree.rwlock_hs);
 
-        ret = DP_Acl_Load_Rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode));
+        DP_Acl_Rule_Clean(&(g_acltree.TreeSet),&(g_acltree.TreeNode));
 
-        rule_list->build_status = RULE_BUILD_COMMIT;
-        cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
-
-        if(SEC_OK != ret)
+        if(rule_list->rule_entry_free == RULE_ENTRY_MAX)  // rule empty, no need to load
         {
-            len = sprintf((void *)ptr, "commit failed\n");
+            cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
+
+            len = sprintf((void *)ptr, "no rule exist\n");
             ptr += len;
             totallen += len;
         }
         else
         {
-            printf("\nwrst case tree depth: %d\n",gWstDepth);
-            if(gChildCount)
-                printf("\naverage tree depth: %f\n",(float)gAvgDepth/gChildCount);
-            printf("\nnumber of tree nodes: %d\n",gNumTreeNode);
-            printf("\nnumber of leaf nodes: %d\n",gNumLeafNode);
-            printf("\ntotal mem: %d(KB)\n",((gNumTreeNode*8)>>10) + ((gNumLeafNode*8)>>10));
+            ret = DP_Acl_Load_Rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode));
 
-            printf("\nfinished\n");
 
-            len = sprintf((void *)ptr, "commit ok\n");
-            ptr += len;
-            totallen += len;
+            cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
+
+            if(SEC_OK != ret)
+            {
+                len = sprintf((void *)ptr, "commit failed\n");
+                ptr += len;
+                totallen += len;
+            }
+            else
+            {
+                printf("\nwrst case tree depth: %d\n",gWstDepth);
+                if(gChildCount)
+                    printf("\naverage tree depth: %f\n",(float)gAvgDepth/gChildCount);
+                printf("\nnumber of tree nodes: %d\n",gNumTreeNode);
+                printf("\nnumber of leaf nodes: %d\n",gNumLeafNode);
+                printf("\nfinished\n");
+
+                len = sprintf((void *)ptr, "commit ok\n");
+                ptr += len;
+                totallen += len;
+            }
         }
+
+        rule_list->build_status = RULE_BUILD_COMMIT;
     }
+
+
 
     printf("total len is %d\n",totallen);
 
@@ -720,6 +729,8 @@ void dp_acl_def_act_set(cvmx_wqe_t *wq, void *data)
     uint32_t len, totallen = 0;
 
     dp_acl_action_default = rule_list->rule_def_act;
+
+    rule_list->build_status = RULE_BUILD_UNCOMMIT;
 
     memset((void *)out, 0, sizeof(out));
     uint8_t *ptr;

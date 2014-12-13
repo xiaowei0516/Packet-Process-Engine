@@ -4,7 +4,7 @@
 #include <rpc-common.h>
 
 
-#define RULE_ENTRY_MAX 100000
+#define RULE_ENTRY_MAX 10000
 
 #define RULE_ENTRY_STATUS_FREE 0
 #define RULE_ENTRY_STATUS_USED 1

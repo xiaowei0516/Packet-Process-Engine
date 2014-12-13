@@ -42,7 +42,7 @@ uint32_t HS_Node_Init()
     }
 
     hsnode_ring->rd_index = 0;
-    hsnode_ring->wr_index = HS_NODE_NUM_MAX;
+    hsnode_ring->wr_index = HS_NODE_NUM_MAX - 1;
 
     return SEC_OK;
 }
@@ -56,6 +56,7 @@ void *HS_NODE_ALLOC()
     void *ptr;
     if(hsnode_ring->rd_index == hsnode_ring->wr_index)
     {
+        LOGDBG("HS node is empty\n");
         return NULL;
     }
 
@@ -68,6 +69,7 @@ void HS_NODE_FREE(void *ptr)
 {
     if( (hsnode_ring->wr_index + 1) % HS_NODE_NUM_MAX == hsnode_ring->rd_index)
     {
+        LOGDBG("HS node is full\n");
         return;
     }
 
@@ -108,6 +110,7 @@ static void _FreeRootNode(hs_node_t *rootnode, uint32_t depth)
         if(NULL != rootnode->child[i])
         {
             _FreeRootNode(rootnode->child[i], depth+1);
+            rootnode->child[i] = NULL;
         }
     }
 

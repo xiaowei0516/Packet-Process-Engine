@@ -114,13 +114,36 @@ void DP_Acl_Add_GuardRule(uint32_t id, rule_t* ruleList)
     ruleList->range[6][1] = 0xff;            // PROTOCOL
 }
 
+extern unsigned int    gChildCount;
+
+extern unsigned int    gNumTreeNode;
+extern unsigned int    gNumLeafNode;
+
+extern unsigned int    gWstDepth;
+extern unsigned int    gAvgDepth;
+
+extern unsigned long long  gNumTotalNonOverlappings;
 
 
 uint32_t DP_Acl_Rule_Clean(rule_set_t* ruleset, hs_node_t* node)
 {
+
+    gChildCount = 0;
+
+    gNumTreeNode = 0;
+    gNumLeafNode = 0;
+
+    gWstDepth = 0;
+    gAvgDepth = 0;
+    gNumTotalNonOverlappings = 1;
+
     ruleset->num = 0;
     //memset(ruleset->ruleList, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
     FreeRootNode(node);
+
+    node->d2s = 0;
+    node->depth = 0;
+    node->thresh = 0;
 
     return SEC_OK;
 }
