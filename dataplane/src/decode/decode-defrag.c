@@ -5,6 +5,7 @@
 #include "decode-defrag.h"
 #include "decode-ipv4.h"
 #include "decode-statistic.h"
+#include "oct-rxtx.h"
 
 
 
@@ -228,14 +229,14 @@ mbuf_t *Frag_defrag_reasm(fcb_t *fcb)
         next = next->next;
     }
 
-
     IPV4_SET_IPLEN(reasm_mb, len);
     ((IPV4Hdr *)(reasm_mb->network_header))->ip_off = 0;
     IPV4_SET_IPCSUM(reasm_mb, IPV4CalculateChecksum((uint16_t *)((reasm_mb->network_header)), ihlen));
 
-    fcb->status |= DEFRAG_COMPLETE;
+    reasm_mb->fcb = (void *)fcb;
+    reasm_mb->flags |= PKT_FRAG_REASM_COMP;
 
-    Frag_defrag_freefrags(fcb);
+    fcb->status |= DEFRAG_COMPLETE;
 
     STAT_FRAG_REASM_OK;
     return reasm_mb;
@@ -399,6 +400,7 @@ mbuf_t *Defrag(mbuf_t *mb)
 #ifdef SEC_DEFRAG_DEBUG
     LOGDBG("frag hash is %d\n", hash);
 #endif
+    mb->fcb_hash = hash;
 
     base = (frag_bucket_t *)ip4_frags_table->bucket_base_ptr;
     fb = &base[hash];
@@ -423,6 +425,12 @@ mbuf_t *Defrag(mbuf_t *mb)
     }
 
     FCB_TABLE_UNLOCK(fb);
+
+    if(fcb->status & DEFRAG_DELETE)
+    {
+        PACKET_DESTROY_ALL(mb);
+        return NULL;
+    }
 
     return Frag_defrag_begin(mb, fcb);
 }
@@ -455,7 +463,7 @@ void Frag_defrag_timeout(Oct_Timer_Threat *o, void *param)
 
         hlist_for_each_entry_safe(fcb, t, n, &base[i].hash, list)
         {
-            if((current_cycle > fcb->cycle) && ((current_cycle - fcb->cycle) > FRAG_MAX_TIMEOUT))
+            if(((current_cycle > fcb->cycle) && ((current_cycle - fcb->cycle) > FRAG_MAX_TIMEOUT)) || fcb->status & DEFRAG_DELETE)
             {
                 hlist_del(&fcb->list);
             #ifdef SEC_DEFRAG_DEBUG
@@ -481,6 +489,31 @@ void Frag_defrag_timeout(Oct_Timer_Threat *o, void *param)
 
     return;
 }
+
+
+void Frag_defrag_sendfrags(mbuf_t *mb)
+{
+    mbuf_t *head;
+    mbuf_t *next;
+    fcb_t *fcb = (fcb_t *)mb->fcb;
+
+    head = fcb->fragments;
+    while(head)
+    {
+        next = head->next;
+        oct_tx_process_sw(head, fw_table[head->input_port]);
+        head = next;
+    }
+    fcb->fragments = NULL;
+    fcb->fragments_tail = NULL;
+
+    mb->flags &= ~PKT_FRAG_REASM_COMP;
+
+    PACKET_DESTROY_ALL(mb);
+}
+
+
+
 
 
 

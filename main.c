@@ -78,9 +78,9 @@ int Sec_LowLevel_Init()
 
     OCT_UserApp_Init();
 
-    if (cvmx_is_init_core())
-    {   /* Have one core do the hardware initialization */
-        OCT_Intercept_Port_Init();
+    if (cvmx_is_init_core())  //First dataplane called
+    {
+        OCT_Intercept_Port_Init(); //Have one core do the hardware initialization
 
         if (SEC_OK != OCT_Timer_Init())
         {
@@ -123,9 +123,9 @@ int Sec_LowLevel_Init()
 
     }
 
-    OCT_RX_Group_Init();
+    OCT_RX_Group_Init();      //ALL dataplane called
 
-    if (!cvmx_is_init_core())
+    if (!cvmx_is_init_core()) //Non first dataplane called
     {
         if(SEC_OK != Mem_Pool_Get())
         {
@@ -187,13 +187,6 @@ int Sec_HighLevel_Init()
         }
         printf("FragModule_init ok\n");
 
-        if(SEC_OK != FlowInit())
-        {
-            printf("FlowInit failed\n");
-            return SEC_NO;
-        }
-        printf("FlowInit ok\n");
-
         if(SEC_OK != DP_Acl_Rule_Init())
         {
             printf("DP_Acl_Rule_Init failed\n");
@@ -223,15 +216,14 @@ int Sec_HighLevel_Init()
 
         printf("FragModuleInfo_Get ok\n");
 
-        if(SEC_OK != FlowInfoGet())
-        {
-            printf("FlowInfoGet failed\n");
-            return SEC_NO;
-        }
-
-        printf("FlowInfoGet ok\n");
     }
 
+    if(SEC_OK != FlowInit())
+    {
+        printf("FlowInit failed\n");
+        return SEC_NO;
+    }
+    printf("FlowInit ok\n");
 
 
 
@@ -268,9 +260,12 @@ void mainloop()
                 }
                 Decode(mb);
             }
-            else if ( TIMER_GROUP == grp )
+            else if ( local_cpu_id == grp )
             {
-                oct_time_update();
+                if (cvmx_is_init_core())
+                {
+                    oct_time_update();
+                }
                 watchdog_ok();
                 OCT_Timer_Thread_Process(work);
             }

@@ -16,6 +16,7 @@
 #define DEFRAG_FIRST_IN   (1 << 0)
 #define DEFRAG_LAST_IN    (1 << 1)
 #define DEFRAG_COMPLETE   (1 << 2)
+#define DEFRAG_DELETE     (1 << 3)
 
 
 #define DEFRAG_OK    0
@@ -89,6 +90,9 @@ typedef struct {
 
 
 #define FRAG_MAX_TIMEOUT    20*oct_cpu_rate   /* 20s */
+
+#define FCB_SET_DELETE(fcb)    ((fcb_t *)fcb)->status |= DEFRAG_DELETE
+
 
 
 #define FCB_UPDATE_TIMESTAMP(f)  (f->cycle = cvmx_get_cycle())

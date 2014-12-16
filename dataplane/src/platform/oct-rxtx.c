@@ -17,6 +17,7 @@
 #include <oct-port.h>
 #include "oct-time.h"
 #include <oct-api.h>
+#include <decode.h>
 
 
 
@@ -32,6 +33,7 @@ oct_softx_stat_t *oct_stx[CPU_HW_RUNNING_MAX];
 
 
 extern CVMX_SHARED int wqe_pool;
+extern void Frag_defrag_sendfrags(mbuf_t *mb);
 
 
 static inline uint8_t oct_tx_port_get(uint8_t inp)
@@ -170,6 +172,77 @@ oct_pend_tx_done_remove(tx_done_t *tdt)
 }
 
 
+
+void oct_tx_process_sw(mbuf_t *mbuf, uint8_t outport)
+{
+    uint64_t queue;
+    cvmx_pko_return_value_t send_status;
+
+    uint8_t *dont_free_cookie = NULL;
+
+
+    queue = cvmx_pko_get_base_queue(outport);
+
+    cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
+
+
+
+    tx_done_t *tx_done = &(oct_stx[local_cpu_id]->tx_done[outport]);
+    if(tx_done->tx_entries < (OCT_PKO_TX_DESC_NUM - 1))
+    {
+        dont_free_cookie = oct_pend_tx_done_add(tx_done, (void *)mbuf);
+    }
+    else
+    {
+        PACKET_DESTROY_ALL(mbuf);
+        STAT_TX_SW_DESC_ERR;
+        return;
+    }
+    /*command word0*/
+    cvmx_pko_command_word0_t pko_command;
+    pko_command.u64 = 0;
+
+    pko_command.s.segs = 1;
+    pko_command.s.total_bytes = mbuf->pkt_totallen;
+
+    pko_command.s.rsp = 1;
+    pko_command.s.dontfree = 1;
+
+    /*command word1*/
+    cvmx_buf_ptr_t packet;
+    packet.u64 = 0;
+    packet.s.size = mbuf->pkt_totallen;
+    packet.s.addr = (uint64_t)mbuf->pkt_ptr;
+
+    /*command word2*/
+    cvmx_pko_command_word2_t tx_ptr_word;
+    tx_ptr_word.u64 = 0;
+    tx_ptr_word.s.ptr = (uint64_t)cvmx_ptr_to_phys(dont_free_cookie);
+
+    /* Send the packet */
+    send_status = cvmx_pko_send_packet_finish3(outport, queue, pko_command, packet, tx_ptr_word.u64, CVMX_PKO_LOCK_CMD_QUEUE);
+    if(send_status != CVMX_PKO_SUCCESS)
+    {
+        if(dont_free_cookie)
+        {
+            oct_pend_tx_done_remove(tx_done);
+        }
+
+        PACKET_DESTROY_ALL(mbuf);
+        STAT_TX_SW_SEND_ERR;
+        return;
+    }
+    else
+    {
+        STAT_TX_SEND_OVER;
+    }
+
+}
+
+
+
+
+
 void oct_tx_process_mbuf(mbuf_t *mbuf)
 {
     uint64_t queue;
@@ -186,15 +259,15 @@ void oct_tx_process_mbuf(mbuf_t *mbuf)
 
     outport = oct_tx_port_get(inport);
 
-    queue = cvmx_pko_get_base_queue(outport);
-
-    cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
-
-
     if(PKTBUF_IS_HW(mbuf))
     {
         /* Build a PKO pointer to this packet */
         cvmx_pko_command_word0_t pko_command;
+
+        queue = cvmx_pko_get_base_queue(outport);
+
+        cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
+
         pko_command.u64 = 0;
         pko_command.s.segs = 1;
         pko_command.s.total_bytes = mbuf->pkt_totallen;
@@ -206,56 +279,21 @@ void oct_tx_process_mbuf(mbuf_t *mbuf)
             STAT_TX_HW_SEND_ERR;
             PACKET_DESTROY_DATA(mbuf);
         }
-
+        else
+        {
+            STAT_TX_SEND_OVER;
+        }
         MBUF_FREE(mbuf);
     }
     else if(PKTBUF_IS_SW(mbuf))
     {
-        uint8_t *dont_free_cookie = NULL;
-        tx_done_t *tx_done = &(oct_stx[local_cpu_id]->tx_done[outport]);
-        if(tx_done->tx_entries < (OCT_PKO_TX_DESC_NUM - 1))
+        if(mbuf->flags & PKT_FRAG_REASM_COMP)
         {
-            dont_free_cookie = oct_pend_tx_done_add(tx_done, (void *)mbuf);
+            Frag_defrag_sendfrags(mbuf);
         }
         else
         {
-            PACKET_DESTROY_ALL(mbuf);
-            STAT_TX_SW_DESC_ERR;
-            return;
-        }
-        /*command word0*/
-        cvmx_pko_command_word0_t pko_command;
-        pko_command.u64 = 0;
-
-        pko_command.s.segs = 1;
-        pko_command.s.total_bytes = mbuf->pkt_totallen;
-
-        pko_command.s.rsp = 1;
-        pko_command.s.dontfree = 1;
-
-        /*command word1*/
-        cvmx_buf_ptr_t packet;
-        packet.u64 = 0;
-        packet.s.size = mbuf->pkt_totallen;
-        packet.s.addr = (uint64_t)mbuf->pkt_ptr;
-
-        /*command word2*/
-        cvmx_pko_command_word2_t tx_ptr_word;
-        tx_ptr_word.u64 = 0;
-        tx_ptr_word.s.ptr = (uint64_t)cvmx_ptr_to_phys(dont_free_cookie);
-
-        /* Send the packet */
-        send_status = cvmx_pko_send_packet_finish3(outport, queue, pko_command, packet, tx_ptr_word.u64, CVMX_PKO_LOCK_CMD_QUEUE);
-        if(send_status != CVMX_PKO_SUCCESS)
-        {
-            if(dont_free_cookie)
-            {
-                oct_pend_tx_done_remove(tx_done);
-            }
-
-            PACKET_DESTROY_ALL(mbuf);
-            STAT_TX_SW_SEND_ERR;
-            return;
+            oct_tx_process_sw(mbuf, outport);
         }
     }
     else
@@ -263,7 +301,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf)
         printf("pkt space %d is wrong, please check it\n", PKTBUF_SPACE_GET(mbuf));
     }
 
-    STAT_TX_SEND_OVER;
+
 }
 
 

@@ -44,7 +44,6 @@ typedef struct flow_table_info_tag_s
 typedef struct flow_bucket_tag_s
 {
     struct hlist_head hash;
-    cvmx_spinlock_t lock;
 }flow_bucket_t;
 
 
@@ -52,7 +51,6 @@ typedef struct flow_bucket_tag_s
 typedef struct flow_item_tag_s
 {
     struct hlist_node   list;
-    cvmx_spinlock_t     item_lock;
     uint64_t cycle;
     int32_t use_cnt;
 
@@ -61,9 +59,14 @@ typedef struct flow_item_tag_s
     uint16_t  sport;
     uint16_t  dport;
     uint16_t  protocol;
-
     uint16_t  input_port;
+
     uint16_t  action;
+
+    uint64_t  bytecnts2d;   //   bytes  count   sport->dport
+    uint64_t  bytecntd2s;   //   bytes  count   dport->sport
+    uint64_t  pktcnts2d;    //   pkts    count   sport->dport
+    uint64_t  pktcntd2s;    //   pkts    count   dport->sport
 }flow_item_t;
 
 

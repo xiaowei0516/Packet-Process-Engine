@@ -69,7 +69,9 @@ typedef struct m_buf_
     int frag_len;                //len of ip fragment packet
 
     uint32_t flags;              //features of packet
+    uint32_t fcb_hash;
 
+    void    *fcb;                //if frag_reassem   pointer to fcb
     void    *flow;               //flow node
 }mbuf_t;
 

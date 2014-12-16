@@ -53,12 +53,12 @@ oct_packet_free(cvmx_wqe_t * wq, int wqepool)
 
 extern uint32_t oct_tx_entries;
 
-
+extern uint8_t fw_table[];
 
 extern void oct_tx_process_mbuf(mbuf_t *mbuf);
 extern int oct_rxtx_init(void);
 extern int oct_rxtx_get(void);
 extern void oct_tx_done_check();
-
+extern void oct_tx_process_sw(mbuf_t *mbuf, uint8_t outport);
 
 #endif

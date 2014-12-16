@@ -30,7 +30,6 @@ CVMX_SHARED uint64_t del_flow[CPU_HW_RUNNING_MAX] = {0, 0, 0, 0};
 
 flow_table_info_t *flow_table;
 
-
 static inline flow_item_t *flow_item_alloc()
 {
     Mem_Slice_Ctrl_B *mscb;
@@ -123,7 +122,6 @@ flow_item_t *FlowAdd(flow_bucket_t *fb, unsigned int hash, mbuf_t *mbuf)
 #ifdef SEC_FLOW_DEBUG
     LOGDBG("==========>enter FlowAdd\n");
 #endif
-    flow_item_t *flow;
     flow_item_t *newf = flow_item_alloc();
     if(NULL == newf)
     {
@@ -140,35 +138,29 @@ flow_item_t *FlowAdd(flow_bucket_t *fb, unsigned int hash, mbuf_t *mbuf)
     newf->protocol = mbuf->proto;
     FLOW_UPDATE_TIMESTAMP(newf);
 
-    FLOW_ITEM_LOCK(newf);     /*lock it*/
+    FlowInsert(fb, newf);
+    new_flow[local_cpu_id]++;
+    return newf;
 
-    /*now scan and add, if exist, free new and return old*/
-    FLOW_TABLE_LOCK(fb);
-
-    flow = FlowFind(fb, mbuf, hash);
-
-    if(NULL == flow)         /*not exist, add new*/
-    {
-        FlowInsert(fb, newf);
-        FLOW_TABLE_UNLOCK(fb);
-        new_flow[local_cpu_id]++;
-        return newf;
-    }
-    else                     /*exist, free new and return old*/
-    {
-        FLOW_ITEM_LOCK(flow);      /*lock it*/
-        FLOW_TABLE_UNLOCK(fb);
-
-        flow_item_free(newf);
-
-        return flow;
-    }
 }
+
 
 
 /*update flow node info*/
 static inline void FlowUpdate(flow_item_t *f, mbuf_t *m)
 {
+
+    if(m->sport == f->sport)
+    {
+        f->pktcnts2d++;
+        f->bytecnts2d += m->pkt_totallen;
+    }
+    else
+    {
+        f->pktcntd2s++;
+        f->bytecntd2s += m->pkt_totallen;
+    }
+
     return;
 }
 
@@ -189,22 +181,16 @@ flow_item_t *FlowGetFlowFromHash(mbuf_t *mbuf)
     LOGDBG("hash value is %d\n", hash);
 #endif
 
-    FLOW_TABLE_LOCK(fb);
-
     flow = FlowFind(fb, mbuf, hash);
-    if(NULL != flow)    /*find , lock it and return*/
+    if(NULL != flow)    /*find and return*/
     {
-        FLOW_ITEM_LOCK(flow);
-        FLOW_TABLE_UNLOCK(fb);
         return flow;
     }
     else                /*not find, create a new node and insert it*/
     {
-        FLOW_TABLE_UNLOCK(fb);
         return FlowAdd(fb, hash, mbuf);
     }
 }
-
 
 
 void FlowHandlePacket(mbuf_t *m)
@@ -215,7 +201,6 @@ void FlowHandlePacket(mbuf_t *m)
 #endif
 
     flow_item_t *f;
-    uint16_t flow_action;
 
     f = FlowGetFlowFromHash(m);  /*return a locked flow item*/
     if(NULL == f)
@@ -226,20 +211,15 @@ void FlowHandlePacket(mbuf_t *m)
         return;
     }
 
-    /* Point the Packet at the Flow */
-    FlowReference((flow_item_t **)&m->flow, f);
+    STAT_FLOW_PROC_OK;
 
     /*TODO:  update info in the flow*/
     FlowUpdate(f, m);
-    flow_action = f->action;
 
-    FLOW_ITEM_UNLOCK(f); /*unlock flow node*/
-
+    m->flow = (void *)f;
     m->flags |= PKT_HAS_FLOW;
 
-    STAT_FLOW_PROC_OK;
-
-    if(flow_action == FLOW_ACTION_DROP)
+    if(FLOW_ACTION_DROP == f->action)
     {
         PACKET_DESTROY_ALL(m);
         return;
@@ -289,39 +269,24 @@ void FlowAgeTimeoutCB(Oct_Timer_Threat *o, void *param)
         INIT_HLIST_HEAD(&timeout);
 
         fb = &base[i];
-        if(FLOW_TABLE_TRYLOCK(fb) != 0)
-            continue;
 
         hlist_for_each_entry_safe(f, t, n, &fb->hash, list)
         {
-            if(FLOW_ITEM_TRYLOCK(f) != 0)
-                continue;
-
             if(FlowTimeOut(f, current_cycle))
             {
                 hlist_del(&f->list);
             #ifdef SEC_FLOW_DEBUG
                 LOGDBG("delete one flow node 0x%p\n", f);
             #endif
-
-                FLOW_ITEM_UNLOCK(f);  /* no one is referring to this flow, use_cnt 0, removed from hash*/
                 del_flow[local_cpu_id]++;
                 hlist_add_head(&f->list, &timeout);
             }
-            else
-            {
-                FLOW_ITEM_UNLOCK(f);
-            }
         }
-
-        FLOW_TABLE_UNLOCK(fb);
 
         hlist_for_each_entry_safe(tf, t, n, &timeout, list)
         {
             hlist_del(&tf->list);
-
             /*TODO: session ageing do something*/
-
             flow_item_free(tf);
         }
 
@@ -337,10 +302,13 @@ int FlowInit(void)
     int i = 0;
 
     flow_bucket_t *base = NULL;
+    char buf[10] = { 0 };
 
     flow_item_size_judge();
 
-    flow_table = (flow_table_info_t *)cvmx_bootmem_alloc_named((sizeof(flow_table_info_t) + FLOW_BUCKET_NUM * FLOW_BUCKET_SIZE), CACHE_LINE_SIZE, FLOW_HASH_TABLE_NAME);
+    sprintf(buf, "Flow_Hash_Table_%d", local_cpu_id);
+
+    flow_table = (flow_table_info_t *)cvmx_bootmem_alloc_named((sizeof(flow_table_info_t) + FLOW_BUCKET_NUM * FLOW_BUCKET_SIZE), CACHE_LINE_SIZE, buf);
     if(NULL == flow_table)
     {
         LOGDBG("flow init: no memory\n");
@@ -361,10 +329,9 @@ int FlowInit(void)
     for(i = 0; i < FLOW_BUCKET_NUM; i++)
     {
         INIT_HLIST_HEAD(&base[i].hash);
-        cvmx_spinlock_init(&base[i].lock);
     }
 
-    if(OCT_Timer_Create(0xFFFFFF, 0, 2, TIMER_GROUP, FlowAgeTimeoutCB, NULL, 0, 1000))/*1s*/
+    if(OCT_Timer_Create(0xFFFFFF, 0, 2, local_cpu_id, FlowAgeTimeoutCB, NULL, 0, 1000))/*1s*/
     {
         LOGDBG("timer create fail\n");
         return SEC_NO;
@@ -376,22 +343,5 @@ int FlowInit(void)
 }
 
 
-int FlowInfoGet()
-{
-
-    const cvmx_bootmem_named_block_desc_t *block_desc = cvmx_bootmem_find_named_block(FLOW_HASH_TABLE_NAME);
-    if (block_desc)
-    {
-        flow_table = (flow_table_info_t *)(block_desc->base_addr);
-    }
-    else
-    {
-        LOGDBG("FlowInfoGet error \n");
-        return SEC_NO;
-    }
-
-
-    return SEC_OK;
-}
 
 

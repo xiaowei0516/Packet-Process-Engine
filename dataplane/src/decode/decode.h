@@ -11,6 +11,7 @@
 
 #define PKT_IP_FRAG                     (1<<1)
 #define PKT_FIRST_FRAG                  (1<<2)
+#define PKT_FRAG_REASM_COMP             (1<<3)
 #define PKT_HAS_FLOW                    (1<<8)
 
 
@@ -23,13 +24,19 @@
 
 
 
-#define GET_PKT_LEN(p) ((p)->pkt_totallen)
-#define GET_PKT_DATA(p) ((p)->pkt_ptr)
+#define GET_PKT_LEN(p)   ((p)->pkt_totallen)
+#define GET_PKT_DATA(p)  ((p)->pkt_ptr)
 
 
 /*Given a packet pkt offset to the start of the ip header in a packet
  *We determine the ip version. */
 #define IP_GET_RAW_VER(pkt) ((((pkt)[0] & 0xf0) >> 4))
+
+
+
+#define CMP_PORT(p1, p2) \
+    ((p1) == (p2))
+
 
 
 
