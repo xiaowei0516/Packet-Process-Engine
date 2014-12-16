@@ -21,7 +21,7 @@
 
 
 
-uint8_t fw_table[OCT_PHY_PORT_MAX] = {OCT_PHY_PORT_SECONDE,
+uint8_t fw_table[OCT_PHY_PORT_MAX] = {OCT_PHY_PORT_FIRST,
                                         OCT_PHY_PORT_FIRST,
                                         OCT_PHY_PORT_FOURTH,
                                         OCT_PHY_PORT_THIRD };

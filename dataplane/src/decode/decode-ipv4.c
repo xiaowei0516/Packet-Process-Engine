@@ -61,7 +61,6 @@ static int DecodeIPV4Packet(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
             mbuf->ipv4.dip >> 8 & 0xff,
             mbuf->ipv4.dip & 0xff);
 #endif
-
     /*TODO: DecodeIPV4Options*/
 
     return DECODE_OK;

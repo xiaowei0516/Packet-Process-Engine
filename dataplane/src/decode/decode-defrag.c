@@ -111,7 +111,7 @@ fcb_t *FragFind(frag_bucket_t *fbucket, mbuf_t *mbuf, uint32_t hash)
     struct hlist_node *n;
 
 #ifdef SEC_DEFRAG_DEBUG
-    printf("============>enter FragFind\n");
+    LOGDBG("============>enter FragFind\n");
 #endif
 
     hlist_for_each_entry(fcb, n, &fbucket->hash, list)
@@ -119,14 +119,14 @@ fcb_t *FragFind(frag_bucket_t *fbucket, mbuf_t *mbuf, uint32_t hash)
         if(ip4_frags_table->match(fcb, mbuf))
         {
         #ifdef SEC_DEFRAG_DEBUG
-            printf("frag match is ok\n");
+            LOGDBG("frag match is ok\n");
         #endif
             FCB_UPDATE_TIMESTAMP(fcb);
             return fcb;
         }
     }
 #ifdef SEC_DEFRAG_DEBUG
-    printf("frag match is fail\n");
+    LOGDBG("frag match is fail\n");
 #endif
     return NULL;
 
@@ -237,7 +237,7 @@ mbuf_t *Frag_defrag_reasm(fcb_t *fcb)
     reasm_mb->flags |= PKT_FRAG_REASM_COMP;
 
     fcb->status |= DEFRAG_COMPLETE;
-
+    LOGDBG("REASM Success!\n");
     STAT_FRAG_REASM_OK;
     return reasm_mb;
 setup_err:
@@ -337,7 +337,7 @@ found:
         fcb->meat == fcb->total_fraglen)
     {
     #ifdef SEC_DEFRAG_DEBUG
-        printf("all in begin to reasm\n");
+        LOGDBG("all in begin to reasm\n");
     #endif
         return Frag_defrag_reasm(fcb);
     }
@@ -374,7 +374,9 @@ mbuf_t *Frag_defrag_begin(mbuf_t *mbuf, fcb_t *fcb)
 
     if(fcb->cache_num >= DEFRAG_CACHE_MAX)
     {
+        FCB_UNLOCK(fcb);
         PACKET_DESTROY_ALL(mbuf);
+        LOGDBG("CACHE FULL\n");
         STAT_FRAG_CACHE_FULL;
         return NULL;
     }
@@ -551,7 +553,7 @@ uint32_t FragModule_init()
     ip4_frags_table->match = ip4_frag_match;
     ip4_frags_table->hashfn = ip4_frag_hashfn;
 
-    if(OCT_Timer_Create(0xFFFFFF, 0, 2, TIMER_GROUP, Frag_defrag_timeout, NULL, 0, 1000))/*1s*/
+    if(OCT_Timer_Create(0xFFFFFF, 0, 2, local_cpu_id, Frag_defrag_timeout, NULL, 0, 1000))/*1s*/
     {
         printf("timer create fail\n");
         return SEC_NO;

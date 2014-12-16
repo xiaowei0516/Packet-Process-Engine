@@ -61,7 +61,7 @@ void OCT_RX_Group_Init()
 
     /* Accept any packet except for the ones destined to the Linux group */
     cvmx_pow_set_group_mask(cvmx_get_core_num(),
-                            (1<<FROM_INPUT_PORT_GROUP)|(1<<FROM_LINUX_GROUP) | (1<<local_cpu_id));
+                            (1<<FROM_INPUT_PORT_GROUP)|(1<<FROM_LINUX_GROUP) | (1<<local_cpu_id) | (1<<TIMER_GROUP));
 
     /* Wait for hardware init to complete */
     cvmx_coremask_barrier_sync(&sysinfo->core_mask);
