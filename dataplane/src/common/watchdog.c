@@ -1,4 +1,6 @@
+#define _GNU_SOURCE
 #include <oct-sched.h>
+#include <sched.h>
 #include <pthread.h>
 
 int wd_is_watchdog_registered(int cpuid)
@@ -39,7 +41,7 @@ void wd_check_watchdog()
 {
     int i;
     int watchdog_fired = 0;
-    
+
     if(wd_is_watchdog_disabled())
     {
         return;
@@ -73,6 +75,34 @@ static pthread_t wd_watchdog_thread;
 static void *wd_watchdog_func(void *arg)
 {
     int rc;
+    cpu_set_t mask;
+    cpu_set_t cpuset;
+    int j;
+    CPU_ZERO(&cpuset);
+    CPU_ZERO(&mask);
+    CPU_SET(0, &mask);
+
+    pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+
+    printf("Set returned by pthread_getaffinity_np() contained:\n");
+    for (j = 0; j < 2; j++)
+        if (CPU_ISSET(j, &cpuset))
+            printf("    CPU %d\n", j);
+
+    if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask) < 0)
+    {
+        LOGDBG("set thread affinity failed\n");
+    }
+
+    LOGDBG("set thread affinity OK\n");
+
+    pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+
+    printf("Set returned by pthread_getaffinity_np() contained:\n");
+    for (j = 0; j < 2; j++)
+        if (CPU_ISSET(j, &cpuset))
+            printf("    CPU %d\n", j);
+
     while(1)
     {
         rc = sleep(WD_WATCHDOG_CHECK_INTERVAL);
@@ -82,6 +112,7 @@ static void *wd_watchdog_func(void *arg)
             wd_check_watchdog(NULL);
         }
     }
+
     return NULL;
 }
 
