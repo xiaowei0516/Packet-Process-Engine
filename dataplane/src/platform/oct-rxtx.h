@@ -55,7 +55,7 @@ extern uint32_t oct_tx_entries;
 
 
 
-extern void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port);
+extern void oct_tx_process_mbuf(mbuf_t *mbuf);
 extern int oct_rxtx_init(void);
 extern int oct_rxtx_get(void);
 extern void oct_tx_done_check();

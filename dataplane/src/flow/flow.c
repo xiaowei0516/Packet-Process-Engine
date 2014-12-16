@@ -215,6 +215,7 @@ void FlowHandlePacket(mbuf_t *m)
 #endif
 
     flow_item_t *f;
+    uint16_t flow_action;
 
     f = FlowGetFlowFromHash(m);  /*return a locked flow item*/
     if(NULL == f)
@@ -230,12 +231,19 @@ void FlowHandlePacket(mbuf_t *m)
 
     /*TODO:  update info in the flow*/
     FlowUpdate(f, m);
+    flow_action = f->action;
 
     FLOW_ITEM_UNLOCK(f); /*unlock flow node*/
 
     m->flags |= PKT_HAS_FLOW;
 
     STAT_FLOW_PROC_OK;
+
+    if(flow_action == FLOW_ACTION_DROP)
+    {
+        PACKET_DESTROY_ALL(m);
+        return;
+    }
 
     l7_deliver(m);
 

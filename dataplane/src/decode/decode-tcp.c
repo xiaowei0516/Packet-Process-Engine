@@ -5,8 +5,9 @@
 #include "decode-tcp.h"
 #include "decode-statistic.h"
 #include <dp_acl.h>
+#include <flow.h>
 
-extern void FlowHandlePacket(mbuf_t *m);
+
 
 static int DecodeTCPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {

@@ -21,6 +21,13 @@
 
 
 
+#define FLOW_ACTION_UNKNOW   0
+#define FLOW_ACTION_FW       1
+#define FLOW_ACTION_DROP     2
+
+
+
+
 typedef struct flow_table_info_tag_s
 {
     uint32_t bucket_num;
@@ -56,7 +63,7 @@ typedef struct flow_item_tag_s
     uint16_t  protocol;
 
     uint16_t  input_port;
-
+    uint16_t  action;
 }flow_item_t;
 
 
@@ -149,6 +156,7 @@ static inline void FlowDeReference(flow_item_t **d) {
 extern int FlowInit(void);
 extern int FlowInfoGet();
 extern void FlowAgeTimeoutCB(Oct_Timer_Threat *o, void *param);
+extern void FlowHandlePacket(mbuf_t *m);
 
 
 extern CVMX_SHARED uint64_t new_flow[];

@@ -26,6 +26,7 @@ INCLUDE_DIR := \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/acl \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/flow \
 	-I$(OCTEON_ROOT)/sec-fw/include
 
 $(LIBDECODE_OBJ_$(d)):  CFLAGS_LOCAL := -O2 -g -W -Wall -Werror -Wno-unused-parameter -Wundef -G0 $(INCLUDE_DIR)

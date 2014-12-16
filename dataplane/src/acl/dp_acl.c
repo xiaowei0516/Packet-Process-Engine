@@ -335,9 +335,9 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
     if(g_acltree.TreeSet.num == 0)
     {
     #ifdef SEC_ACL_DEBUG
-        LOGDBG("not any rule exist\n");
+        LOGDBG("Rule is empty\n");
     #endif
-        return dp_acl_action_default;
+        return ACL_RULE_ACTION_FW;
     }
 
     cvmx_rwlock_wp_read_lock(&g_acltree.rwlock_hs);

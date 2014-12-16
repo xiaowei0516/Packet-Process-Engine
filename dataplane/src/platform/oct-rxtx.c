@@ -19,16 +19,25 @@
 #include <oct-api.h>
 
 
+
+uint8_t fw_table[OCT_PHY_PORT_MAX] = {OCT_PHY_PORT_SECONDE,
+                                        OCT_PHY_PORT_FIRST,
+                                        OCT_PHY_PORT_FOURTH,
+                                        OCT_PHY_PORT_THIRD };
+
+
+
 uint32_t oct_tx_entries = 0;
 oct_softx_stat_t *oct_stx[CPU_HW_RUNNING_MAX];
-
-
-
 
 
 extern CVMX_SHARED int wqe_pool;
 
 
+static inline uint8_t oct_tx_port_get(uint8_t inp)
+{
+    return fw_table[inp];
+}
 
 
 /*
@@ -161,21 +170,25 @@ oct_pend_tx_done_remove(tx_done_t *tdt)
 }
 
 
-void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
+void oct_tx_process_mbuf(mbuf_t *mbuf)
 {
     uint64_t queue;
     cvmx_pko_return_value_t send_status;
+    uint8_t inport, outport;
+    inport = mbuf->input_port;
 
-    if(port > OCT_PHY_PORT_MAX)
+    if(inport > OCT_PHY_PORT_MAX)
     {
         PACKET_DESTROY_ALL(mbuf);
         STAT_TX_SEND_PORT_ERR;
         return;
     }
 
-    queue = cvmx_pko_get_base_queue(port);
+    outport = oct_tx_port_get(inport);
 
-    cvmx_pko_send_packet_prepare(port, queue, CVMX_PKO_LOCK_CMD_QUEUE);
+    queue = cvmx_pko_get_base_queue(outport);
+
+    cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
 
 
     if(PKTBUF_IS_HW(mbuf))
@@ -187,7 +200,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
         pko_command.s.total_bytes = mbuf->pkt_totallen;
 
         /* Send the packet */
-        send_status = cvmx_pko_send_packet_finish(port, queue, pko_command, mbuf->packet_ptr, CVMX_PKO_LOCK_CMD_QUEUE);
+        send_status = cvmx_pko_send_packet_finish(outport, queue, pko_command, mbuf->packet_ptr, CVMX_PKO_LOCK_CMD_QUEUE);
         if (send_status != CVMX_PKO_SUCCESS)
         {
             STAT_TX_HW_SEND_ERR;
@@ -199,7 +212,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
     else if(PKTBUF_IS_SW(mbuf))
     {
         uint8_t *dont_free_cookie = NULL;
-        tx_done_t *tx_done = &(oct_stx[local_cpu_id]->tx_done[port]);
+        tx_done_t *tx_done = &(oct_stx[local_cpu_id]->tx_done[outport]);
         if(tx_done->tx_entries < (OCT_PKO_TX_DESC_NUM - 1))
         {
             dont_free_cookie = oct_pend_tx_done_add(tx_done, (void *)mbuf);
@@ -232,7 +245,7 @@ void oct_tx_process_mbuf(mbuf_t *mbuf, uint8_t port)
         tx_ptr_word.s.ptr = (uint64_t)cvmx_ptr_to_phys(dont_free_cookie);
 
         /* Send the packet */
-        send_status = cvmx_pko_send_packet_finish3(port, queue, pko_command, packet, tx_ptr_word.u64, CVMX_PKO_LOCK_CMD_QUEUE);
+        send_status = cvmx_pko_send_packet_finish3(outport, queue, pko_command, packet, tx_ptr_word.u64, CVMX_PKO_LOCK_CMD_QUEUE);
         if(send_status != CVMX_PKO_SUCCESS)
         {
             if(dont_free_cookie)

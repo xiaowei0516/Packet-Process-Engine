@@ -7,7 +7,7 @@ void l7_deliver(mbuf_t *m)
     LOGDBG("===============>l7 enter\n");
 #endif
 
-    oct_tx_process_mbuf(m, m->input_port);
+    oct_tx_process_mbuf(m);
 
     return;
 }
