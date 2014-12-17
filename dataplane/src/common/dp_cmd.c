@@ -3,6 +3,7 @@
 #include "dp_acl.h"
 #include <oct-rxtx.h>
 #include <flow.h>
+#include "rwlock.h"
 
 void oct_send_response(cvmx_wqe_t *work, uint16_t opcode, void *data, uint32_t size)
 {
@@ -672,13 +673,13 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
     }
     else
     {
-        cvmx_rwlock_wp_write_lock(&g_acltree.rwlock_hs);
+        write_lock(&g_acltree.hs_rwlock);
 
         DP_Acl_Rule_Clean(&(g_acltree.TreeSet),&(g_acltree.TreeNode));
 
         if(rule_list->rule_entry_free == RULE_ENTRY_MAX)  // rule empty, no need to load
         {
-            cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
+            write_unlock(&g_acltree.hs_rwlock);
 
             len = sprintf((void *)ptr, "no rule exist\n");
             ptr += len;
@@ -688,8 +689,7 @@ void dp_acl_rule_commit(cvmx_wqe_t *wq, void *data)
         {
             ret = DP_Acl_Load_Rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode));
 
-
-            cvmx_rwlock_wp_write_unlock(&g_acltree.rwlock_hs);
+            write_unlock(&g_acltree.hs_rwlock);
 
             if(SEC_OK != ret)
             {

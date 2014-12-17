@@ -11,6 +11,10 @@
 #define DP_ACL_RULELIST_NAME "DP_ACL_RULELIST"
 
 
+#define DP_ACL_BUILD_CHECK_INTERVAL  1
+
+
+
 extern rule_list_t *rule_list;
 
 extern CVMX_SHARED unit_tree g_acltree;

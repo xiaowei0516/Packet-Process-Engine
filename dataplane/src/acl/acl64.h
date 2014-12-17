@@ -11,6 +11,7 @@
 #include "acl_rule.h"
 #include <sec-common.h>
 #include <oct-common.h>
+#include "rwlock.h"
 
 
 /*-----------------------------------------------------------------------------
@@ -79,7 +80,7 @@ typedef struct hs_node_s
 
 
 typedef struct {
-    cvmx_rwlock_wp_lock_t rwlock_hs;
+    rwlock_t hs_rwlock;
     rule_set_t TreeSet;
     hs_node_t  TreeNode;
 } unit_tree;

@@ -121,6 +121,10 @@ int Sec_LowLevel_Init()
 
         printf("wd_watchdog_init ok\n");
 
+        DP_Acl_Build_Thread_Init();
+
+        printf("DP_Acl_Build_Thread_Init ok\n");
+
     }
 
     OCT_RX_Group_Init();      //ALL dataplane called
@@ -172,7 +176,6 @@ int Sec_HighLevel_Init()
 
     if ( cvmx_is_init_core() )
     {
-
         if(SEC_OK != Decode_PktStat_Init())
         {
             printf("Decode_PktStat_Init failed\n");
@@ -215,7 +218,6 @@ int Sec_HighLevel_Init()
         }
 
         printf("FragModuleInfo_Get ok\n");
-
     }
 
     if(SEC_OK != FlowInit())
@@ -225,11 +227,8 @@ int Sec_HighLevel_Init()
     }
     printf("FlowInit ok\n");
 
-
-
     return SEC_OK;
 }
-
 
 
 

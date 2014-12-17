@@ -79,6 +79,7 @@ int Rule_list_init()
 
     rule_list->rule_def_act = ACL_RULE_ACTION_DROP;
     rule_list->rule_entry_free = RULE_ENTRY_MAX;
+    rule_list->build_status = RULE_BUILD_COMMIT;
 
     return 0;
 }

@@ -76,11 +76,12 @@ static void *wd_watchdog_func(void *arg)
 {
     int rc;
     cpu_set_t mask;
-    cpu_set_t cpuset;
-    int j;
-    CPU_ZERO(&cpuset);
     CPU_ZERO(&mask);
     CPU_SET(0, &mask);
+#if 0
+    int j;
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
 
     pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
 
@@ -88,20 +89,22 @@ static void *wd_watchdog_func(void *arg)
     for (j = 0; j < 2; j++)
         if (CPU_ISSET(j, &cpuset))
             printf("    CPU %d\n", j);
-
+#endif
     if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask) < 0)
     {
-        LOGDBG("set thread affinity failed\n");
+        LOGDBG("wd_watchdog set thread affinity failed\n");
     }
 
-    LOGDBG("set thread affinity OK\n");
+    LOGDBG("wd_watchdog set thread affinity OK\n");
 
+#if 0
     pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
 
     printf("Set returned by pthread_getaffinity_np() contained:\n");
     for (j = 0; j < 2; j++)
         if (CPU_ISSET(j, &cpuset))
             printf("    CPU %d\n", j);
+#endif
 
     while(1)
     {
