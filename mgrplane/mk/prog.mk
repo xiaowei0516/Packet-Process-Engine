@@ -2,7 +2,7 @@ include $(PROJ_DIR)/mk/env.mk
 TOP = ..
 
 
-PROG_SRV_LDFLAGS += -lrt
+PROG_SRV_LDFLAGS += -lrt -lpthread
 
 srv:FORCE
 	@echo [LD] $@

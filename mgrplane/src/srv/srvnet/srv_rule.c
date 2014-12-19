@@ -6,6 +6,8 @@
 #include <rpc-common.h>
 #include <shm.h>
 #include <time.h>
+#include <pthread.h>
+
 
 
 
@@ -453,6 +455,295 @@ int Rule_show_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, void *pa
     return 0;
 }
 
+
+
+static pthread_t rule_load_thread;
+static pthread_cond_t rule_load_cond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t rule_load_mutex = PTHREAD_MUTEX_INITIALIZER;
+uint32_t rule_load_notify = 0;
+
+char *rule_conf_filename = "";
+
+
+int ReadIPInfo(FILE *fp, uint32_t *ip_info, uint32_t *mask_info)
+{
+    unsigned int trange[4];
+    unsigned int mask;
+    char validslash;
+    uint32_t ip = 0;
+
+
+    if (4 != fscanf(fp, "%d.%d.%d.%d", &trange[0],&trange[1],&trange[2],&trange[3]))
+    {
+        printf ("\n>> [err] ill-format IP rule-file\n");
+        return -1;
+    }
+
+    if (1 != fscanf(fp, "%c", &validslash))
+    {
+        printf ("\n>> [err] ill-format IP slash rule-file\n");
+        return -1;
+    }
+
+    if(validslash != '/')
+    {
+        printf ("\n>> [err] ill-format IP slash rule-file   /  \n");
+        return -1;
+    }
+
+    if (1 != fscanf(fp,"%d", &mask))
+    {
+        printf ("\n>> [err] ill-format mask rule-file\n");
+        return -1;
+    }
+
+    ip = ((uint32_t)trange[0]) << 24;
+    ip |= ((uint32_t)trange[1]) << 16;
+    ip |= ((uint32_t)trange[2]) << 8;
+    ip |= ((uint32_t)trange[3]);
+
+    if( 0 == ip && 0 != mask)
+    {
+        printf("sip mask invalid\n");
+        return -1;
+
+    }
+    if( 0 != ip && mask > 32)
+    {
+        printf("sip mask invalid\n");
+        return -1;
+    }
+
+    *ip_info = ip;
+    *mask_info = mask;
+
+    return 0;
+}
+
+int ReadPortInfo(FILE *fp, uint16_t *from, uint16_t *to)
+{
+    unsigned int tfrom;
+    unsigned int tto;
+    if ( 2 !=  fscanf(fp,"%d : %d",&tfrom, &tto))
+    {
+        printf ("\n>> [err] ill-format port range rule-file\n");
+        return -1;
+    }
+    *from = tfrom;
+    *to = tto;
+
+    return 0;
+}
+
+int ReadProtoInfo(FILE *fp, uint8_t *from, uint8_t *to)
+{
+    unsigned int tfrom;
+    unsigned int tto;
+    if ( 2 !=  fscanf(fp,"%d : %d",&tfrom, &tto)) {
+        printf ("\n>> [err] ill-format port range rule-file\n");
+        return -1;
+    }
+    *from = tfrom;
+    *to = tto;
+
+    return 0;
+}
+
+
+int ReadMACInfo(FILE *fp, uint8_t *macinfo)
+{
+    unsigned int mac[6];
+    if ( 6 !=  fscanf(fp,"%u:%u:%u:%u:%u:%u",&mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]))
+    {
+        printf ("\n>> [err] ill-format port range rule-file\n");
+        return -1;
+    }
+
+    macinfo[0] = mac[0];
+    macinfo[1] = mac[1];
+    macinfo[2] = mac[2];
+    macinfo[3] = mac[3];
+    macinfo[4] = mac[4];
+    macinfo[5] = mac[5];
+
+    return 0;
+}
+
+
+int ReadTimeInfo(FILE *fp, uint64_t *timeinfo)
+{
+    uint64_t time;
+    if (4 != fscanf(fp, "%ld", &time))
+    {
+        printf ("\n>> [err] ill-format IP rule-file\n");
+        return -1;
+    }
+
+    *timeinfo = time;
+
+    return 0;
+}
+
+
+int ReadActionInfo(FILE *fp, uint16_t *actioninfo)
+{
+    int action;
+    if (4 != fscanf(fp, "%d", &action))
+    {
+        printf ("\n>> [err] ill-format IP rule-file\n");
+        return -1;
+    }
+
+    *actioninfo = action;
+
+    return 0;
+}
+
+int Rule_Load_Line(FILE *fp)
+{
+    RCP_BLOCK_ACL_RULE_TUPLE rule;
+    char validfilter;               //validfilter means an '@'
+
+    while(!feof(fp))
+    {
+        if ( 0 != fscanf(fp,"%c",&validfilter))
+        {
+            printf (">> [err] ill-format @ rule-file\n");
+        }
+
+        if (validfilter != '@')     //each rule should begin with an '@'
+            return -1;
+
+        if(0 != ReadMACInfo(fp, rule.smac))
+        {
+            return -1;
+        }
+
+        if(0 != ReadMACInfo(fp, rule.dmac))
+        {
+            return -1;
+        }
+
+        if(0 != ReadIPInfo(fp, &rule.sip, &rule.sip_mask))
+        {
+            return -1;
+        }
+
+        if(0 != ReadIPInfo(fp, &rule.dip, &rule.dip_mask))
+        {
+            return -1;
+        }
+
+        if(0 != ReadPortInfo(fp, &rule.sport_start, &rule.sport_end))
+        {
+            return -1;
+        }
+
+        if(0 != ReadPortInfo(fp, &rule.dport_start, &rule.dport_end))
+        {
+            return -1;
+        }
+
+        if(0 != ReadProtoInfo(fp, &rule.protocol_start, &rule.protocol_end))
+        {
+            return -1;
+        }
+
+        if(0 != ReadTimeInfo(fp, &rule.time_start))
+        {
+            return -1;
+        }
+
+        if(0 != ReadTimeInfo(fp, &rule.time_end))
+        {
+            return -1;
+        }
+
+        if(0 != ReadActionInfo(fp, &rule.action))
+        {
+            return -1;
+        }
+
+        Rule_add(&rule);
+
+        return 0;
+    }
+
+    return 0;
+}
+
+int Rule_load_from_conf()
+{
+    int line = 0;
+    uint32_t ret;
+    FILE *fp;
+
+    fp = fopen(rule_conf_filename, "r");
+    if (fp == NULL)
+    {
+        printf("Couldnt open filter set file \n");
+        return  -1;
+    }
+
+    while(!feof(fp))
+    {
+        ret = Rule_Load_Line(fp);
+        if(ret != 0)
+        {
+            printf("config file line %d format err\n", line);
+            return -1;
+        }
+        line++;
+    }
+
+    return 0;
+
+}
+
+static void *Rule_Load_Fn(void *arg)
+{
+    while(1)
+    {
+        pthread_mutex_lock(&rule_load_mutex);
+
+        while (!rule_load_notify)
+        {
+            pthread_cond_wait(&rule_load_cond, &rule_load_mutex);
+        }
+
+        Rule_load_from_conf();
+
+        rule_load_notify = 0;
+
+        pthread_mutex_unlock(&rule_load_mutex);
+    }
+
+    return NULL;
+}
+
+
+void Rule_config()
+{}
+
+void Rule_Load_Notify()
+{
+    pthread_mutex_lock(&rule_load_mutex);
+
+    Rule_config();  //give a configfile and notify
+
+    rule_load_notify = 1;
+
+    pthread_cond_signal(&rule_load_cond);
+
+    pthread_mutex_unlock(&rule_load_mutex);
+}
+
+
+
+void Rule_load_thread_start()
+{
+    pthread_create(&rule_load_thread, NULL, Rule_Load_Fn, NULL);
+}
 
 
 

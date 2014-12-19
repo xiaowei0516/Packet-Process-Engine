@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    Rule_load_thread_start();
+
+
     printf("server init done.\n");
 
     printf("now server running....\n");

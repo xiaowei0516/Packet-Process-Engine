@@ -27,15 +27,15 @@ typedef struct tag_RCP_BLOCK_ACL_RULE_TUPLE{
     uint8_t dmac[6];
     uint16_t sport_start;
     uint16_t sport_end;
-    int32_t sip;
-    int32_t dip;
-    int32_t sip_mask;
-    int32_t dip_mask;
-    int16_t dport_start;
-    int16_t dport_end;
-    int8_t protocol_start;
-    int8_t protocol_end;
-    int16_t action;
+    uint32_t sip;
+    uint32_t dip;
+    uint32_t sip_mask;
+    uint32_t dip_mask;
+    uint16_t dport_start;
+    uint16_t dport_end;
+    uint8_t protocol_start;
+    uint8_t protocol_end;
+    uint16_t action;
 }__attribute__ ((__packed__)) RCP_BLOCK_ACL_RULE_TUPLE;
 
 
