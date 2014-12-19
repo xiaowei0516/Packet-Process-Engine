@@ -1,10 +1,10 @@
 /********************************************************************************
  *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology 
+ *        Copyright (C) 2014-2015  Beijing winicssec Technology
  *        All rights reserved
  *
  *        filename :       oct-init.h
- *        description :    
+ *        description :
  *
  *        created by  luoye  at  2014-11-18
  *
@@ -75,5 +75,8 @@ extern int OCT_Timer_Init();
 extern int OCT_Timer_Create(uint32_t tag, cvmx_pow_tag_type_t tag_type, uint64_t qos, uint64_t grp, timer_thread_fn fn,
                                 void *param, uint32_t param_len, uint16_t tick);
 extern void OCT_Timer_Thread_Process(cvmx_wqe_t *wq);
+
+extern void dp_sync_srv();
+extern int srv_sync_dp_init();
 
 #endif

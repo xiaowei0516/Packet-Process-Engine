@@ -23,5 +23,7 @@ extern int Rule_show_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, v
 
 extern void Rule_load_thread_start();
 
+extern void Rule_Conf_Recover();
+
 
 #endif

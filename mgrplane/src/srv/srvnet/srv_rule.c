@@ -115,7 +115,6 @@ int Rule_add(RCP_BLOCK_ACL_RULE_TUPLE *rule)
     rule_list->rule_entry_free--;
     rule_list->rule_entry[index].entry_status = RULE_ENTRY_STATUS_USED;
     rule_list->build_status = RULE_BUILD_UNCOMMIT;
-
     return RULE_OK;
 
 }
@@ -462,7 +461,7 @@ static pthread_cond_t rule_load_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t rule_load_mutex = PTHREAD_MUTEX_INITIALIZER;
 uint32_t rule_load_notify = 0;
 
-char *rule_conf_filename = "";
+char *rule_conf_filename = "./rule_config";
 
 
 int ReadIPInfo(FILE *fp, uint32_t *ip_info, uint32_t *mask_info)
@@ -471,11 +470,11 @@ int ReadIPInfo(FILE *fp, uint32_t *ip_info, uint32_t *mask_info)
     unsigned int mask;
     char validslash;
     uint32_t ip = 0;
+    int ret;
 
-
-    if (4 != fscanf(fp, "%d.%d.%d.%d", &trange[0],&trange[1],&trange[2],&trange[3]))
+    if (4 != (ret = fscanf(fp, "%d.%d.%d.%d", &trange[0],&trange[1],&trange[2],&trange[3])))
     {
-        printf ("\n>> [err] ill-format IP rule-file\n");
+        printf (">> [err] ill-format IP rule-file %d\n", ret);
         return -1;
     }
 
@@ -573,9 +572,9 @@ int ReadMACInfo(FILE *fp, uint8_t *macinfo)
 int ReadTimeInfo(FILE *fp, uint64_t *timeinfo)
 {
     uint64_t time;
-    if (4 != fscanf(fp, "%ld", &time))
+    if (1 != fscanf(fp, "%ld", &time))
     {
-        printf ("\n>> [err] ill-format IP rule-file\n");
+        printf ("\n>> [err] ill-format time rule-file\n");
         return -1;
     }
 
@@ -588,9 +587,9 @@ int ReadTimeInfo(FILE *fp, uint64_t *timeinfo)
 int ReadActionInfo(FILE *fp, uint16_t *actioninfo)
 {
     int action;
-    if (4 != fscanf(fp, "%d", &action))
+    if (1 != fscanf(fp, "%d", &action))
     {
-        printf ("\n>> [err] ill-format IP rule-file\n");
+        printf ("\n>> [err] ill-format action rule-file\n");
         return -1;
     }
 
@@ -606,63 +605,90 @@ int Rule_Load_Line(FILE *fp)
 
     while(!feof(fp))
     {
-        if ( 0 != fscanf(fp,"%c",&validfilter))
+        if(0 != fscanf(fp,"%c",&validfilter))
         {
-            printf (">> [err] ill-format @ rule-file\n");
+            //printf (">> [err] ill-format @ rule-file\n");
+            //return -1;
         }
 
         if (validfilter != '@')     //each rule should begin with an '@'
-            return -1;
+        {
+            continue;
+        }
+
 
         if(0 != ReadMACInfo(fp, rule.smac))
         {
             return -1;
         }
+        printf("smac is %2u:%2u:%2u:%2u:%2u:%2u\n",
+                rule.smac[0],
+                rule.smac[1],
+                rule.smac[2],
+                rule.smac[3],
+                rule.smac[4],
+                rule.smac[5] );
 
         if(0 != ReadMACInfo(fp, rule.dmac))
         {
             return -1;
         }
+        printf("dmac is %2u:%2u:%2u:%2u:%2u:%2u\n",
+                rule.dmac[0],
+                rule.dmac[1],
+                rule.dmac[2],
+                rule.dmac[3],
+                rule.dmac[4],
+                rule.dmac[5] );
 
         if(0 != ReadIPInfo(fp, &rule.sip, &rule.sip_mask))
         {
             return -1;
         }
+        printf("sip is %d.%d.%d.%d/%d\n", (int)((rule.sip >> 24)&0xff), (int)((rule.sip >> 16)&0xff), (int)((rule.sip >> 8)&0xff), (int)((rule.sip)&0xff), (int)rule.sip_mask & 0xff );
 
         if(0 != ReadIPInfo(fp, &rule.dip, &rule.dip_mask))
         {
             return -1;
         }
+        printf("dip is %d.%d.%d.%d/%d\n", (int)((rule.dip >> 24)&0xff), (int)((rule.dip >> 16)&0xff), (int)((rule.dip >> 8)&0xff), (int)((rule.dip)&0xff), (int)rule.dip_mask & 0xff );
 
         if(0 != ReadPortInfo(fp, &rule.sport_start, &rule.sport_end))
         {
             return -1;
         }
+        printf("sport start is %d, end is %d\n", rule.sport_start, rule.sport_end);
 
         if(0 != ReadPortInfo(fp, &rule.dport_start, &rule.dport_end))
         {
             return -1;
         }
+        printf("dport start is %d, end is %d\n", rule.dport_start, rule.dport_end);
 
         if(0 != ReadProtoInfo(fp, &rule.protocol_start, &rule.protocol_end))
         {
             return -1;
         }
+        printf("protocol start is %d, end is %d\n", rule.protocol_start, rule.protocol_end);
+
 
         if(0 != ReadTimeInfo(fp, &rule.time_start))
         {
             return -1;
         }
+        printf("time_start is %ld\n", rule.time_start);
 
         if(0 != ReadTimeInfo(fp, &rule.time_end))
         {
             return -1;
         }
+        printf("time_end is %ld\n", rule.time_end);
 
         if(0 != ReadActionInfo(fp, &rule.action))
         {
             return -1;
         }
+        printf("action is %d\n", rule.action);
 
         Rule_add(&rule);
 
@@ -681,12 +707,15 @@ int Rule_load_from_conf()
     fp = fopen(rule_conf_filename, "r");
     if (fp == NULL)
     {
-        printf("Couldnt open filter set file \n");
+        printf("Couldnt open rule config file\n");
         return  -1;
     }
 
+    printf("open rule config success\n");
+
     while(!feof(fp))
     {
+        printf("line %d:\n", line);
         ret = Rule_Load_Line(fp);
         if(ret != 0)
         {
@@ -695,6 +724,10 @@ int Rule_load_from_conf()
         }
         line++;
     }
+
+    fclose(fp);
+
+    rule_list->build_notify = 1;
 
     return 0;
 
@@ -743,6 +776,17 @@ void Rule_Load_Notify()
 void Rule_load_thread_start()
 {
     pthread_create(&rule_load_thread, NULL, Rule_Load_Fn, NULL);
+}
+
+
+
+void Rule_Conf_Recover()
+{
+    pthread_mutex_lock(&rule_load_mutex);
+
+    Rule_load_from_conf();
+
+    pthread_mutex_unlock(&rule_load_mutex);
 }
 
 

@@ -16,6 +16,8 @@
 #include "oct-port.h"
 #include "oct-api.h"
 
+#include "shm.h"
+
 
 
 /* This is the Octeon hardware port number to intercept. Packets coming
@@ -228,7 +230,53 @@ int OCT_CPU_Init()
     return SEC_OK;
 }
 
+SRV_DP_SYNC *srv_dp_sync;
 
+
+int srv_sync_dp_init()
+{
+    int fd;
+
+    fd = shm_open(SHM_SRV_DP_SYNC_NAME, O_RDWR, 0);
+
+    if (fd < 0)
+    {
+        LOGDBG("Failed to setup CVMX_SHARED(shm_open)\n");
+        return SEC_NO;
+    }
+
+    ftruncate(fd, sizeof(SRV_DP_SYNC));
+
+    void *ptr = mmap(NULL, sizeof(SRV_DP_SYNC), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (ptr == NULL)
+    {
+        LOGDBG("Failed to setup rule list (mmap copy)");
+        return SEC_NO;
+    }
+
+    srv_dp_sync = (SRV_DP_SYNC *)ptr;
+
+    if(srv_dp_sync->magic != SRV_DP_SYNC_MAGIC)
+    {
+        LOGDBG("srv dp sync magic error\n");
+        return SEC_NO;
+    }
+
+    return SEC_OK;
+}
+
+
+void dp_sync_srv()
+{
+    while(!srv_dp_sync->srv_initdone);
+    printf("srv init done....\n");
+
+    while(!srv_dp_sync->srv_notify_dp);
+    printf("srv notify dp is true...\n");
+
+    srv_dp_sync->dp_ack = 1;
+    printf("dp give a ack to srv...\n");
+}
 
 
 

@@ -197,6 +197,13 @@ int Sec_HighLevel_Init()
         }
         printf("DP_Acl_Rule_Init ok\n");
 
+        if(SEC_OK != srv_sync_dp_init())
+        {
+            printf("srv_sync_dp_init failed\n");
+            return SEC_NO;
+        }
+        printf("srv_sync_dp_init ok\n");
+
     }
 
     cvmx_coremask_barrier_sync(&sysinfo->core_mask);
@@ -338,6 +345,8 @@ int main(int argc, char *argv[])
     {
         printf("sec HighLevel init ok!\n");
     }
+
+    dp_sync_srv();
 
     mainloop();
 

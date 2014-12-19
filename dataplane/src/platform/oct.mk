@@ -20,7 +20,8 @@ LIBPLATFORM_OBJ_$(d)  :=  \
 INCLUDE_DIR := \
 	-I$(d) \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
-	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/decode
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/decode \
+	-I$(OCTEON_ROOT)/sec-fw/include
 
 	
 
