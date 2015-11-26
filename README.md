@@ -42,3 +42,6 @@ Packet Process Engine is a high performance Netwrok Packet Process Engine. It is
 
 ## How to use
 ...
+
+## Contributors
+PPE is designed and implemented by @Roy Luo. For more information about the author, please visit: [http://royluo.org/about](http://royluo.org/about)
