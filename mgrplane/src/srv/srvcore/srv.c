@@ -6,11 +6,17 @@
 SRV_DP_SYNC *srv_dp_sync;
 
 
-
+int dp_msg_queue_id;
 int srv_dp_sync_init()
 {
     /*TODO:alloc rule_list a share mem*/
     int fd;
+
+    dp_msg_queue_id = MSGQUE_Init(SHM_MSGQUE_KEY);
+    if(dp_msg_queue_id < 0)
+    {
+        return -1;
+    }
 
     fd = shm_open(SHM_SRV_DP_SYNC_NAME, O_RDWR | O_CREAT | O_TRUNC, 0);
 
@@ -43,7 +49,7 @@ int srv_dp_sync_init()
 void srv_sync_dp()
 {
     srv_dp_sync->srv_initdone = 1;
-    printf("srv init done, waiting for dp...\n");
+    printf("\nsrv init done, waiting for dp...\n");
 
     srv_dp_sync->srv_notify_dp = 1;
 
@@ -60,7 +66,7 @@ int main(int argc, char *argv[])
 {
     int ch;
 
-    while ((ch = getopt(argc, argv, "d:h")) != -1) {
+    while ((ch = getopt(argc, argv, "pdc:x")) != -1) {
         switch (ch) {
         case 'd':
             debugprint = 1;
@@ -71,7 +77,6 @@ int main(int argc, char *argv[])
     if (!debugprint) {
         daemon(0, 1);
     }
-
 
     server_init();
 
@@ -85,13 +90,12 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    //srv_sync_dp();
+    srv_sync_dp();
 
+    //Rule_Conf_Recover();
 
-    Rule_Conf_Recover();
-
-    Rule_load_thread_start();
-
+    //printf("start rule load thread...\n");
+    //Rule_load_thread_start();
 
     printf("server init done.\n");
 

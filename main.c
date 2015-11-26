@@ -1,48 +1,3 @@
-/***********************license start***************
- * Copyright (c) 2003-2010  Cavium Inc.y (support@cavium.com). All rights
- * reserved.
- *
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
-
- *   * Neither the name of Cavium Inc.y nor the names of
- *     its contributors may be used to endorse or promote products
- *     derived from this software without specific prior written
- *     permission.
-
- * This Software, including technical data, may be subject to U.S. export  control
- * laws, including the U.S. Export Administration Act and its  associated
- * regulations, and may be subject to export or import  regulations in other
- * countries.
-
- * TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
- * AND WITH ALL FAULTS AND CAVIUM INC. MAKES NO PROMISES, REPRESENTATIONS OR
- * WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH RESPECT TO
- * THE SOFTWARE, INCLUDING ITS CONDITION, ITS CONFORMITY TO ANY REPRESENTATION OR
- * DESCRIPTION, OR THE EXISTENCE OF ANY LATENT OR PATENT DEFECTS, AND CAVIUM
- * SPECIFICALLY DISCLAIMS ALL IMPLIED (IF ANY) WARRANTIES OF TITLE,
- * MERCHANTABILITY, NONINFRINGEMENT, FITNESS FOR A PARTICULAR PURPOSE, LACK OF
- * VIRUSES, ACCURACY OR COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR
- * CORRESPONDENCE TO DESCRIPTION. THE ENTIRE  RISK ARISING OUT OF USE OR
- * PERFORMANCE OF THE SOFTWARE LIES WITH YOU.
- ***********************license end**************************************/
-
-
-/*
- * File version info: $Id: secd.c 87283 2013-08-23 18:13:43Z lrosenboim $
- *
- */
-
 #include <stdio.h>
 #include <string.h>
 #ifdef __linux__
@@ -64,22 +19,31 @@
 #include <dp_cmd.h>
 #include <sos_malloc.h>
 #include <dp_acl.h>
-
+#include <stream-tcp.h>
+#include <dp_portscan.h>
+#include <route.h>
+#include <oct-thread.h>
+//#include "match.h"
+//#include "tsmp_dc.h"
+#include "dp_attack.h"
+#include "util-atomic.h"
 
 extern flow_item_t *flow_item_alloc();
-extern void *oct_rx_process_work(cvmx_wqe_t *wq);
+
 extern void Decode(mbuf_t *mbuf);
 extern cvmx_sysinfo_t *sysinfo;
 
+uint64_t packet_rx[4] = {0};
+
+
 int Sec_LowLevel_Init()
 {
-
-    OCT_CPU_Init();
-
-    OCT_UserApp_Init();
-
-    if (cvmx_is_init_core())  //First dataplane called
+    if (IS_DP_MASTER_THREAD)  //First dataplane called
     {
+        OCT_UserApp_Init();
+
+        OCT_CPU_Init();
+
         OCT_Intercept_Port_Init(); //Have one core do the hardware initialization
 
         if (SEC_OK != OCT_Timer_Init())
@@ -87,16 +51,14 @@ int Sec_LowLevel_Init()
             printf("OCT_Timer_Init fail\n");
             return SEC_NO;
         }
-        else
-        {
-            printf("OCT_Timer_Init ok\n");
-        }
+        printf("OCT_Timer_Init ok\n");
 
         if(SEC_OK != Mem_Pool_Init())
         {
             return SEC_NO;
         }
         printf("Mem_Pool_Init ok\n");
+
 #if 0
         if(SEC_OK != sos_mem_init())
         {
@@ -114,29 +76,24 @@ int Sec_LowLevel_Init()
         {
             return SEC_NO;
         }
-
         printf("oct_rxtx_init ok\n");
 
         wd_watchdog_init();
-
         printf("wd_watchdog_init ok\n");
-
-        DP_Acl_Build_Thread_Init();
-
-        printf("DP_Acl_Build_Thread_Init ok\n");
-
     }
 
-    OCT_RX_Group_Init();      //ALL dataplane called
+    OCT_RX_Group_Init();      //ALL dataplane called, set self core's group
 
-    if (!cvmx_is_init_core()) //Non first dataplane called
+    if (!IS_DP_MASTER_THREAD) //Non first dataplane called
     {
+    #if 0
         if(SEC_OK != Mem_Pool_Get())
         {
             printf("mem pool info get failed!\n");
             return SEC_NO;
         }
         printf("mem pool info get ok!\n");
+    #endif
 #if 0
         if(SEC_OK != sos_mem_get())
         {
@@ -145,7 +102,7 @@ int Sec_LowLevel_Init()
         }
         printf("sos_mem_get ok!\n");
 #endif
-
+    #if 0
         if(SEC_OK != oct_sched_Get())
         {
             printf("oct_sched_Get fail\n");
@@ -159,7 +116,7 @@ int Sec_LowLevel_Init()
             return SEC_NO;
         }
         printf("oct_rxtx_get ok\n");
-
+    #endif
     }
 
     register_watchdog();
@@ -174,15 +131,21 @@ int Sec_HighLevel_Init()
     mbuf_size_judge();
     flow_item_size_judge();
 
-    if ( cvmx_is_init_core() )
+    if ( IS_DP_MASTER_THREAD )
     {
         if(SEC_OK != Decode_PktStat_Init())
         {
             printf("Decode_PktStat_Init failed\n");
             return SEC_NO;
         }
-
         printf("Decode_PktStat_Init ok\n");
+
+        if(SEC_OK != StreamTcpInit())
+        {
+            printf("StreamTcpInit failed\n");
+            return SEC_NO;
+        }
+        printf("StreamTcpInit ok\n");
 
         if(SEC_OK != FragModule_init())
         {
@@ -190,12 +153,11 @@ int Sec_HighLevel_Init()
         }
         printf("FragModule_init ok\n");
 
-        if(SEC_OK != DP_Acl_Rule_Init())
+        if(SEC_OK != PortScan_Module_init())
         {
-            printf("DP_Acl_Rule_Init failed\n");
-            return SEC_NO;
+            printf("PortScan_Module_init failed\n");
         }
-        printf("DP_Acl_Rule_Init ok\n");
+        printf("PortScan_Module_init ok\n");
 
         if(SEC_OK != srv_sync_dp_init())
         {
@@ -204,12 +166,31 @@ int Sec_HighLevel_Init()
         }
         printf("srv_sync_dp_init ok\n");
 
+        DP_Msg_Process_Thread_Init();
+        printf("DP_Msg_Process_Thread_Init ok\n");
+
+        DP_NetStat_Monitor_Init();
+        printf("DP_NetStat_Monitor_Init ok\n");
+
+        DP_Attack_load_thread_start();
+
+        if(SEC_OK != DP_Acl_Rule_Init())
+        {
+            printf("DP_Acl_Rule_Init failed\n");
+            return SEC_NO;
+        }
+        printf("DP_Acl_Rule_Init ok\n");
+
+        printf("DP_Attack_load_from_conf\n");
+        DP_Attack_load_from_conf();
+
     }
 
-    cvmx_coremask_barrier_sync(&sysinfo->core_mask);
+    //cvmx_coremask_barrier_sync(&sysinfo->core_mask);
 
-    if ( !cvmx_is_init_core() )
+    if ( !IS_DP_MASTER_THREAD )
     {
+    #if 0
         if(SEC_OK != Decode_PktStat_Get())
         {
             printf("Decode_PktStat_Get failed\n");
@@ -225,9 +206,10 @@ int Sec_HighLevel_Init()
         }
 
         printf("FragModuleInfo_Get ok\n");
+     #endif
     }
 
-    if(SEC_OK != FlowInit())
+    if(SEC_OK != FlowInit())  // flow table is percore
     {
         printf("FlowInit failed\n");
         return SEC_NO;
@@ -238,94 +220,8 @@ int Sec_HighLevel_Init()
 }
 
 
-
-
-
-void mainloop()
+void Sec_Init()
 {
-    mbuf_t *mb;
-    int grp;
-    cvmx_wqe_t *work;
-    while(1){
-
-        if(unlikely(oct_tx_entries)) {
-            oct_tx_done_check();
-        }
-
-        work = oct_pow_work_request_sync_nocheck(CVMX_POW_WAIT);
-        if (NULL != work)
-        {
-            grp = oct_wqe_get_grp(work);
-
-            if ( FROM_INPUT_PORT_GROUP == grp )
-            {
-                mb = (mbuf_t *)oct_rx_process_work(work);
-                if (NULL == mb)
-                {
-                    continue;
-                }
-                Decode(mb);
-            }
-            else if ( local_cpu_id == grp )
-            {
-                if (cvmx_is_init_core())
-                {
-                    oct_time_update();
-                }
-                watchdog_ok();
-                OCT_Timer_Thread_Process(work);
-            }
-            else if( FROM_LINUX_GROUP == grp )
-            {
-            #ifdef SEC_RX_DEBUG
-                LOGDBG("receive packet from linux!\n");
-            #endif
-                oct_rx_process_command(work);
-            }
-            else
-            {
-            #ifdef SEC_RX_DEBUG
-                LOGDBG("work group error %d\n", grp);
-            #endif
-                oct_packet_free(work, wqe_pool);
-                STAT_RECV_GRP_ERR;
-            }
-
-        }
-        else
-        {
-            continue;
-        }
-    }
-}
-
-
-
-int debugprint = 1;
-
-/**
- * Main entry point
- *
- * @return exit code
- */
-int main(int argc, char *argv[])
-{
-
-    int ch;
-
-    while ((ch = getopt(argc, argv, "d:h")) != -1) {
-        switch (ch) {
-        case 'd':
-            debugprint = 1;
-            break;
-        }
-    }
-
-    if (!debugprint) {
-        daemon(0, 1);
-    }
-
-
     if(SEC_OK != Sec_LowLevel_Init())
     {
         printf("sec lowlevel init err!\n");
@@ -346,10 +242,189 @@ int main(int argc, char *argv[])
         printf("sec HighLevel init ok!\n");
     }
 
-    dp_sync_srv();
+    return;
+}
+
+
+
+void mainloop()
+{
+    mbuf_t *mb;
+    uint32_t grp;
+    cvmx_wqe_t *work;
+    //uint64_t cycle_start;
+    //uint64_t cycle_end;
+    //uint64_t cost;
+
+    dp_sync_dp();
+
+    while(1)
+    {
+        if(unlikely(oct_tx_entries[LOCAL_CPU_ID])) {
+            oct_tx_done_check();
+        }
+
+        work = oct_pow_work_request_sync_nocheck(CVMX_POW_WAIT);//CVMX_POW_NO_WAIT
+        if (NULL != work)
+        {
+            //cycle_start = cvmx_get_cycle();
+            grp = (uint32_t)oct_wqe_get_grp(work);
+
+            if ( FROM_INPUT_PORT_GROUP == grp || LOCAL_CPU_ID == grp || PACKET_GROUP_4 == grp)
+            {
+                if( oct_wqe_get_unused8(work) == 0)
+                {
+                    LOGDBG(SEC_RX_DBG_BIT, "core %d receive packet! group is %d, tag is %d\n",LOCAL_CPU_ID, grp, cvmx_wqe_get_tag(work));
+                    if(oct_directfw)
+                    {
+                        packet_rx[LOCAL_CPU_ID]++;
+
+                        oct_tx_process_hw_work(work, fw_table[oct_wqe_get_port(work)]);
+
+
+                        test_packet_send();
+                        //usleep(oct_directfw_sleeptime);
+                        //cycle_end = cvmx_get_cycle();
+                        //cost = cycle_end - cycle_start;
+                        //if(cost > oct_cpu_rate/1000000*50)//50us
+                        //{
+                            //LOGDBG(SEC_RX_DBG_BIT, "cost %ld \n", cost);
+                        //}
+                    }
+                    else
+                    {
+                        mb = (mbuf_t *)oct_rx_process_work(work, FROMPORT);
+                        if (NULL == mb)
+                        {
+                            continue;
+                        }
+                        Decode(mb);
+                    }
+                }
+                else if (oct_wqe_get_unused8(work) == TIMER_FLAG_OF_WORK )
+                {
+                    if (IS_DP_MASTER_THREAD)
+                    {
+                        oct_time_update();
+                    }
+                    watchdog_ok();
+                    OCT_Timer_Thread_Process(work);
+                }
+            }
+			else if ( FROM_LINUX_GROUP == grp )
+			{
+				int outport = 0;
+                mb = (mbuf_t *)oct_rx_process_work(work, FROMLINUX);
+
+                if(mb->input_port == POW0_LINUX_GROUP)
+                {
+                    outport = 0;
+                }
+                else if (mb->input_port == POW1_LINUX_GROUP)
+                {
+                    outport = 1;
+                }
+                else if (mb->input_port == POW2_LINUX_GROUP)
+                {
+                    outport = 2;
+                }
+                else if (mb->input_port == POW3_LINUX_GROUP)
+                {
+                    outport = 3;
+                }
+                oct_tx_process_hw(mb, outport);
+			}
+            else
+            {
+                printf("work group error %d\n", grp);
+                printf("Received %u byte packet.\n", oct_wqe_get_len(work));
+                printf("Processing packet\n");
+                cvmx_helper_dump_packet(work);
+                oct_packet_free(work, wqe_pool);
+
+                STAT_RECV_GRP_ERR;
+            }
+        }
+        else
+        {
+			usleep(0);
+            continue;
+        }
+    }
+}
+
+
+static void *Dp_Thread_Entry(void *arg)
+{
+    cvmx_linux_enable_xkphys_access(0);
+
+    printf("core %d start to init\n", LOCAL_CPU_ID);
+
+    Sec_Init();
+
+    printf("core %d start to run\n", LOCAL_CPU_ID);
 
     mainloop();
 
+    return NULL;
+}
+
+
+
+int debugprint = 1;
+int resourceclean = 0;
+
+/* Begin Add by fengqb 2014/12/19 */
+SC_ATOMIC_DECLARE(unsigned int, engine_stage);
+/* End. fengqb */
+
+/**
+ * Main entry point
+ *
+ * @return exit code
+ */
+int main(int argc, char *argv[])
+{
+
+    int ch;
+    uint32_t hw_id;
+
+    while ((ch = getopt(argc, argv, "dc")) != -1) {
+        switch (ch) {
+        case 'd':
+            debugprint = 1;
+            break;
+        case 'c':
+            resourceclean = 1;
+            break;
+        }
+    }
+
+    if(resourceclean == 1)
+    {
+        resource_clean();
+        return 0;
+    }
+
+
+
+    if (!debugprint) {
+        daemon(0, 1);
+    }
+
+    printf("main thread pid is %d\n", getpid());
+
+    Sec_Init();
+
+    dp_sync_srv();
+
+
+    for(hw_id = 2; hw_id < running_core_num; hw_id++)
+    {
+        oct_dp_pthread_create(Dp_Thread_Entry, hw_id);
+    }
+
+    mainloop();
 
     return 0;
 }

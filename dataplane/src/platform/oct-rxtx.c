@@ -1,15 +1,3 @@
-/********************************************************************************
- *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology
- *        All rights reserved
- *
- *        filename :       oct-rxtx.c
- *        description :
- *
- *        created by  luoye  at  2014-11-21
- *
- ********************************************************************************/
-
 #include "oct-rxtx.h"
 #include <decode-statistic.h>
 #include <mbuf.h>
@@ -18,6 +6,7 @@
 #include "oct-time.h"
 #include <oct-api.h>
 #include <decode.h>
+#include <oct-init.h>
 
 
 
@@ -28,18 +17,131 @@ uint8_t fw_table[OCT_PHY_PORT_MAX] = {OCT_PHY_PORT_FIRST,
 
 
 
-uint32_t oct_tx_entries = 0;
+uint32_t oct_tx_entries[CPU_HW_RUNNING_MAX] = {0};
 oct_softx_stat_t *oct_stx[CPU_HW_RUNNING_MAX];
 
+uint32_t oct_directfw = 1;
+uint32_t oct_directfw_sleeptime = 0;
 
-extern CVMX_SHARED int wqe_pool;
 extern void Frag_defrag_sendfrags(mbuf_t *mb);
 
 
-static inline uint8_t oct_tx_port_get(uint8_t inp)
+void oct_directfw_set()
 {
-    return fw_table[inp];
+    uint32_t port;
+    oct_directfw = srv_dp_sync->dp_directfw_able;
+    oct_directfw_sleeptime = srv_dp_sync->dp_directfw_sleep_time;
+    if(oct_directfw)
+    {
+        for(port = OCT_PHY_PORT_FIRST; port < OCT_PHY_PORT_MAX; port++)
+        {
+            cvmx_pip_port_tag_cfg_t tag_config;
+            /*config group*/
+            tag_config.u64 = cvmx_read_csr(CVMX_PIP_PRT_TAGX(port));
+            tag_config.s.grp = FROM_INPUT_PORT_GROUP;
+            if( running_core_num == 4)
+            {
+                /*config tuple of hash value*/
+                tag_config.cn70xx.ip4_src_flag = 0;
+                tag_config.cn70xx.ip4_dst_flag = 0;
+                tag_config.cn70xx.ip4_sprt_flag = 0;
+                tag_config.cn70xx.ip4_dprt_flag = 0;
+                tag_config.cn70xx.ip4_pctl_flag = 0;
+
+                tag_config.cn70xx.grptag = 0;
+                tag_config.cn70xx.grptagmask = 0;
+                tag_config.cn70xx.grptagbase = 0;
+            }
+
+            cvmx_write_csr(CVMX_PIP_PRT_TAGX(port), tag_config.u64);
+
+            cvmx_wait_usec(1000);
+        }
+    }
+    else
+    {
+        for(port = OCT_PHY_PORT_FIRST; port < OCT_PHY_PORT_MAX; port++)
+        {
+            cvmx_pip_port_tag_cfg_t tag_config;
+            /*config group*/
+            tag_config.u64 = cvmx_read_csr(CVMX_PIP_PRT_TAGX(port));
+            tag_config.s.grp = FROM_INPUT_PORT_GROUP;
+            if( running_core_num == 4)
+            {
+                /*config tuple of hash value*/
+                tag_config.cn70xx.ip4_src_flag = 1;
+                tag_config.cn70xx.ip4_dst_flag = 1;
+                tag_config.cn70xx.ip4_sprt_flag = 1;
+                tag_config.cn70xx.ip4_dprt_flag = 1;
+                tag_config.cn70xx.ip4_pctl_flag = 1;
+
+                tag_config.cn70xx.grptag = 1;
+                tag_config.cn70xx.grptagmask = 0xc;
+                tag_config.cn70xx.grptagbase = 1;
+            }
+
+            cvmx_write_csr(CVMX_PIP_PRT_TAGX(port), tag_config.u64);
+
+            cvmx_wait_usec(1000);
+        }
+    }
+
 }
+
+
+
+uint32_t oct_pow_se2linux(mbuf_t *m)
+{
+    cvmx_wqe_t *work = NULL;
+	uint8_t input = 0;
+	uint8_t linux_group = 0;
+
+    /* Get a work queue entry */
+    work = cvmx_fpa_alloc(CVMX_FPA_WQE_POOL);
+    if(NULL == work)
+    {
+        return SEC_NO;
+    }
+
+    memset(work, 0, sizeof(cvmx_wqe_t));
+
+    work->packet_ptr.u64 = m->packet_ptr.u64;
+    work->word2.s.bufs = 1;
+
+    input = m->input_port;
+
+	if(input == 0)
+	{
+		linux_group = POW0_LINUX_GROUP;
+	}
+	else if (input == 1)
+	{
+		linux_group = POW1_LINUX_GROUP;
+	}
+	else if (input == 2)
+	{
+		linux_group = POW2_LINUX_GROUP;
+	}
+	else if (input == 3)
+	{
+		linux_group = POW3_LINUX_GROUP;
+	}
+	else
+	{
+		return SEC_NO;
+	}
+
+    cvmx_wqe_set_len(work, m->pkt_totallen);
+    cvmx_wqe_set_port(work, m->input_port);
+    cvmx_wqe_set_grp(work, linux_group);
+
+    cvmx_pow_work_submit(work, 0, 0, 0, linux_group);
+
+    MBUF_FREE(m);
+
+    return SEC_OK;
+}
+
 
 
 /*
@@ -48,7 +150,7 @@ static inline uint8_t oct_tx_port_get(uint8_t inp)
  *  then free wqe, reurn mbuf
  */
 void *
-oct_rx_process_work(cvmx_wqe_t *wq)
+oct_rx_process_work(cvmx_wqe_t *wq, uint8_t src)
 {
     void *pkt_virt;
     mbuf_t *m;
@@ -59,7 +161,15 @@ oct_rx_process_work(cvmx_wqe_t *wq)
               *  and now do not support jumbo packet
               */
         oct_packet_free(wq, wqe_pool);
-        STAT_RECV_ERR;
+        if(FROMLINUX == src)
+        {
+            STAT_RECV_FROMLINUX_ERR;
+        }
+        else
+        {
+            STAT_RECV_FROMHWPORT_ERR;
+        }
+
         return NULL;
     }
 
@@ -70,11 +180,12 @@ oct_rx_process_work(cvmx_wqe_t *wq)
         return NULL;
     }
 
-#ifdef SEC_PACKET_DUMP
-    printf("Received %u byte packet.\n", oct_wqe_get_len(wq));
-    printf("Processing packet\n");
-    cvmx_helper_dump_packet(wq);
-#endif
+    LOGDBG(SEC_PACKET_DUMP, "Received %u byte packet.\n", oct_wqe_get_len(wq));
+    LOGDBG(SEC_PACKET_DUMP, "Processing packet\n");
+    if(srv_dp_sync->dp_debugprint & SEC_PACKET_DUMP)
+    {
+        cvmx_helper_dump_packet(wq);
+    }
 
     m = (mbuf_t *)MBUF_ALLOC();
 
@@ -90,14 +201,26 @@ oct_rx_process_work(cvmx_wqe_t *wq)
     m->pkt_totallen = oct_wqe_get_len(wq);
     m->pkt_ptr = pkt_virt;
 
+    m->tag = cvmx_wqe_get_tag(wq);
+
     m->timestamp = OCT_TIME_SECONDS_SINCE1970;
 
     oct_fpa_free(wq, wqe_pool, 0);
 
-    STAT_RECV_PC_ADD;
-    STAT_RECV_PB_ADD(m->pkt_totallen);
+    if(FROMPORT == src)
+    {
+        STAT_RECV_PC_ADD;
+        STAT_RECV_PB_ADD(m->pkt_totallen);
+    }
 
-    STAT_RECV_OK;
+    if(FROMLINUX == src)
+    {
+        STAT_RECV_FROMLINUX_OK;
+    }
+    else
+    {
+        STAT_RECV_FROMHWPORT_OK;
+    }
 
     return (void *)m;
 }
@@ -109,7 +232,7 @@ void oct_tx_done_check()
     uint16_t consumer;
     uint16_t producer;
     oct_pko_pend_tx_done_t *pend_tx_done;
-    oct_softx_stat_t *oct_stx_local = oct_stx[local_cpu_id];
+    oct_softx_stat_t *oct_stx_local = oct_stx[LOCAL_CPU_ID];
 
     for( port = 0; port < OCT_PHY_PORT_MAX; port++ )
     {
@@ -130,7 +253,7 @@ void oct_tx_done_check()
 
                 consumer = (consumer + 1) & (OCT_PKO_TX_DESC_NUM - 1);
                 oct_stx_local->tx_done[port].tx_entries--;
-                oct_tx_entries--;
+                oct_tx_entries[LOCAL_CPU_ID]--;
             }
             oct_stx_local->tx_done[port].consumer = consumer;
         }
@@ -155,7 +278,7 @@ oct_pend_tx_done_add(tx_done_t *tdt, void *mb)
     producer = (producer + 1) & (OCT_PKO_TX_DESC_NUM - 1);
 
     tdt->tx_entries++;
-    oct_tx_entries++;
+    oct_tx_entries[LOCAL_CPU_ID]++;
     tdt->producer = producer;
 
     return mem_ref;
@@ -167,7 +290,7 @@ oct_pend_tx_done_remove(tx_done_t *tdt)
 {
     tdt->producer = (tdt->producer - 1) & (OCT_PKO_TX_DESC_NUM - 1);
     tdt->tx_entries--;
-    oct_tx_entries--;
+    oct_tx_entries[LOCAL_CPU_ID]--;
     return;
 }
 
@@ -180,14 +303,11 @@ void oct_tx_process_sw(mbuf_t *mbuf, uint8_t outport)
 
     uint8_t *dont_free_cookie = NULL;
 
-
     queue = cvmx_pko_get_base_queue(outport);
 
     cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
 
-
-
-    tx_done_t *tx_done = &(oct_stx[local_cpu_id]->tx_done[outport]);
+    tx_done_t *tx_done = &(oct_stx[LOCAL_CPU_ID]->tx_done[outport]);
     if(tx_done->tx_entries < (OCT_PKO_TX_DESC_NUM - 1))
     {
         dont_free_cookie = oct_pend_tx_done_add(tx_done, (void *)mbuf);
@@ -242,66 +362,63 @@ void oct_tx_process_sw(mbuf_t *mbuf, uint8_t outport)
 
 
 
-
-void oct_tx_process_mbuf(mbuf_t *mbuf)
+void oct_tx_process_hw(mbuf_t *mbuf, uint32_t outport)
 {
     uint64_t queue;
+
+    /* Build a PKO pointer to this packet */
     cvmx_pko_return_value_t send_status;
-    uint8_t inport, outport;
-    inport = mbuf->input_port;
+    cvmx_pko_command_word0_t pko_command;
 
-    if(inport > OCT_PHY_PORT_MAX)
+    queue = cvmx_pko_get_base_queue(outport);
+
+    cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
+
+    pko_command.u64 = 0;
+    pko_command.s.segs = 1;
+    pko_command.s.total_bytes = mbuf->pkt_totallen;
+
+    /* Send the packet */
+    send_status = cvmx_pko_send_packet_finish(outport, queue, pko_command, mbuf->packet_ptr, CVMX_PKO_LOCK_CMD_QUEUE);
+    if (send_status != CVMX_PKO_SUCCESS)
     {
-        PACKET_DESTROY_ALL(mbuf);
-        STAT_TX_SEND_PORT_ERR;
-        return;
-    }
-
-    outport = oct_tx_port_get(inport);
-
-    if(PKTBUF_IS_HW(mbuf))
-    {
-        /* Build a PKO pointer to this packet */
-        cvmx_pko_command_word0_t pko_command;
-
-        queue = cvmx_pko_get_base_queue(outport);
-
-        cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
-
-        pko_command.u64 = 0;
-        pko_command.s.segs = 1;
-        pko_command.s.total_bytes = mbuf->pkt_totallen;
-
-        /* Send the packet */
-        send_status = cvmx_pko_send_packet_finish(outport, queue, pko_command, mbuf->packet_ptr, CVMX_PKO_LOCK_CMD_QUEUE);
-        if (send_status != CVMX_PKO_SUCCESS)
-        {
-            STAT_TX_HW_SEND_ERR;
-            PACKET_DESTROY_DATA(mbuf);
-        }
-        else
-        {
-            STAT_TX_SEND_OVER;
-        }
-        MBUF_FREE(mbuf);
-    }
-    else if(PKTBUF_IS_SW(mbuf))
-    {
-        if(mbuf->flags & PKT_FRAG_REASM_COMP)
-        {
-            Frag_defrag_sendfrags(mbuf);
-        }
-        else
-        {
-            oct_tx_process_sw(mbuf, outport);
-        }
+        STAT_TX_HW_SEND_ERR;
+        PACKET_DESTROY_DATA(mbuf);
     }
     else
     {
-        printf("pkt space %d is wrong, please check it\n", PKTBUF_SPACE_GET(mbuf));
+        STAT_TX_SEND_OVER;
     }
+    MBUF_FREE(mbuf);
+}
 
 
+void oct_tx_process_hw_work(cvmx_wqe_t *work, uint32_t outport)
+{
+	uint64_t queue = cvmx_pko_get_base_queue(outport);
+
+	cvmx_pko_send_packet_prepare(outport, queue, CVMX_PKO_LOCK_CMD_QUEUE);
+
+    /* Build a PKO pointer to this packet */
+    cvmx_pko_command_word0_t pko_command;
+    pko_command.u64 = 0;
+    pko_command.s.segs = work->word2.s.bufs;
+    pko_command.s.total_bytes = cvmx_wqe_get_len(work);
+
+    /* Send the packet */
+    cvmx_pko_return_value_t send_status = cvmx_pko_send_packet_finish(outport, queue, pko_command, work->packet_ptr, CVMX_PKO_LOCK_CMD_QUEUE);
+    if (send_status != CVMX_PKO_SUCCESS)
+    {
+        printf("Failed to send packet using cvmx_pko_send_packet2\n");
+        cvmx_helper_free_packet_data(work);
+		STAT_TX_HW_SEND_ERR;
+    }
+	else
+	{
+		STAT_TX_SEND_OVER;
+	}
+
+    cvmx_fpa_free(work, wqe_pool, 0);
 }
 
 
@@ -332,6 +449,13 @@ int oct_rxtx_init(void)
 }
 
 
+
+void oct_rxtx_Release()
+{
+    int rc;
+    rc = cvmx_bootmem_free_named(OCT_TX_DESC_NAME);
+    printf("%s free rc=%d\n", OCT_TX_DESC_NAME, rc);
+}
 
 int oct_rxtx_get(void)
 {

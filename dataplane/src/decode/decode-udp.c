@@ -7,6 +7,9 @@
 #include "decode-defrag.h"
 #include <dp_acl.h>
 #include <flow.h>
+#include "dp_log.h"
+#include "output.h"
+
 
 
 
@@ -14,6 +17,7 @@ static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {
     if (unlikely(len < UDP_HEADER_LEN)) {
         STAT_UDP_HEADER_ERR;
+        DP_Log_Func(mbuf);
         return DECODE_DROP;
     }
 
@@ -21,21 +25,21 @@ static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 
     if (unlikely(len < UDP_GET_LEN(mbuf))) {
         STAT_UDP_LEN_ERR;
+        DP_Log_Func(mbuf);
         return DECODE_DROP;
     }
 
     if (unlikely(len != UDP_GET_LEN(mbuf))) {
         STAT_UDP_LEN_ERR;
+        DP_Log_Func(mbuf);
         return DECODE_DROP;
     }
 
     mbuf->sport = UDP_GET_SRC_PORT(mbuf);
     mbuf->dport = UDP_GET_DST_PORT(mbuf);
 
-#ifdef SEC_UDP_DEBUG
-    LOGDBG("src port is %d\n", mbuf->sport);
-    LOGDBG("dst port is %d\n", mbuf->dport);
-#endif
+    LOGDBG(SEC_UDP_DBG_BIT, "src port is %d\n", mbuf->sport);
+    LOGDBG(SEC_UDP_DBG_BIT, "dst port is %d\n", mbuf->dport);
 
     mbuf->payload = (void *)(pkt + UDP_HEADER_LEN);
     mbuf->payload_len = len - UDP_HEADER_LEN;
@@ -52,9 +56,7 @@ static int DecodeUDPPacket(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
   */
 int DecodeUDP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
 {
-#ifdef SEC_UDP_DEBUG
-    LOGDBG("=========>enter DecodeUDP\n");
-#endif
+    LOGDBG(SEC_UDP_DBG_BIT, "=========>enter DecodeUDP\n");
 
     if (unlikely(DECODE_OK != DecodeUDPPacket(mbuf, pkt, len)))
     {
@@ -62,15 +64,6 @@ int DecodeUDP(mbuf_t *mbuf, uint8_t *pkt, uint16_t len)
     }
 
     STAT_UDP_RECV_OK;
-
-    if(ACL_RULE_ACTION_DROP == DP_Acl_Lookup(mbuf))
-    {
-        STAT_ACL_DROP;
-        PACKET_DESTROY_ALL(mbuf);
-        return DECODE_OK;
-    }
-
-    STAT_ACL_FW;
 
     FlowHandlePacket(mbuf);
 

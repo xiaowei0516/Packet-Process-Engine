@@ -9,10 +9,12 @@
 #include <pthread.h>
 
 
-
-
+//#define RULE_LODE_DBG
+extern int dp_msg_queue_id;
 
 rule_list_t *rule_list;
+static pthread_mutex_t rule_list_mutex = PTHREAD_MUTEX_INITIALIZER;// just for cli operation and rule load thread
+
 
 
 static inline int Rule_compare(RCP_BLOCK_ACL_RULE_TUPLE *rule1, RCP_BLOCK_ACL_RULE_TUPLE *rule2)
@@ -93,20 +95,20 @@ int Rule_add(RCP_BLOCK_ACL_RULE_TUPLE *rule)
 
     if(rule_list->rule_entry_free == 0)
     {
-        printf("Rule Full\n");
+        LOG("Rule Full\n");
         return RULE_FULL;
     }
 
     if( RULE_EXIST == Rule_duplicate_check(rule))
     {
-        printf("Rule already exist\n");
+        LOG("Rule already exist\n");
         return RULE_EXIST;
     }
 
     index = find_first_free();
     if(-1 == index)
     {
-        printf("Rule Full\n");
+        LOG("Rule Full\n");
         return RULE_FULL;
     }
 
@@ -115,8 +117,8 @@ int Rule_add(RCP_BLOCK_ACL_RULE_TUPLE *rule)
     rule_list->rule_entry_free--;
     rule_list->rule_entry[index].entry_status = RULE_ENTRY_STATUS_USED;
     rule_list->build_status = RULE_BUILD_UNCOMMIT;
-    return RULE_OK;
 
+    return RULE_OK;
 }
 
 int Rule_del(RCP_BLOCK_ACL_RULE_TUPLE *rule)
@@ -175,8 +177,6 @@ int Rule_del_by_id(RCP_BLOCK_ACL_RULE_ID *id)
 }
 
 
-
-
 int Rule_del_all()
 {
     int i;
@@ -226,7 +226,7 @@ void Rule_Save_File(FILE *fp)
         }
 
         fprintf(fp,
-            "%d: smac: %2x:%2x:%2x:%2x:%2x:%2x,  dmac: %2x:%2x:%2x:%2x:%2x:%2x, sip:%d.%d.%d.%d/%d, dip:%d.%d.%d.%d/%d, sport_start:%d, sport_end:%d, proto_start:%d, proto_end:%d, time_start:%s, time_end:%s, action:%s\n",
+            "%d: smac: %2x:%2x:%2x:%2x:%2x:%2x,  dmac: %2x:%2x:%2x:%2x:%2x:%2x, sip:%d.%d.%d.%d/%d, dip:%d.%d.%d.%d/%d, sport_start:%d, sport_end:%d, dport_start:%d, dport_end:%d, proto_start:%d, proto_end:%d, time_start:%s, time_end:%s, action:%s, log:%s\n",
             i,
             rule_list->rule_entry[i].rule_tuple.smac[0],
             rule_list->rule_entry[i].rule_tuple.smac[1],
@@ -252,11 +252,14 @@ void Rule_Save_File(FILE *fp)
             rule_list->rule_entry[i].rule_tuple.dip_mask,
             rule_list->rule_entry[i].rule_tuple.sport_start,
             rule_list->rule_entry[i].rule_tuple.sport_end,
+            rule_list->rule_entry[i].rule_tuple.dport_start,
+            rule_list->rule_entry[i].rule_tuple.dport_end,
             rule_list->rule_entry[i].rule_tuple.protocol_start,
             rule_list->rule_entry[i].rule_tuple.protocol_end,
             time_s,
             time_e,
-            rule_list->rule_entry[i].rule_tuple.action? "drop":"fw");
+            rule_list->rule_entry[i].rule_tuple.action? "drop":"fw",
+            rule_list->rule_entry[i].rule_tuple.logable? "enable":"disable");
     }
 }
 
@@ -312,7 +315,9 @@ int Rule_add_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *param_
     RCP_BLOCK_ACL_RULE_TUPLE *blocks = (RCP_BLOCK_ACL_RULE_TUPLE *)(from + MESSAGE_HEADER_LENGTH);
 
     /*ADD RULE INFO INTO LOCAL MANAGER*/
+    pthread_mutex_lock(&rule_list_mutex);
     ret = Rule_add(blocks);
+    pthread_mutex_unlock(&rule_list_mutex);
     if(RULE_OK == ret)
     {
         rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
@@ -346,8 +351,9 @@ int Rule_del_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *param_
     struct rcp_msg_params_s *rcp_param_p = (struct rcp_msg_params_s *)param_p;
 
     RCP_BLOCK_ACL_RULE_TUPLE *blocks = (RCP_BLOCK_ACL_RULE_TUPLE *)(from + MESSAGE_HEADER_LENGTH);
-
+    pthread_mutex_lock(&rule_list_mutex);
     ret = Rule_del(blocks);
+    pthread_mutex_unlock(&rule_list_mutex);
     if( RULE_OK == ret )
     {
         rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
@@ -376,8 +382,9 @@ int Rule_del_acl_rule_id(uint8_t * from, uint32_t length, uint32_t fd, void *par
     struct rcp_msg_params_s *rcp_param_p = (struct rcp_msg_params_s *)param_p;
 
     RCP_BLOCK_ACL_RULE_ID *blocks = (RCP_BLOCK_ACL_RULE_ID *)(from + MESSAGE_HEADER_LENGTH);
-
+    pthread_mutex_lock(&rule_list_mutex);
     ret = Rule_del_by_id(blocks);
+    pthread_mutex_unlock(&rule_list_mutex);
     if( RULE_OK == ret )
     {
         rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
@@ -405,7 +412,9 @@ int Rule_del_acl_rule_all(uint8_t * from, uint32_t length, uint32_t fd, void *pa
 
     struct rcp_msg_params_s *rcp_param_p = (struct rcp_msg_params_s *)param_p;
 
+    pthread_mutex_lock(&rule_list_mutex);
     Rule_del_all();
+    pthread_mutex_unlock(&rule_list_mutex);
 
     rcp_param_p->params_list.params[0].CliResultCode.result_code = RCP_RESULT_OK;
 
@@ -420,8 +429,10 @@ int Rule_del_acl_rule_all(uint8_t * from, uint32_t length, uint32_t fd, void *pa
 int Rule_commit_acl_rule(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
 {
     LOG("Rule_commit_acl_rule\n");
-
-    return octeon_rpccall(from, length, fd, param_p, COMMIT_ACL_RULE_ACK, COMMAND_ACL_RULE_COMMIT);
+    pthread_mutex_lock(&rule_list_mutex);
+    octeon_msgque_rpccall(from, length, fd, param_p, COMMIT_ACL_RULE_ACK, COMMAND_ACL_RULE_COMMIT);
+    pthread_mutex_unlock(&rule_list_mutex);
+    return 0;
 }
 
 int Rule_set_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
@@ -429,10 +440,11 @@ int Rule_set_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, void *par
     LOG("Rule_set_acl_def_act\n");
 
     RCP_BLOCK_ACL_DEF_ACTION *blocks = (RCP_BLOCK_ACL_DEF_ACTION *)(from + MESSAGE_HEADER_LENGTH);
-
+    pthread_mutex_lock(&rule_list_mutex);
     rule_list->rule_def_act = blocks->action;
-
-    return octeon_rpccall(from, length, fd, param_p, SET_ACL_DEF_ACT_ACK, COMMAND_ACL_DEF_ACT_SET);
+    octeon_msgque_rpccall(from, length, fd, param_p, SET_ACL_DEF_ACT_ACK, COMMAND_ACL_DEF_ACT_SET);
+    pthread_mutex_unlock(&rule_list_mutex);
+    return 0;
 }
 
 int Rule_show_acl_def_act(uint8_t * from, uint32_t length, uint32_t fd, void *param_p)
@@ -461,38 +473,37 @@ static pthread_cond_t rule_load_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t rule_load_mutex = PTHREAD_MUTEX_INITIALIZER;
 uint32_t rule_load_notify = 0;
 
-char *rule_conf_filename = "./rule_config";
+char *rule_conf_filename = "/root/rule_config";
 
 
-int ReadIPInfo(FILE *fp, uint32_t *ip_info, uint32_t *mask_info)
+int ReadIPInfo(FILE *fp, int line ,uint32_t *ip_info, uint32_t *mask_info)
 {
     unsigned int trange[4];
     unsigned int mask;
     char validslash;
     uint32_t ip = 0;
-    int ret;
 
-    if (4 != (ret = fscanf(fp, "%d.%d.%d.%d", &trange[0],&trange[1],&trange[2],&trange[3])))
+    if (4 != fscanf(fp, "%d.%d.%d.%d", &trange[0],&trange[1],&trange[2],&trange[3]))
     {
-        printf (">> [err] ill-format IP rule-file %d\n", ret);
+        printf (">> [err] ill-format IP rule-file, rule line: %d\n", line);
         return -1;
     }
 
     if (1 != fscanf(fp, "%c", &validslash))
     {
-        printf ("\n>> [err] ill-format IP slash rule-file\n");
+        printf ("\n>> [err] ill-format IP slash rule-file, rule line: %d\n", line);
         return -1;
     }
 
     if(validslash != '/')
     {
-        printf ("\n>> [err] ill-format IP slash rule-file   /  \n");
+        printf ("\n>> [err] ill-format IP slash rule-file, rule line: %d\n", line);
         return -1;
     }
 
     if (1 != fscanf(fp,"%d", &mask))
     {
-        printf ("\n>> [err] ill-format mask rule-file\n");
+        printf ("\n>> [err] ill-format mask rule-file, rule line: %d\n", line);
         return -1;
     }
 
@@ -503,13 +514,13 @@ int ReadIPInfo(FILE *fp, uint32_t *ip_info, uint32_t *mask_info)
 
     if( 0 == ip && 0 != mask)
     {
-        printf("sip mask invalid\n");
+        printf("sip mask invalid, rule line: %d\n", line);
         return -1;
 
     }
     if( 0 != ip && mask > 32)
     {
-        printf("sip mask invalid\n");
+        printf("sip mask invalid, rule line: %d\n", line);
         return -1;
     }
 
@@ -519,13 +530,13 @@ int ReadIPInfo(FILE *fp, uint32_t *ip_info, uint32_t *mask_info)
     return 0;
 }
 
-int ReadPortInfo(FILE *fp, uint16_t *from, uint16_t *to)
+int ReadPortInfo(FILE *fp, int line, uint16_t *from, uint16_t *to)
 {
     unsigned int tfrom;
     unsigned int tto;
     if ( 2 !=  fscanf(fp,"%d : %d",&tfrom, &tto))
     {
-        printf ("\n>> [err] ill-format port range rule-file\n");
+        printf ("\n>> [err] ill-format port range rule-file, rule line: %d\n", line);
         return -1;
     }
     *from = tfrom;
@@ -534,12 +545,12 @@ int ReadPortInfo(FILE *fp, uint16_t *from, uint16_t *to)
     return 0;
 }
 
-int ReadProtoInfo(FILE *fp, uint8_t *from, uint8_t *to)
+int ReadProtoInfo(FILE *fp, int line, uint8_t *from, uint8_t *to)
 {
     unsigned int tfrom;
     unsigned int tto;
     if ( 2 !=  fscanf(fp,"%d : %d",&tfrom, &tto)) {
-        printf ("\n>> [err] ill-format port range rule-file\n");
+        printf ("\n>> [err] ill-format protocol range rule-file, rule line: %d\n", line);
         return -1;
     }
     *from = tfrom;
@@ -549,12 +560,12 @@ int ReadProtoInfo(FILE *fp, uint8_t *from, uint8_t *to)
 }
 
 
-int ReadMACInfo(FILE *fp, uint8_t *macinfo)
+int ReadMACInfo(FILE *fp, int line, uint8_t *macinfo)
 {
     unsigned int mac[6];
     if ( 6 !=  fscanf(fp,"%u:%u:%u:%u:%u:%u",&mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]))
     {
-        printf ("\n>> [err] ill-format port range rule-file\n");
+        printf ("\n>> [err] ill-format macinfo rule-file, rule line: %d\n", line);
         return -1;
     }
 
@@ -569,12 +580,12 @@ int ReadMACInfo(FILE *fp, uint8_t *macinfo)
 }
 
 
-int ReadTimeInfo(FILE *fp, uint64_t *timeinfo)
+int ReadTimeInfo(FILE *fp, int line, uint64_t *timeinfo)
 {
     uint64_t time;
     if (1 != fscanf(fp, "%ld", &time))
     {
-        printf ("\n>> [err] ill-format time rule-file\n");
+        printf ("\n>> [err] ill-format time rule-file, rule line: %d\n", line);
         return -1;
     }
 
@@ -584,12 +595,12 @@ int ReadTimeInfo(FILE *fp, uint64_t *timeinfo)
 }
 
 
-int ReadActionInfo(FILE *fp, uint16_t *actioninfo)
+int ReadActionInfo(FILE *fp, int line, uint16_t *actioninfo)
 {
     int action;
     if (1 != fscanf(fp, "%d", &action))
     {
-        printf ("\n>> [err] ill-format action rule-file\n");
+        printf ("\n>> [err] ill-format action rule-file, rule line: %d\n", line);
         return -1;
     }
 
@@ -598,7 +609,26 @@ int ReadActionInfo(FILE *fp, uint16_t *actioninfo)
     return 0;
 }
 
-int Rule_Load_Line(FILE *fp)
+
+void Rule_Notify_Dp_Build()
+{
+    MSG_QUE_BODY msgsnd;
+    MSG_QUE_BODY msgrcv;
+
+    memset((void *)&msgsnd, 0, sizeof(MSG_QUE_BODY));
+    memset((void *)&msgrcv, 0, sizeof(MSG_QUE_BODY));
+
+    memset((void *)&srv_dp_sync->msgbuf, 0, sizeof(srv_dp_sync->msgbuf));
+
+    msgsnd.mtype = COMMAND_DP_END_POINT;
+    msgsnd.msg[0] = COMMAND_ACL_RULE_COMMIT;
+    msgrcv.mtype = COMMAND_ACL_RULE_COMMIT_ACK;
+
+    MSGQUE_Rpc_Syncall2dp(dp_msg_queue_id, &msgsnd, &msgrcv);
+
+    printf("notify result is %s\n", srv_dp_sync->msgbuf);
+}
+int Rule_Load_Line(FILE *fp, int line)
 {
     RCP_BLOCK_ACL_RULE_TUPLE rule;
     char validfilter;               //validfilter means an '@'
@@ -617,11 +647,11 @@ int Rule_Load_Line(FILE *fp)
         }
 
 
-        if(0 != ReadMACInfo(fp, rule.smac))
+        if(0 != ReadMACInfo(fp, line, rule.smac))
         {
             return -1;
         }
-        printf("smac is %2u:%2u:%2u:%2u:%2u:%2u\n",
+        LOG("smac is %2u:%2u:%2u:%2u:%2u:%2u\n",
                 rule.smac[0],
                 rule.smac[1],
                 rule.smac[2],
@@ -629,11 +659,11 @@ int Rule_Load_Line(FILE *fp)
                 rule.smac[4],
                 rule.smac[5] );
 
-        if(0 != ReadMACInfo(fp, rule.dmac))
+        if(0 != ReadMACInfo(fp, line, rule.dmac))
         {
             return -1;
         }
-        printf("dmac is %2u:%2u:%2u:%2u:%2u:%2u\n",
+        LOG("dmac is %2u:%2u:%2u:%2u:%2u:%2u\n",
                 rule.dmac[0],
                 rule.dmac[1],
                 rule.dmac[2],
@@ -641,54 +671,85 @@ int Rule_Load_Line(FILE *fp)
                 rule.dmac[4],
                 rule.dmac[5] );
 
-        if(0 != ReadIPInfo(fp, &rule.sip, &rule.sip_mask))
+        if(0 != ReadIPInfo(fp, line, &rule.sip, &rule.sip_mask))
         {
             return -1;
         }
-        printf("sip is %d.%d.%d.%d/%d\n", (int)((rule.sip >> 24)&0xff), (int)((rule.sip >> 16)&0xff), (int)((rule.sip >> 8)&0xff), (int)((rule.sip)&0xff), (int)rule.sip_mask & 0xff );
 
-        if(0 != ReadIPInfo(fp, &rule.dip, &rule.dip_mask))
+        LOG("sip is %d.%d.%d.%d/%d\n", (int)((rule.sip >> 24)&0xff), (int)((rule.sip >> 16)&0xff), (int)((rule.sip >> 8)&0xff), (int)((rule.sip)&0xff), (int)rule.sip_mask & 0xff );
+
+        if(0 != ReadIPInfo(fp, line, &rule.dip, &rule.dip_mask))
         {
             return -1;
         }
-        printf("dip is %d.%d.%d.%d/%d\n", (int)((rule.dip >> 24)&0xff), (int)((rule.dip >> 16)&0xff), (int)((rule.dip >> 8)&0xff), (int)((rule.dip)&0xff), (int)rule.dip_mask & 0xff );
 
-        if(0 != ReadPortInfo(fp, &rule.sport_start, &rule.sport_end))
+        LOG("dip is %d.%d.%d.%d/%d\n", (int)((rule.dip >> 24)&0xff), (int)((rule.dip >> 16)&0xff), (int)((rule.dip >> 8)&0xff), (int)((rule.dip)&0xff), (int)rule.dip_mask & 0xff );
+
+        if(0 != ReadPortInfo(fp, line, &rule.sport_start, &rule.sport_end))
         {
             return -1;
         }
-        printf("sport start is %d, end is %d\n", rule.sport_start, rule.sport_end);
 
-        if(0 != ReadPortInfo(fp, &rule.dport_start, &rule.dport_end))
+        LOG("sport start is %d, end is %d\n", rule.sport_start, rule.sport_end);
+
+        if( rule.sport_start > rule.sport_end || rule.sport_end > 0xffff )
+        {
+            printf("sport invalid\n");
+            return -1;
+        }
+
+        if(0 != ReadPortInfo(fp, line, &rule.dport_start, &rule.dport_end))
         {
             return -1;
         }
-        printf("dport start is %d, end is %d\n", rule.dport_start, rule.dport_end);
 
-        if(0 != ReadProtoInfo(fp, &rule.protocol_start, &rule.protocol_end))
+        LOG("dport start is %d, end is %d\n", rule.dport_start, rule.dport_end);
+
+        if( rule.dport_start > rule.dport_end || rule.dport_end > 0xffff )
+        {
+            printf("sport invalid\n");
+            return -1;
+        }
+
+        if(0 != ReadProtoInfo(fp, line, &rule.protocol_start, &rule.protocol_end))
         {
             return -1;
         }
-        printf("protocol start is %d, end is %d\n", rule.protocol_start, rule.protocol_end);
 
+        LOG("protocol start is %d, end is %d\n", rule.protocol_start, rule.protocol_end);
 
-        if(0 != ReadTimeInfo(fp, &rule.time_start))
+        if( rule.protocol_start > rule.protocol_end || rule.protocol_end > 0xff )
+        {
+            printf("dport invalid\n");
+            return -1;
+        }
+
+        if(0 != ReadTimeInfo(fp, line, &rule.time_start))
         {
             return -1;
         }
-        printf("time_start is %ld\n", rule.time_start);
 
-        if(0 != ReadTimeInfo(fp, &rule.time_end))
+        LOG("time_start is %ld\n", rule.time_start);
+
+        if(0 != ReadTimeInfo(fp, line, &rule.time_end))
         {
             return -1;
         }
-        printf("time_end is %ld\n", rule.time_end);
 
-        if(0 != ReadActionInfo(fp, &rule.action))
+        LOG("time_end is %ld\n", rule.time_end);
+
+        if(0 != ReadActionInfo(fp, line, &rule.action))
         {
             return -1;
         }
-        printf("action is %d\n", rule.action);
+
+        LOG("action is %d\n", rule.action);
+
+        if(rule.action != 0 && rule.action != 1)
+        {
+            LOG("action is error %d\n", rule.action);
+            return -1;
+        }
 
         Rule_add(&rule);
 
@@ -697,6 +758,7 @@ int Rule_Load_Line(FILE *fp)
 
     return 0;
 }
+
 
 int Rule_load_from_conf()
 {
@@ -713,21 +775,26 @@ int Rule_load_from_conf()
 
     printf("open rule config success\n");
 
+    pthread_mutex_lock(&rule_list_mutex);
+
+    Rule_del_all();
+    LOG("rule delete all\n");
+
     while(!feof(fp))
     {
-        printf("line %d:\n", line);
-        ret = Rule_Load_Line(fp);
+        ret = Rule_Load_Line(fp, line);
         if(ret != 0)
         {
-            printf("config file line %d format err\n", line);
-            return -1;
+            //printf("config file line %d format err\n", line);
+            fclose(fp);
+            pthread_mutex_unlock(&rule_list_mutex);
+            return 0;
         }
         line++;
     }
 
     fclose(fp);
-
-    rule_list->build_notify = 1;
+    pthread_mutex_unlock(&rule_list_mutex);
 
     return 0;
 
@@ -745,6 +812,10 @@ static void *Rule_Load_Fn(void *arg)
         }
 
         Rule_load_from_conf();
+
+        LOG("success load rule num is %d\n", RULE_ENTRY_MAX - rule_list->rule_entry_free);
+
+        Rule_Notify_Dp_Build();
 
         rule_load_notify = 0;
 
@@ -785,6 +856,10 @@ void Rule_Conf_Recover()
     pthread_mutex_lock(&rule_load_mutex);
 
     Rule_load_from_conf();
+
+    printf("success load rule num is %d\n", RULE_ENTRY_MAX - rule_list->rule_entry_free);
+
+    Rule_Notify_Dp_Build();
 
     pthread_mutex_unlock(&rule_load_mutex);
 }

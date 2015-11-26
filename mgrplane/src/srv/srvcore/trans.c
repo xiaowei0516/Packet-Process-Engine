@@ -139,7 +139,7 @@ int tcp_server_socket_create(void)
     int opt = 1;
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (-1 == listenfd) 
+    if (-1 == listenfd)
     {
         LOG("cann't create a socket for listen\n");
         return -1;
@@ -183,29 +183,28 @@ int server_init(void)
 
     signal(SIGPIPE, SIG_IGN);
     signal(SIGTERM, cleanup_all);
-    
+
     FD_ZERO(&rfds);
 
     sock_map_init();
 
-    
+
     /* initialize the rcp message handle */
     init_msg_pack_handle();
     init_msg_header();
     init_cmd_process_handle();
 
-    
 
     fd = tcp_server_socket_create();
-    add_fd(TCP_SERVER, fd, NULL); 
+    add_fd(TCP_SERVER, fd, NULL);
 
-
+#if 0
     if(pow_init() < 0)
     {
         printf("pow init failed\n");
         exit(1);
     }
-    
+#endif
 
     return 0;
 }
@@ -223,7 +222,7 @@ void server_run(void)
     int conn_fd;
     struct sockaddr_in addr;
     struct timeval tv;
-    uint8_t buf_r[1518];
+    uint8_t buf_r[BUFSIZE];
     uint32_t length;
 
     while(1)
@@ -231,7 +230,7 @@ void server_run(void)
         trfds = rfds;
         tv.tv_sec = 0;
         tv.tv_usec = 500;
-        
+
         retval = select(maxfd + 1, &trfds, NULL, NULL, &tv);
         if(-1 == retval)
         {
@@ -241,7 +240,7 @@ void server_run(void)
         {
             /*timeout*/
         }
-        else 
+        else
         {
             /* process tcp client request */
             if (FD_ISSET(listenfd, &trfds))
@@ -260,15 +259,15 @@ void server_run(void)
                 }
             }
 
-            for (i = 3; i < SOCK_MAX; i++) 
+            for (i = 3; i < SOCK_MAX; i++)
             {
                 if (sock_map[i].status == INVALID)
                 {
                     continue;
                 }
-                if (FD_ISSET(i, &trfds)) 
+                if (FD_ISSET(i, &trfds))
                 {
-                    
+
                     LOG("socket %d has data,type=%d\n", i, sock_map[i].sock_type);
                     switch (sock_map[i].sock_type)
                     {
@@ -277,11 +276,11 @@ void server_run(void)
                         {
                             ret = recv_tcp_client_packet(i, buf_r, &length);
                             current_sock_fd = i;
-                            if (ret == 0) 
+                            if (ret == 0)
                             {
                                 //dump_packet(buf_r, length);
                                 ret = tcp_client_message_handle(buf_r, length, i);
-                            } else 
+                            } else
                                 LOG("tcpserver socket recv length is less\n" );
                             break;
                         }
@@ -292,10 +291,10 @@ void server_run(void)
                         }
                     }
                     /*
-                          *  if some rcpclient close the connect, clean up some resource 
+                          *  if some rcpclient close the connect, clean up some resource
                           */
                     if (length <= 0) {
-                        if (sock_map[i].sock_type == TCP_CLIENT) 
+                        if (sock_map[i].sock_type == TCP_CLIENT)
                         {
                             close(i);
                             del_fd(i);

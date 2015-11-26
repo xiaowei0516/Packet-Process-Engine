@@ -1,13 +1,7 @@
 #ifndef  __ACL64_H__
 #define  __ACL64_H__
 
-#include <stdint.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-#include "inttypes.h"
+
 #include "acl_rule.h"
 #include <sec-common.h>
 #include <oct-common.h>
@@ -37,6 +31,7 @@ struct FILTER
 {
     uint64_t dim[DIM][2];
     uint8_t  action;
+    uint8_t logable;
     int32_t  rule_id;
     uint64_t    time_start;
     uint64_t    time_end;
@@ -56,6 +51,7 @@ typedef struct rule_s
 {
     uint32_t    pri;
     uint8_t     action;
+    uint8_t     logable;
     uint32_t    rule_id;
     uint64_t    time_start;
     uint64_t    time_end;
@@ -79,11 +75,12 @@ typedef struct hs_node_s
 } hs_node_t;
 
 
-typedef struct {
+typedef struct unit_tree_s
+{
     rwlock_t hs_rwlock;
     rule_set_t TreeSet;
     hs_node_t  TreeNode;
-} unit_tree;
+} unit_tree_t;
 
 
 #define HS_NODE_NUM_MAX 300000

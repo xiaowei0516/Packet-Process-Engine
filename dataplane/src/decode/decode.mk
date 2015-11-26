@@ -27,7 +27,11 @@ INCLUDE_DIR := \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/acl \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/flow \
-	-I$(OCTEON_ROOT)/sec-fw/include
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/common \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/route  \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/output \
+	-I$(OCTEON_ROOT)/sec-fw/include \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/attack
 
 $(LIBDECODE_OBJ_$(d)):  CFLAGS_LOCAL := -O2 -g -W -Wall -Werror -Wno-unused-parameter -Wundef -G0 $(INCLUDE_DIR)
 $(LIBDECODE_OBJ_$(d)):  CFLAGS_GLOBAL := $(filter-out -fprofile-%,$(CFLAGS_GLOBAL)) 

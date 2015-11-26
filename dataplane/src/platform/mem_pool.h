@@ -57,25 +57,32 @@ typedef struct MEM_POOL_CFG_TAG_S
 #define MEM_POOL_CFG_SIZE              sizeof(Mem_Pool_Cfg)
 
 
-#define MEM_POOL_HOST_MBUF_SIZE       256
-#define MEM_POOL_FLOW_NODE_SIZE       256
-#define MEM_POOL_SMALL_BUFFER_SIZE    2048
-#define MEM_POOL_LARGE_BUFFER_SIZE    8192
+#define MEM_POOL_HOST_MBUF_SIZE                 256
+#define MEM_POOL_FLOW_NODE_SIZE                 256
+#define MEM_POOL_SMALL_BUFFER_SIZE              2048
+#define MEM_POOL_LARGE_BUFFER_SIZE              8192
+#define MEM_POOL_STREAM_TCP_SESSION_SIZE        256
+#define MEM_POOL_STREAM_TCP_SEGMENT_SIZE        64
+#define MEM_POOL_PORTSCAN_BUFFER_SIZE           128
 
 
 
-#define MEM_POOL_HOST_MBUF_NUM     3000
-#define MEM_POOL_FLOW_NODE_NUM     100000
-#define MEM_POOL_SMALL_BUFFER_NUM  1000
-#define MEM_POOL_LARGE_BUFFER_NUM  256
+
+#define MEM_POOL_HOST_MBUF_NUM               3000
+#define MEM_POOL_FLOW_NODE_NUM               100000
+#define MEM_POOL_SMALL_BUFFER_NUM            1000
+#define MEM_POOL_LARGE_BUFFER_NUM            256
+#define MEM_POOL_STREAM_TCP_SESSION_NUM      10000
+#define MEM_POOL_STREAM_TCP_SEGMENT_NUM      20000
+#define MEM_POOL_PORTSCAN_BUFFER_NUM         100000
 
 
-#define MEM_POOL_ID_HOST_MBUF     0     /*by fpa 7    256 bytes used for mbuf + fcb*/
+
+#define MEM_POOL_ID_HOST_MBUF     0     /*by fpa 6    256 bytes used for mbuf + fcb*/
 #define MEM_POOL_NAME_HOST_MBUF "HOST_MBUF_POOL"
 #define MEM_POOL_TOTAL_HOST_MBUF MEM_POOL_HOST_MBUF_NUM * MEM_POOL_HOST_MBUF_SIZE + MEM_POOL_CFG_SIZE
 
-
-#define MEM_POOL_ID_FLOW_NODE     1     /*by fpa 8    256 bytes used for flowitem*/
+#define MEM_POOL_ID_FLOW_NODE     1     /*by fpa 7    256 bytes used for flowitem*/
 #define MEM_POOL_NAME_FLOW_NODE "FLOW_NODE_POOL"
 #define MEM_POOL_TOTAL_FLOW_NODE MEM_POOL_FLOW_NODE_NUM * MEM_POOL_FLOW_NODE_SIZE + MEM_POOL_CFG_SIZE
 
@@ -87,7 +94,24 @@ typedef struct MEM_POOL_CFG_TAG_S
 #define MEM_POOL_NAME_LARGE_BUFFER "LARGE_BUF_POOL"
 #define MEM_POOL_TOTAL_LARGE_BUFFER MEM_POOL_LARGE_BUFFER_NUM * MEM_POOL_LARGE_BUFFER_SIZE + MEM_POOL_CFG_SIZE
 
-#define MEM_POOL_ID_MAX           4
+
+#define MEM_POOL_ID_STREAMTCP_SESSION_BUFFER  4      /* 256 bytes*/
+#define MEM_POOL_NAME_STREAMTCP_SESSION_BUFFER "STREAMTCP_SESSION"
+#define MEM_POOL_TOTAL_STREAMTCP_SESSION_BUFFER MEM_POOL_STREAM_TCP_SESSION_NUM * MEM_POOL_STREAM_TCP_SESSION_SIZE + MEM_POOL_CFG_SIZE
+
+
+#define MEM_POOL_ID_STREAMTCP_SEGMENT_BUFFER  5     /* 64 BYTES*/
+#define MEM_POOL_NAME_STREAMTCP_SEGMENT_BUFFER  "STREAMTCP_SEGMENT"
+#define MEM_POOL_TOTAL_STREAMTCP_SEGMENT_BUFFER MEM_POOL_STREAM_TCP_SEGMENT_NUM * MEM_POOL_STREAM_TCP_SEGMENT_SIZE + MEM_POOL_CFG_SIZE
+
+
+#define MEM_POOL_ID_PORTSCAN_BUFFER    6   /*128 BYTES*/
+#define MEM_POOL_NAME_PORTSCAN_BUFFER  "PORTSCAN_POOL"
+#define MEM_POOL_TOTAL_PORTSCAN_BUFFER MEM_POOL_PORTSCAN_BUFFER_NUM * MEM_POOL_PORTSCAN_BUFFER_SIZE + MEM_POOL_CFG_SIZE
+
+
+
+#define MEM_POOL_ID_MAX           (MEM_POOL_ID_PORTSCAN_BUFFER + 1)
 
 
 
@@ -109,6 +133,8 @@ static inline void mem_pool_fpa_slice_free(void *buf, int pool_id)
 extern void *mem_pool_alloc(int pool_id, uint32_t size);
 extern void mem_pool_free(void *buf);
 
+#define MEM_PORTSCAN_ITEM_ALLOC(size)   mem_pool_alloc(MEM_POOL_ID_PORTSCAN_BUFFER, size)
+#define MEM_PORTSCAN_ITEM_FREE(b)    mem_pool_free(b)
 
 
 #define MEM_2K_ALLOC(size)   mem_pool_alloc(MEM_POOL_ID_SMALL_BUFFER, size)
@@ -125,6 +151,9 @@ extern Mem_Pool_Cfg *mem_pool[];
 
 extern int Mem_Pool_Init(void);
 extern int Mem_Pool_Get(void);
+
+extern int mem_pool_sw_slice_inject(int pool_id);
+extern void Mem_Pool_Release();
 
 
 

@@ -1,15 +1,3 @@
-/********************************************************************************
- *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology
- *        All rights reserved
- *
- *        filename :       mbuf.h
- *        description :
- *
- *        created by  luoye  at  2014-11-21
- *
- ********************************************************************************/
-
 #ifndef __MBUF_H__
 #define __MBUF_H__
 
@@ -18,6 +6,11 @@
 #include <sec-util.h>
 #include <mem_pool.h>
 
+#include <decode-tcp.h>
+
+
+
+typedef void (*FreeAlState)(void *s);
 
 typedef struct {
     uint32_t sip;
@@ -31,12 +24,14 @@ typedef struct m_buf_
 {
     uint32_t magic_flag;         //mbuf memory magic num
 
-    uint16_t pkt_space;          //pkt is hw or sw buffer
-    uint16_t pkt_totallen;       //pkt total len
+    uint8_t pkt_space;          //pkt is hw or sw buffer
+    uint8_t flow_log;
+    uint16_t frag_len;                //len of ip fragment packet
+
 
     cvmx_buf_ptr_t packet_ptr;   //copy from wqe packet_ptr, packet info
 
-    struct m_buf_ *next;         //for cache chain
+    struct m_buf_ *next;         //for cache frag chain
 
     void *pkt_ptr;               //pointer to begin of packet from wqe packet_ptr
 
@@ -65,14 +60,30 @@ typedef struct m_buf_
     uint64_t timestamp;          //seconds since 1970
     void *payload;               //L7 payload pointer
 
-    int frag_offset;             //offset of ip fragment packet
-    int frag_len;                //len of ip fragment packet
+    union {
+        TCPVars tcpvars;
+    };
+
+    uint16_t frag_offset;             //offset of ip fragment packet
+    uint16_t tcp_reasm_overlap;
+    uint32_t pkt_totallen;       //pkt total len
 
     uint32_t flags;              //features of packet
     uint32_t fcb_hash;
 
-    void    *fcb;                //if frag_reassem   pointer to fcb
+    void    *fcb;                //if frag_reasm   pointer to fcb
+    struct m_buf_  *fragments;          //if frag_reasm ok, linked to fragments
     void    *flow;               //flow node
+
+    struct m_buf_  *tcp_seg_raw;
+    struct m_buf_  *tcp_seg_raw_tail;    //if seg_reassem   pointer to raw packet
+
+    struct m_buf_  *tcp_seg_reassem;
+
+    void   *alState;			//L7 state data
+    FreeAlState FreeState;		//L7 free alState's memory
+
+    uint32_t tag;
 }mbuf_t;
 
 
@@ -143,8 +154,12 @@ extern mbuf_t *mbuf_alloc();
 extern void mbuf_free(mbuf_t *mb);
 extern void packet_destroy_all(mbuf_t *m);
 extern void packet_destroy_data(mbuf_t *mbuf);
-extern uint32_t packet_hw2sw(mbuf_t *mbuf);
+extern uint32_t packet_hw2sw(mbuf_t *mbuf, uint32_t flag);
+extern uint32_t packet_sw2hw(mbuf_t *mbuf);
 
+
+#define SW2K_ZONE    0
+#define SW8K_ZONE    1
 
 #define MBUF_ALLOC()  mbuf_alloc()
 #define MBUF_FREE(m)   mbuf_free(m)
@@ -153,7 +168,7 @@ extern uint32_t packet_hw2sw(mbuf_t *mbuf);
 #define PACKET_DESTROY_ALL(m)   packet_destroy_all(m)
 #define PACKET_DESTROY_DATA(m)  packet_destroy_data(m)
 
-#define PACKET_HW2SW(m) packet_hw2sw(m)
+#define PACKET_HW2SW(m, flag) packet_hw2sw(m, flag)
 
 
 

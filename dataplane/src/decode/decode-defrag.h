@@ -107,6 +107,7 @@ static inline void fcb_size_judge(void)
 extern mbuf_t *Defrag(mbuf_t *mbuf);
 extern uint32_t FragModule_init();
 extern uint32_t FragModuleInfo_Get();
+extern void FragModule_Release();
 
 
 

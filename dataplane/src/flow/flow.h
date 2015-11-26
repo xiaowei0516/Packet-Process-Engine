@@ -1,14 +1,3 @@
-/********************************************************************************
- *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology
- *        All rights reserved
- *
- *        filename :       flow.h
- *        description :    flow manage
- *
- *        created by  luoye  at  2014-11-18
- *
- ********************************************************************************/
 
 #ifndef __FLOW_H__
 #define __FLOW_H__
@@ -20,10 +9,18 @@
 #include <mem_pool.h>
 
 
-
 #define FLOW_ACTION_UNKNOW   0
 #define FLOW_ACTION_FW       1
 #define FLOW_ACTION_DROP     2
+
+
+#define FLOW_FLAG_PERSISTENT 1 << 0
+
+
+
+#define TOSERVER 0
+#define TOCLIENT 1
+
 
 
 
@@ -60,13 +57,28 @@ typedef struct flow_item_tag_s
     uint16_t  dport;
     uint16_t  protocol;
     uint16_t  input_port;
-
     uint16_t  action;
+    uint16_t  flowflags;
 
     uint64_t  bytecnts2d;   //   bytes  count   sport->dport
     uint64_t  bytecntd2s;   //   bytes  count   dport->sport
     uint64_t  pktcnts2d;    //   pkts    count   sport->dport
     uint64_t  pktcntd2s;    //   pkts    count   dport->sport
+
+    /** protocol specific data pointer, e.g. for TcpSession */
+    void *protoctx;             //tcpsession ----->  ssn
+
+	mbuf_t *pmbuf;
+
+
+    /** application level storage ptrs.
+     *
+     */
+
+    uint16_t alproto; /**< \brief application level protocol */
+    void *alparser;     /**< parser internal state */
+    void *alstate;      /**< application layer state */
+    void (*StateFree)(void *);
 }flow_item_t;
 
 
@@ -89,9 +101,14 @@ typedef struct flow_item_tag_s
 
 
 
+#define FLOW_SET_PERSISTENT(f) (f->flowflags |= FLOW_FLAG_PERSISTENT)
+#define FLOW_CLEAR_PERSISTENT(f) (f->flowflags &= ~FLOW_FLAG_PERSISTENT)
+#define FLOW_IS_PERSISTERN(f)  (f->flowflags & FLOW_FLAG_PERSISTENT)
+
+
 static inline void flow_item_size_judge(void)
 {
-    BUILD_BUG_ON((sizeof(flow_item_t) + sizeof(Mem_Slice_Ctrl_B)) > 256);
+    BUILD_BUG_ON((sizeof(flow_item_t) + sizeof(Mem_Slice_Ctrl_B)) > MEM_POOL_HOST_MBUF_SIZE);
 
     return;
 }
@@ -160,10 +177,20 @@ extern int FlowInit(void);
 extern int FlowInfoGet();
 extern void FlowAgeTimeoutCB(Oct_Timer_Threat *o, void *param);
 extern void FlowHandlePacket(mbuf_t *m);
+extern void FlowRelease();
 
 
-extern CVMX_SHARED uint64_t new_flow[];
-extern CVMX_SHARED uint64_t del_flow[];
+extern uint64_t new_flow[];
+extern uint64_t del_flow[];
 
+/* below add by fenqb 2014/12/18 */
+typedef struct FlowAddress_ {
+    union {
+        uint32_t       address_un_data32[4]; /* type-specific field */
+        uint16_t       address_un_data16[8]; /* type-specific field */
+        uint8_t        address_un_data8[16]; /* type-specific field */
+    } address;
+} FlowAddress;
+/* End by fengqb */
 
 #endif

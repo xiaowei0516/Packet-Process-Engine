@@ -3,6 +3,9 @@
 #include <sched.h>
 #include <pthread.h>
 
+
+extern void DP_Attack_Info_Update();
+
 int wd_is_watchdog_registered(int cpuid)
 {
     return (sched_tbl->data[cpuid].watchdog_enabled);
@@ -92,10 +95,10 @@ static void *wd_watchdog_func(void *arg)
 #endif
     if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask) < 0)
     {
-        LOGDBG("wd_watchdog set thread affinity failed\n");
+        printf("wd_watchdog set thread affinity failed\n");
     }
 
-    LOGDBG("wd_watchdog set thread affinity OK\n");
+    printf("wd_watchdog set thread affinity OK\n");
 
 #if 0
     pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
@@ -106,6 +109,9 @@ static void *wd_watchdog_func(void *arg)
             printf("    CPU %d\n", j);
 #endif
 
+    printf("pid is %d\n", getpid());
+    cvmx_linux_enable_xkphys_access(0);
+
     while(1)
     {
         rc = sleep(WD_WATCHDOG_CHECK_INTERVAL);
@@ -113,7 +119,9 @@ static void *wd_watchdog_func(void *arg)
         if(0 == rc)
         {
             wd_check_watchdog(NULL);
+            DP_Attack_Info_Update();
         }
+
     }
 
     return NULL;

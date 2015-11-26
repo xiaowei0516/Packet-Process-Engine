@@ -136,6 +136,7 @@ build_start(){
 
 make_package(){
 	cp version/scripts/startup.sh bin/
+	cp version/scripts/netstat_monitor.sh bin/
 	tar czf sec-fw.tar.gz bin
 	if [ $? -eq 0 ]; then
 		echo "Package make ok!"

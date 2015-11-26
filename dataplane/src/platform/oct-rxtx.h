@@ -10,6 +10,10 @@
 
 #define OCT_TX_DESC_NAME "oct-tx-desc"
 
+
+#define FROMPORT  0
+#define FROMLINUX 1
+
 typedef struct
 {
     uint8_t mem_ref;
@@ -51,14 +55,31 @@ oct_packet_free(cvmx_wqe_t * wq, int wqepool)
 }
 
 
-extern uint32_t oct_tx_entries;
+extern uint8_t fw_table[];
+static inline uint8_t
+oct_tx_port_get(uint8_t inp)
+{
+    return fw_table[inp];
+}
+
+
+
+extern uint32_t oct_tx_entries[];
+extern uint32_t oct_directfw;
+extern uint32_t oct_directfw_sleeptime;
 
 extern uint8_t fw_table[];
 
-extern void oct_tx_process_mbuf(mbuf_t *mbuf);
+
 extern int oct_rxtx_init(void);
 extern int oct_rxtx_get(void);
 extern void oct_tx_done_check();
 extern void oct_tx_process_sw(mbuf_t *mbuf, uint8_t outport);
+extern void oct_tx_process_hw(mbuf_t *mbuf, uint32_t outport);
+extern uint32_t oct_pow_se2linux(mbuf_t *m);
+extern void *oct_rx_process_work(cvmx_wqe_t *wq, uint8_t src);
+extern void oct_rxtx_Release();
+extern void oct_directfw_set();
+extern void oct_tx_process_hw_work(cvmx_wqe_t *work, uint32_t outport);
 
 #endif

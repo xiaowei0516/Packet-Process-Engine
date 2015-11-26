@@ -18,7 +18,13 @@ INCLUDE_DIR := \
 	-I$(d) \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/decode \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
-	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/acl \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/common \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/output \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/attack \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/plugin/stream-tcp \
+	-I$(OCTEON_ROOT)/sec-fw/include
 
 	
 

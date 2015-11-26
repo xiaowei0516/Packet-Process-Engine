@@ -15,7 +15,8 @@ LIBPLATFORM_OBJ_$(d)  :=  \
 	$(OBJ_DIR)/oct-init.o \
 	$(OBJ_DIR)/mem_pool.o \
 	$(OBJ_DIR)/oct-sched.o \
-	$(OBJ_DIR)/oct-time.o 
+	$(OBJ_DIR)/oct-time.o \
+	$(OBJ_DIR)/oct-thread.o
 
 INCLUDE_DIR := \
 	-I$(d) \

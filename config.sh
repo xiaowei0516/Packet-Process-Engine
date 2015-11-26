@@ -1,4 +1,4 @@
 cd ..
 pwd
-source env-setup OCTEON_CN70XX
+source env-setup
 cd sec-fw

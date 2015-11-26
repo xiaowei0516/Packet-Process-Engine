@@ -12,8 +12,9 @@
 
 extern sos_mem_pool_region_t *sos_mem_pool;
 extern void oct_rx_process_command(cvmx_wqe_t *wq);
-
-
+extern void DP_Msg_Process_Thread_Init();
+extern void DP_NetStat_Monitor_Init();
+extern void Decode_unsupport_proto_handle(mbuf_t *mbuf);
 
 
 #endif

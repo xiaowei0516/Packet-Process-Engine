@@ -149,7 +149,7 @@ cparser_cmd_delete_rule_all(cparser_context_t *context)
 
 
 cparser_result_t
-cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_time_start_time_end_action
+cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_time_start_time_end_action_log
     (cparser_context_t *context,
             cparser_macaddr_t *smac,
             cparser_macaddr_t *dmac,
@@ -165,7 +165,8 @@ cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_d
             uint32_t *proto_end,
             char **time_start,
             char **time_end,
-            char **action)
+            char **action,
+            char **log)
 {
     assert(context);
 
@@ -293,6 +294,14 @@ cparser_cmd_delete_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_d
         rcp_para.params_list.params[0].AclRuleTuple.action = ACL_RULE_ACTION_DROP;
     }
 
+    if (!strcmp(*log, "enable")) {
+        LOG("log is fw\n");
+        rcp_para.params_list.params[0].AclRuleTuple.logable = 1;
+    }else if (!strcmp(*log, "disable")) {
+        LOG("log is disable\n");
+        rcp_para.params_list.params[0].AclRuleTuple.logable = 0;
+    }
+
     cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);
     LOG("after pack the message\n");
 
@@ -386,7 +395,7 @@ cparser_cmd_show_rule(cparser_context_t *context)
 
 
 cparser_result_t
-cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_time_start_time_end_action
+cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_mask_sport_start_sport_start_sport_end_sport_end_dport_start_dport_start_dport_end_dport_end_proto_start_proto_start_proto_end_proto_end_time_start_time_end_action_log
         (cparser_context_t *context,
             cparser_macaddr_t *smac,
             cparser_macaddr_t *dmac,
@@ -402,7 +411,8 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
             uint32_t *proto_end,
             char **time_start,
             char **time_end,
-            char **action)
+            char **action,
+            char **log)
 {
     assert(context);
 
@@ -430,12 +440,12 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 
     if( 0 == *sip && 0 != *sip_mask)
     {
-        LOG("sip mask invalid\n");
+        printf("sip mask invalid\n");
         return CPARSER_NOT_OK;
     }
     if( 0 != *sip && *sip_mask > 32)
     {
-        LOG("sip mask invalid\n");
+        printf("sip mask invalid\n");
         return CPARSER_NOT_OK;
     }
 
@@ -444,22 +454,21 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 
     if( 0 == *dip && 0 != *dip_mask)
     {
-        LOG("dip mask invalid\n");
+        printf("dip mask invalid\n");
         return CPARSER_NOT_OK;
     }
     if( 0 != *dip && *dip_mask > 32)
     {
-        LOG("dip mask invalid\n");
+        printf("dip mask invalid\n");
         return CPARSER_NOT_OK;
     }
 
     rcp_para.params_list.params[0].AclRuleTuple.dip = *dip;
     rcp_para.params_list.params[0].AclRuleTuple.dip_mask = *dip_mask;
 
-
     if( *sport_start > *sport_end || *sport_end > 0xffff )
     {
-        LOG("sport invalid\n");
+        printf("sport invalid\n");
         return CPARSER_NOT_OK;
     }
 
@@ -468,7 +477,7 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 
     if( *dport_start > *dport_end || *dport_end > 0xffff )
     {
-        LOG("dport invalid\n");
+        printf("dport invalid\n");
         return CPARSER_NOT_OK;
     }
 
@@ -477,7 +486,7 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 
     if( *proto_start > *proto_end || *proto_end > 0xff )
     {
-        LOG("dport invalid\n");
+        printf("dport invalid\n");
         return CPARSER_NOT_OK;
     }
 
@@ -487,7 +496,7 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
 
     if ( ( !strcmp(*time_start, "any" ) && strcmp(*time_end, "any") ) || ( strcmp(*time_start, "any" ) && !strcmp(*time_end, "any") ))
     {
-        LOG("time invalid\n");
+        printf("time invalid\n");
         return CPARSER_NOT_OK;
     }
 
@@ -504,7 +513,7 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
         ret = strptime(*time_start, "%Y-%m-%d/%H:%M:%S", &tm_time);
         if(NULL == ret)
         {
-            LOG("invalid time format\n");
+            printf("invalid time format\n");
             return CPARSER_NOT_OK;
         }
 
@@ -514,7 +523,7 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
         ret = strptime(*time_end, "%Y-%m-%d/%H:%M:%S", &tm_time);
         if(NULL == ret)
         {
-            LOG("invalid time format\n");
+            printf("invalid time format\n");
             return CPARSER_NOT_OK;
         }
 
@@ -528,6 +537,14 @@ cparser_cmd_add_rule_smac_smac_dmac_dmac_sip_sip_mask_sip_mask_dip_dip_mask_dip_
     }else if (!strcmp(*action, "drop")) {
         LOG("action is drop\n");
         rcp_para.params_list.params[0].AclRuleTuple.action = ACL_RULE_ACTION_DROP;
+    }
+
+    if (!strcmp(*log, "enable")) {
+        LOG("log is fw\n");
+        rcp_para.params_list.params[0].AclRuleTuple.logable = 1;
+    }else if (!strcmp(*log, "disable")) {
+        LOG("log is disable\n");
+        rcp_para.params_list.params[0].AclRuleTuple.logable = 0;
     }
 
     cmd_msg_handles[cmd].pack(cmd, &rcp_para, send_buf, &sn);

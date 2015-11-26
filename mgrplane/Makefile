@@ -9,8 +9,9 @@ SRV_DIRS += $(TOP)/src/srv/srvnet
 SRV_DIRS += $(TOP)/src/srv/srvpow
 CLIENT_DIRS = $(TOP)/src/client
 COMMON_DIRS = $(TOP)/src/common
+IPC_DIRS = $(TOP)/../ipc
 
-SRC_DIRS = $(SRV_DIRS) $(CLIENT_DIRS) $(COMMON_DIRS)
+SRC_DIRS = $(SRV_DIRS) $(CLIENT_DIRS) $(COMMON_DIRS) $(IPC_DIRS)
 
 ################PROGS USE LOCAL LIBS##################
 COMMON_LDFLAGS = $(TOP)/lib/libcommon.a
@@ -18,6 +19,7 @@ COMMON_LDFLAGS = $(TOP)/lib/libcommon.a
 PROG_SRV_LDFLAGS = $(TOP)/lib/libsrvcore.a
 PROG_SRV_LDFLAGS += $(TOP)/lib/libsrvnet.a
 PROG_SRV_LDFLAGS += $(TOP)/lib/libsrvpow.a
+PROG_SRV_LDFLAGS += $(TOP)/lib/libipc.a
 PROG_SRV_LDFLAGS += $(COMMON_LDFLAGS)
 
 

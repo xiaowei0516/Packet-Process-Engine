@@ -30,7 +30,7 @@ int open_cli2server_socket(void)
         close(g_rcp_fd);
         g_rcp_fd = -1;
         return -1;
-    } 
+    }
 
     return 0;
 }
@@ -58,7 +58,7 @@ int process_message(int sn, int *rn_p)
     if (rn < 0) {
         exit(1);
     }
-    
+
     return 0;
 }
 
@@ -71,7 +71,7 @@ int process_cli_show_cmd(char *rbuf, char *sbuf, int sn)
     if (g_rcp_fd <= 0) {
         open_cli2server_socket();
         if (g_rcp_fd <= 0) {
-            LOG("Error:can not connect to server,make sure server is running\n");
+            printf("Error:can not connect to server,make sure server is running\n");
             return 1;
         }
     }
@@ -103,6 +103,7 @@ int process_cli_show_cmd(char *rbuf, char *sbuf, int sn)
             }
             printf("%s", (char *)(rbuf + MESSAGE_HEADER_LENGTH));
         }
+
         memset(rbuf, 0, BUFSIZE);
     } while (more_flag);
 

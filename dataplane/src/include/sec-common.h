@@ -9,6 +9,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include <sys/time.h>
 
 
@@ -20,10 +21,25 @@
 
 
 
+#define SEC_FW    0
+#define SEC_DROP  1
+#define SEC_CACHE 2
 
 
 
 
 
+
+
+/* Begin: below add by fengqb 2014/12/19 */
+
+/* Engine stage/status*/
+enum {
+    SEC_FW_INIT = 0,
+    SEC_FW_RUNTIME,
+    SEC_FW_DEINIT
+};
+
+/* End. by fengqb */
 
 #endif

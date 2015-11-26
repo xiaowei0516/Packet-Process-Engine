@@ -1,14 +1,3 @@
-/********************************************************************************
- *
- *        Copyright (C) 2014-2015  Beijing winicssec Technology 
- *        All rights reserved
- *
- *        filename :       oct-sched.c
- *        description :    
- *
- *        created by  luoye  at  2014-11-18
- *
- ********************************************************************************/
 
 #include "oct-sched.h"
 #include <sec-util.h>
@@ -31,9 +20,19 @@ int oct_sched_init(void)
     return SEC_OK;
 }
 
+void oct_seched_Release(void)
+{
+    int rc;
+    rc = cvmx_bootmem_free_named(OCT_SCHED_TABLE_NAME);
+    printf("%s free rc=%d\n", OCT_SCHED_TABLE_NAME, rc);
+}
+
+
+
 int oct_sched_Get(void)
 {
-    const cvmx_bootmem_named_block_desc_t *block_desc = cvmx_bootmem_find_named_block(OCT_SCHED_TABLE_NAME); 
+#if 0
+    const cvmx_bootmem_named_block_desc_t *block_desc = cvmx_bootmem_find_named_block(OCT_SCHED_TABLE_NAME);
     if (block_desc)
     {
         sched_tbl = (oct_sched_t *)(block_desc->base_addr);
@@ -43,11 +42,6 @@ int oct_sched_Get(void)
         printf("oct_sched_Get error \n");
         return SEC_NO;
     }
-
+#endif
     return SEC_OK;
 }
-
-
-
-
-

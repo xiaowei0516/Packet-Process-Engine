@@ -8,33 +8,69 @@
 #include <mbuf.h>
 #include <sec-debug.h>
 
-CVMX_SHARED uint32_t dp_acl_action_default = ACL_RULE_ACTION_DROP;
+#include "rule.h"
+
+uint32_t dp_acl_action_default = ACL_RULE_ACTION_DROP;
 
 rule_list_t *rule_list;
 
-CVMX_SHARED unit_tree g_acltree;
+unit_tree_t g_acltree_1;
+unit_tree_t g_acltree_2;
+unsigned long g_acltree_running = 0;
+rwlock_t acltree_running_rwlock;
 
+
+
+//static pthread_mutex_t rule_list_mutex_dp = PTHREAD_MUTEX_INITIALIZER;
+
+char *rule_conf_filename = "/data/rule_config.rul";
+
+static pthread_t rule_load_thread_dp;
+static pthread_cond_t rule_load_cond_dp = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t rule_load_mutex_dp= PTHREAD_MUTEX_INITIALIZER; //mutex for rule config file and load
+uint32_t rule_load_notify_dp = 0;
 
 
 
 uint32_t DP_Acl_Tree_Init()
 {
-    void *ptr;
+    void *ptr1;
+    void *ptr2;
 
-    ptr = (void *)cvmx_bootmem_alloc_named((RULE_ENTRY_MAX + 1) * sizeof(rule_t), 128, DP_ACL_RULELIST_NAME);
-    if(NULL == ptr)
+    ptr1 = (void *)cvmx_bootmem_alloc_named((RULE_ENTRY_MAX + 1) * sizeof(rule_t), 128, DP_ACL_RULELIST_NAME_1);
+    if(NULL == ptr1)
     {
         return SEC_NO;
     }
 
-    memset(ptr, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
+    ptr2 = (void *)cvmx_bootmem_alloc_named((RULE_ENTRY_MAX + 1) * sizeof(rule_t), 128, DP_ACL_RULELIST_NAME_2);
+    if(NULL == ptr2)
+    {
+        return SEC_NO;
+    }
 
-    rwlock_init(&g_acltree.hs_rwlock);
+    /*init acltree 1*/
+    memset(ptr1, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
 
-    g_acltree.TreeSet.num = 0;
-    g_acltree.TreeSet.ruleList = (rule_t *)ptr;
+    rwlock_init(&g_acltree_1.hs_rwlock);
 
-    memset((void *)&g_acltree.TreeNode, 0, sizeof(hs_node_t));
+    g_acltree_1.TreeSet.num = 0;
+    g_acltree_1.TreeSet.ruleList = (rule_t *)ptr1;
+
+    memset((void *)&g_acltree_2.TreeNode, 0, sizeof(hs_node_t));
+
+    /*init acltree 2*/
+    memset(ptr2, 0, (RULE_ENTRY_MAX + 1) * sizeof(rule_t));
+
+    rwlock_init(&g_acltree_1.hs_rwlock);
+
+    g_acltree_2.TreeSet.num = 0;
+    g_acltree_2.TreeSet.ruleList = (rule_t *)ptr2;
+
+    memset((void *)&g_acltree_2.TreeNode, 0, sizeof(hs_node_t));
+
+    g_acltree_running = (unsigned long)(void *)&g_acltree_2;
+    rwlock_init(&acltree_running_rwlock);
 
     return SEC_OK;
 }
@@ -45,10 +81,9 @@ uint32_t DP_Acl_List_Init()
     int fd;
 
     fd = shm_open(SHM_RULE_LIST_NAME, O_RDWR, 0);
-
     if (fd < 0)
     {
-        LOGDBG("Failed to setup CVMX_SHARED(shm_open)\n");
+        printf("Failed to setup CVMX_SHARED(shm_open)\n");
         return SEC_NO;
     }
 
@@ -57,13 +92,130 @@ uint32_t DP_Acl_List_Init()
     void *ptr = mmap(NULL, sizeof(rule_list_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (ptr == NULL)
     {
-        LOGDBG("Failed to setup rule list (mmap copy)");
+        printf("Failed to setup rule list (mmap copy)");
         return SEC_NO;
     }
 
     rule_list = (rule_list_t *)ptr;
 
     return SEC_OK;
+}
+
+
+
+
+
+int DP_Rule_load_from_conf()
+{
+    int line = 0;
+    uint32_t ret;
+    FILE *fp;
+
+    if(access(rule_conf_filename, F_OK) != 0)
+    {
+        printf("RULE CONFIG FILE NOT EXIST\n");
+        return  -1;
+    }
+
+    fp = fopen(rule_conf_filename, "r");
+    if (fp == NULL)
+    {
+        printf("Couldnt open rule config file\n");
+        return  -1;
+    }
+
+#ifdef RULE_DEBUG
+    printf("open rule config success\n");
+#endif
+
+    Rule_del_all();
+
+#ifdef RULE_DEBUG
+    printf("rule delete all\n");
+#endif
+
+    while(!feof(fp))
+    {
+        ret = Rule_Load_Line(fp, line);
+        if(ret != 0)
+        {
+            //printf("config file line %d format err\n", line);
+            fclose(fp);
+            return 0;
+        }
+        line++;
+    }
+
+    fclose(fp);
+
+    return 0;
+
+}
+
+
+void DP_Rule_Conf_Recover()
+{
+    pthread_mutex_lock(&rule_load_mutex_dp);
+
+    if(DP_Rule_load_from_conf() < 0)
+    {
+        pthread_mutex_unlock(&rule_load_mutex_dp);
+        return;
+    }
+
+#ifdef RULE_DEBUG
+    printf("success load rule num is %d\n", RULE_ENTRY_MAX - rule_list->rule_entry_free);
+#endif
+
+    Rule_Notify_Dp_Build_Sync();
+
+    pthread_mutex_unlock(&rule_load_mutex_dp);
+}
+
+static void *DP_Rule_Load_Fn(void *arg)
+{
+    cpu_set_t mask;
+    CPU_ZERO(&mask);
+    CPU_SET(0, &mask);
+
+    printf("DP_Rule_Load_Fn thread running\n");
+
+    if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask) < 0)
+    {
+        printf("set thread affinity failed\n");
+    }
+
+    printf("set thread affinity OK\n");
+
+    cvmx_linux_enable_xkphys_access(0);
+
+    while(1)
+    {
+        pthread_mutex_lock(&rule_load_mutex_dp);
+
+        while (!rule_load_notify_dp)
+        {
+            pthread_cond_wait(&rule_load_cond_dp, &rule_load_mutex_dp);
+        }
+
+        DP_Rule_load_from_conf();
+
+        printf("success load rule num is %d\n", RULE_ENTRY_MAX - rule_list->rule_entry_free);
+
+        Rule_Notify_Dp_Build_Sync();
+
+        rule_load_notify_dp = 0;
+
+        pthread_mutex_unlock(&rule_load_mutex_dp);
+    }
+
+    return NULL;
+}
+
+
+void DP_Rule_load_thread_start()
+{
+    pthread_create(&rule_load_thread_dp, NULL, DP_Rule_Load_Fn, NULL);
 }
 
 
@@ -85,18 +237,36 @@ uint32_t DP_Acl_Rule_Init()
         return SEC_NO;
     }
 
+    printf("start rule load thread...\n");
+    DP_Rule_load_thread_start();
+
+    DP_Rule_Conf_Recover();
 
     return SEC_OK;
+}
+
+void DP_Acl_Rule_Release(void)
+{
+    int rc;
+    rc = cvmx_bootmem_free_named(DP_ACL_RULELIST_NAME_1);
+    printf("%s free rc=%d\n", DP_ACL_RULELIST_NAME_1, rc);
+
+    rc = cvmx_bootmem_free_named(DP_ACL_RULELIST_NAME_2);
+    printf("%s free rc=%d\n", DP_ACL_RULELIST_NAME_2, rc);
+
+
+    rc = cvmx_bootmem_free_named(HS_NODE_NAME);
+    printf("%s free rc=%d\n", HS_NODE_NAME, rc);
 
 }
 
 
 void DP_Acl_Add_GuardRule(uint32_t id, rule_t* ruleList)
 {
-#ifdef SEC_ACL_DEBUG
-    LOGDBG("guard rule id is %d\n", id);
-#endif
+    LOGDBG(SEC_ACL_DBG_BIT, "guard rule id is %d\n", id);
+
     ruleList->pri = id;
+    ruleList->logable = 0;
     ruleList->action = dp_acl_action_default;
     ruleList->rule_id = RULE_ENTRY_MAX;
 
@@ -160,9 +330,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
 
     if(ruleset == NULL || node == NULL)
     {
-    #ifdef SEC_ACL_DEBUG
-        LOGDBG("\nwrong parameters\n");
-    #endif
+        LOGDBG(SEC_ACL_DBG_BIT, "\nwrong parameters\n");
         return SEC_NO;
     }
 
@@ -184,6 +352,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
         memset(tempfilt->dim, 0, DIM * 2 * sizeof(uint64_t));
 
         tempfilt->action = (unsigned int)rule_list->rule_entry[i].rule_tuple.action;
+        tempfilt->logable = (unsigned int)rule_list->rule_entry[i].rule_tuple.logable;
         tempfilt->rule_id = i;
 
         /*0 SMAC from to*/
@@ -232,6 +401,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
     {
         ruleset->ruleList[i].pri = i;
         ruleset->ruleList[i].action = filtset->filtArr[i].action;
+        ruleset->ruleList[i].logable = filtset->filtArr[i].logable;
         ruleset->ruleList[i].rule_id = filtset->filtArr[i].rule_id;
         ruleset->ruleList[i].time_start = filtset->filtArr[i].time_start;
         ruleset->ruleList[i].time_end = filtset->filtArr[i].time_end;
@@ -242,9 +412,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
         }
     }
 
-#ifdef SEC_ACL_DEBUG
-    LOGDBG("number of rules loaded  %d\n", ruleset->num);
-#endif
+    LOGDBG(SEC_ACL_DBG_BIT, "number of rules loaded  %d\n", ruleset->num);
 
     DP_Acl_Add_GuardRule(ruleset->num, &ruleset->ruleList[ruleset->num]);
     ruleset->num += 1;
@@ -252,8 +420,7 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
     uint32_t ruleNum;
     for (ruleNum = 0; ruleNum < ruleset->num; ruleNum ++)
     {
-    #ifdef SEC_ACL_DEBUG
-        LOGDBG("\nRule%d: [%lx %lx] [%lx %lx] [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx]\n", ruleNum,
+        LOGDBG(SEC_ACL_DBG_BIT, "\nRule%d: [%lx %lx] [%lx %lx] [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx], [%lx %lx]\n", ruleNum,
             ruleset->ruleList[ruleNum].range[0][0], ruleset->ruleList[ruleNum].range[0][1],
             ruleset->ruleList[ruleNum].range[1][0], ruleset->ruleList[ruleNum].range[1][1],
             ruleset->ruleList[ruleNum].range[2][0], ruleset->ruleList[ruleNum].range[2][1],
@@ -261,7 +428,6 @@ uint32_t DP_Acl_Load_Rule(rule_list_t *rule_list,rule_set_t* ruleset, hs_node_t*
             ruleset->ruleList[ruleNum].range[4][0], ruleset->ruleList[ruleNum].range[4][1],
             ruleset->ruleList[ruleNum].range[5][0], ruleset->ruleList[ruleNum].range[5][1],
             ruleset->ruleList[ruleNum].range[6][0], ruleset->ruleList[ruleNum].range[6][1]);
-    #endif
     }
 
     if(BuildHSTree(ruleset,node,0) != 1)
@@ -290,6 +456,7 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
     uint8_t action;
     uint64_t timestar;
     uint64_t timeend;
+    unit_tree_t *p_running_tree;
 
     for(i = 0; i < 6; i++)
     {
@@ -323,8 +490,7 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
     packet[5] = mb->dport;
     packet[6] = mb->proto;
 
-#ifdef SEC_ACL_DEBUG
-    LOGDBG("\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
+    LOGDBG(SEC_ACL_DBG_BIT, "\n>>packet: [%lx  %lx]  [%lx  %lx]  [%lx %lx], [%lx %lx], [%lu %lu], [%lu %lu], [%lx %lx]\n",
             packet[0], packet[0],
             packet[1], packet[1],
             packet[2], packet[2],
@@ -332,196 +498,182 @@ uint8_t DP_Acl_Lookup(mbuf_t *mb)
             packet[4], packet[4],
             packet[5], packet[5],
             packet[6], packet[6]);
-#endif
 
-    if(read_trylock(&g_acltree.hs_rwlock))
+    read_lock(&acltree_running_rwlock);
+
+    p_running_tree = (unit_tree_t *)g_acltree_running;
+
+    if(p_running_tree->TreeSet.num == 0)
     {
+        LOGDBG(SEC_ACL_DBG_BIT, "Rule is empty\n");
 
-        if(g_acltree.TreeSet.num == 0)
-        {
-        #ifdef SEC_ACL_DEBUG
-            LOGDBG("Rule is empty\n");
-        #endif
+        read_unlock(&acltree_running_rwlock);
 
-            read_unlock(&g_acltree.hs_rwlock);
+        return ACL_RULE_ACTION_FW;
+    }
 
-            return ACL_RULE_ACTION_FW;
-        }
+    ruleset = &(p_running_tree->TreeSet);
+    root = &(p_running_tree->TreeNode);
 
-        ruleset = &(g_acltree.TreeSet);
-        root = &(g_acltree.TreeNode);
+    LookupHSTree(packet, ruleset, root, &hit_node);
 
-        LookupHSTree(packet, ruleset, root, &hit_node);
+    LOGDBG(SEC_ACL_DBG_BIT, "\nnode->thresh: ""%" PRId64 "\n",  hit_node->thresh);
 
-#ifdef SEC_ACL_DEBUG
-        LOGDBG("\nnode->thresh: ""%" PRId64 "\n",  hit_node->thresh);
-#endif
+    rule = (uint32_t)hit_node->thresh;
+    if(rule == ruleset->num - 1)
+    {
+        action = ruleset->ruleList[rule].action;
+        LOGDBG(SEC_ACL_DBG_BIT, "\nhit guard rule\n");
+    }
+    else
+    {
+        LOGDBG(SEC_ACL_DBG_BIT, "\n>>hit Rule%ld: [%8lx %8lx] [%8lx %8lx] [%8lx %8lx], [%8lx %8lx], [%5lu %5lu], [%5lu %5lu], [%2lx %2lx]\n", hit_node->thresh+1,
+                    ruleset->ruleList[rule].range[0][0], ruleset->ruleList[rule].range[0][1],
+                    ruleset->ruleList[rule].range[1][0], ruleset->ruleList[rule].range[1][1],
+                    ruleset->ruleList[rule].range[2][0], ruleset->ruleList[rule].range[2][1],
+                    ruleset->ruleList[rule].range[3][0], ruleset->ruleList[rule].range[3][1],
+                    ruleset->ruleList[rule].range[4][0], ruleset->ruleList[rule].range[4][1],
+                    ruleset->ruleList[rule].range[5][0], ruleset->ruleList[rule].range[5][1],
+                    ruleset->ruleList[rule].range[6][0], ruleset->ruleList[rule].range[6][1]);
+        LOGDBG(SEC_ACL_DBG_BIT, "hit Rule Id is %d\n", ruleset->ruleList[rule].rule_id);
 
-        rule = (uint32_t)hit_node->thresh;
-        if(rule == ruleset->num - 1)
+        timestar = ruleset->ruleList[rule].time_start;
+        timeend = ruleset->ruleList[rule].time_end;
+
+        if(timestar == 0 && timeend == 0)
         {
             action = ruleset->ruleList[rule].action;
-
-        #ifdef SEC_ACL_DEBUG
-            LOGDBG("\nhit guard rule\n");
-        #endif
-
         }
         else
         {
-
-        #ifdef SEC_ACL_DEBUG
-            LOGDBG("\n>>hit Rule%ld: [%8lx %8lx] [%8lx %8lx] [%8lx %8lx], [%8lx %8lx], [%5lu %5lu], [%5lu %5lu], [%2lx %2lx]\n", hit_node->thresh+1,
-                        ruleset->ruleList[rule].range[0][0], ruleset->ruleList[rule].range[0][1],
-                        ruleset->ruleList[rule].range[1][0], ruleset->ruleList[rule].range[1][1],
-                        ruleset->ruleList[rule].range[2][0], ruleset->ruleList[rule].range[2][1],
-                        ruleset->ruleList[rule].range[3][0], ruleset->ruleList[rule].range[3][1],
-                        ruleset->ruleList[rule].range[4][0], ruleset->ruleList[rule].range[4][1],
-                        ruleset->ruleList[rule].range[5][0], ruleset->ruleList[rule].range[5][1],
-                        ruleset->ruleList[rule].range[6][0], ruleset->ruleList[rule].range[6][1]);
-            LOGDBG("hit Rule Id is %d\n", ruleset->ruleList[rule].rule_id);
-        #endif
-
-            timestar = ruleset->ruleList[rule].time_start;
-            timeend = ruleset->ruleList[rule].time_end;
-
-            if(timestar == 0 && timeend == 0)
+            if(mb->timestamp >= timestar && mb->timestamp <= timeend)
             {
                 action = ruleset->ruleList[rule].action;
             }
             else
             {
-                if(mb->timestamp >= timestar && mb->timestamp <= timeend)
-                {
-                    action = ruleset->ruleList[rule].action;
-                }
-                else
-                {
-                    action = dp_acl_action_default;
-                #ifdef SEC_ACL_DEBUG
-                    LOGDBG("time not match, not hit\n");
-                #endif
-                }
+                action = dp_acl_action_default;
+                LOGDBG(SEC_ACL_DBG_BIT, "time not match, not hit\n");
             }
         }
-
-        read_unlock(&g_acltree.hs_rwlock);
-
     }
-    else // trylock fail,  must be commiting, pass fw
-    {
-        return ACL_RULE_ACTION_FW;
-    }
+    mb->flow_log = ruleset->ruleList[rule].logable;
+    read_unlock(&acltree_running_rwlock);
 
-
-#ifdef SEC_ACL_DEBUG
-    LOGDBG("hit Rule action is %s\n", action ? "drop" : "fw");
-#endif
+    LOGDBG(SEC_ACL_DBG_BIT, "hit Rule action is %s\n", action ? "drop" : "fw");
+    LOGDBG(SEC_ACL_DBG_BIT, "hit Rule log is %s\n", mb->flow_log ? "enable" : "disable");
 
     return action;
 }
 
 
 
-static pthread_t dp_acl_build_thread;
 
 
-void DP_Acl_Build()
+void Rule_config()
 {
-    if(rule_list->build_status != RULE_BUILD_COMMIT)
-    {
-        write_lock(&g_acltree.hs_rwlock);
-
-        DP_Acl_Rule_Clean(&(g_acltree.TreeSet),&(g_acltree.TreeNode));
-
-        if(rule_list->rule_entry_free != RULE_ENTRY_MAX)  // rule empty, no need to load
-        {
-            DP_Acl_Load_Rule(rule_list,&(g_acltree.TreeSet),&(g_acltree.TreeNode));
-        }
-
-        write_unlock(&g_acltree.hs_rwlock);
-
-        rule_list->build_status = RULE_BUILD_COMMIT;
-
-        LOGDBG("\nwrst case tree depth: %d\n",gWstDepth);
-        if(gChildCount)
-            LOGDBG("\naverage tree depth: %f\n",(float)gAvgDepth/gChildCount);
-        LOGDBG("\nnumber of tree nodes: %d\n",gNumTreeNode);
-        LOGDBG("\nnumber of leaf nodes: %d\n",gNumLeafNode);
-        LOGDBG("\nfinished\n");
-    }
-
 }
 
-
-static void *DP_Acl_Build_Fn(void *arg)
+void Rule_Load_Notify()
 {
-    int rc;
-    cpu_set_t mask;
-    cpu_set_t cpuset;
-    int j;
-    CPU_ZERO(&cpuset);
-    CPU_ZERO(&mask);
-    CPU_SET(0, &mask);
+    pthread_mutex_lock(&rule_load_mutex_dp);
 
-    printf("dp acl build thread running\n");
+    Rule_config();  //give a configfile and notify
 
-    pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    rule_load_notify_dp = 1;
 
-    printf("Set returned by pthread_getaffinity_np() contained:\n");
-    for (j = 0; j < 2; j++)
-        if (CPU_ISSET(j, &cpuset))
-            printf("    CPU %d\n", j);
+    pthread_cond_signal(&rule_load_cond_dp);
 
-    if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask) < 0)
-    {
-        LOGDBG("set thread affinity failed\n");
-    }
-
-    LOGDBG("set thread affinity OK\n");
-
-    pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-
-    printf("Set returned by pthread_getaffinity_np() contained:\n");
-    for (j = 0; j < 2; j++)
-        if (CPU_ISSET(j, &cpuset))
-            printf("    CPU %d\n", j);
-
-
-    while(1)
-    {
-        rc = sleep(DP_ACL_BUILD_CHECK_INTERVAL);
-
-        if(0 == rc)
-        {
-            DP_Acl_Build();
-        }
-    }
-
-    return NULL;
-
+    pthread_mutex_unlock(&rule_load_mutex_dp);
 }
 
 
 
 
-void DP_Acl_Build_Thread_Init()
+int DP_Acl_Rule_Add(RCP_BLOCK_ACL_RULE_TUPLE *rule, uint32_t *ruleid)
 {
-    pthread_create(&dp_acl_build_thread, NULL, DP_Acl_Build_Fn, NULL);
+    int ret;
+
+    ret = Rule_add(rule, ruleid);
+    if(ret != RULE_OK)
+    {
+        return ret;
+    }
+
+#ifdef RULE_DEBUG
+    printf("success load rule num is %d\n", RULE_ENTRY_MAX - rule_list->rule_entry_free);
+#endif
+
+    Rule_Notify_Dp_Build();
+
+    return RULE_OK;
 }
 
 
+int DP_Acl_Rule_Delete(uint32_t ruleid)
+{
+    int ret;
+    ret = Rule_del_by_id(ruleid);
+    if(ret != RULE_OK)
+    {
+        return ret;
+    }
 
+#ifdef RULE_DEBUG
+    printf("success delete rule,now num is %d\n", RULE_ENTRY_MAX - rule_list->rule_entry_free);
+#endif
 
+    Rule_Notify_Dp_Build();
 
+    return RULE_OK;
+}
 
+uint32_t ruleid = 0;
+void DP_Acl_Rule_Add_Test()
+{
 
+    RCP_BLOCK_ACL_RULE_TUPLE rule;
+    rule.action = 0;
+    rule.smac[0] = 0x22;
+    rule.smac[1] = 0x22;
+    rule.smac[2] = 0x22;
+    rule.smac[3] = 0x22;
+    rule.smac[4] = 0x22;
+    rule.smac[5] = 0x22;
 
+    rule.dmac[0] = 0x33;
+    rule.dmac[1] = 0x33;
+    rule.dmac[2] = 0x33;
+    rule.dmac[3] = 0x33;
+    rule.dmac[4] = 0x33;
+    rule.dmac[5] = 0x33;
 
+    rule.sip = 0x10101010;
+    rule.dip = 0x20202020;
 
+    rule.sip_mask = 32;
+    rule.dip_mask = 24;
 
+    rule.sport_start = 2;
+    rule.sport_end = 2;
 
+    rule.dport_start = 3;
+    rule.dport_end = 3;
 
+    rule.protocol_start = 4;
+    rule.protocol_end = 4;
+
+    rule.time_start = 0;
+    rule.time_end = 0;
+
+    DP_Acl_Rule_Add(&rule, &ruleid);
+
+}
+
+void DP_Acl_Rule_Delete_Test()
+{
+    DP_Acl_Rule_Delete(ruleid);
+}
 
 
 

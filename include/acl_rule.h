@@ -2,6 +2,7 @@
 #define __ACL_RULE_H__
 
 #include <rpc-common.h>
+#include <pthread.h>
 
 
 #define RULE_ENTRY_MAX 10000
@@ -17,6 +18,12 @@
 #define ACL_RULE_ACTION_FW 0
 #define ACL_RULE_ACTION_DROP 1
 
+
+#define RULE_OK         0
+#define RULE_FULL       1
+#define RULE_EXIST      2
+#define RULE_NOT_EXIST  3
+
 typedef struct{
     int8_t entry_status;
     RCP_BLOCK_ACL_RULE_TUPLE rule_tuple;
@@ -29,10 +36,10 @@ typedef struct
     uint32_t rule_def_act;
     int rule_entry_free;
     int build_status;
-    int build_notify;
+    pthread_mutex_t rulelist_mutex;
     rule_entry_t rule_entry[RULE_ENTRY_MAX];
 }rule_list_t;
 
-
+extern rule_list_t *rule_list;
 
 #endif

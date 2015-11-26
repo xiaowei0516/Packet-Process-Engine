@@ -94,7 +94,7 @@ typedef struct IPV4Hdr_
 
 #define IPV4_SET_IPLEN(p, value) \
     IPV4_SET_RAW_IPLEN((IPV4Hdr *)(p->network_header), value)
-    
+
 #define IPV4_SET_IPCSUM(p, value) \
     IPV4_SET_RAW_IPCSUM((IPV4Hdr *)(p->network_header), value)
 
@@ -108,12 +108,10 @@ typedef struct IPV4Hdr_
     (IPV4_GET_IPOFFSET(p) > 0 || IPV4_GET_MF(p) == 1)
 
 
-
-
+#define PROTO_ICMP       1
 #define PROTO_TCP        6  /**< tcp */
-
 #define PROTO_UDP       17  /**< user datagram protocol */
-
+#define PROTO_OSPF      89
 
 
 static inline uint16_t IPV4CalculateChecksum(uint16_t *pkt, uint16_t hlen)

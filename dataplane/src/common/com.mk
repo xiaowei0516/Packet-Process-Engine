@@ -14,7 +14,8 @@ LIBCOMMON_OBJ_$(d)  :=  \
 	$(OBJ_DIR)/dp_cmd.o \
 	$(OBJ_DIR)/mbuf.o \
 	$(OBJ_DIR)/watchdog.o \
-	$(OBJ_DIR)/sos_malloc.o
+	$(OBJ_DIR)/sos_malloc.o \
+	$(OBJ_DIR)/dp_log.o
     
 
 INCLUDE_DIR := \
@@ -22,8 +23,10 @@ INCLUDE_DIR := \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/include \
     -I$(OCTEON_ROOT)/sec-fw/dataplane/src/decode \
     -I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/plugin/stream-tcp \
     -I$(OCTEON_ROOT)/sec-fw/dataplane/src/flow \
     -I$(OCTEON_ROOT)/sec-fw/dataplane/src/acl \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/attack \
     -I$(OCTEON_ROOT)/sec-fw/include
     
 

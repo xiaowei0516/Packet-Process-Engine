@@ -4,8 +4,8 @@
 
 #include <sec-common.h>
 
-extern CVMX_SHARED uint64_t global_time;
-extern CVMX_SHARED uint64_t seconds_since1970;
+extern uint64_t global_time;
+extern uint64_t seconds_since1970;
 
 
 #define OCT_TIME_SECONDS_SINCE1970 seconds_since1970

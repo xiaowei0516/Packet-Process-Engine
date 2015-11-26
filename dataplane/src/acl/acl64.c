@@ -24,7 +24,7 @@ uint32_t HS_Node_Init()
     int i = 0;
     uint64_t start;
 
-    void *ptr = (void *)cvmx_bootmem_alloc_named(sizeof(HS_Node_Ring_t) + (HS_NODE_NUM_MAX - 1) * sizeof(hs_node_t), 128, HS_NODE_NAME);
+    void *ptr = (void *)cvmx_bootmem_alloc_named(sizeof(HS_Node_Ring_t) + (HS_NODE_NUM_MAX) * sizeof(hs_node_t), 128, HS_NODE_NAME);
     if(NULL == ptr)
     {
         return SEC_NO;
@@ -56,7 +56,7 @@ void *HS_NODE_ALLOC()
     void *ptr;
     if(hsnode_ring->rd_index == hsnode_ring->wr_index)
     {
-        LOGDBG("HS node is empty\n");
+        printf("HS node is empty\n");
         return NULL;
     }
 
@@ -69,7 +69,7 @@ void HS_NODE_FREE(void *ptr)
 {
     if( (hsnode_ring->wr_index + 1) % HS_NODE_NUM_MAX == hsnode_ring->rd_index)
     {
-        LOGDBG("HS node is full\n");
+        printf("HS node is full\n");
         return;
     }
 
@@ -250,7 +250,6 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
         }
 
 #ifdef  DEBUG
-        printf("\n>>dim[%d] segs: ", dim);
         for (num = 0; num < pos; num++) {
             /*if (!(num % 10))  printf("\n");*/
             printf ("%lx(%lu) ", segPoints[dim][num], segPointsInfo[dim][num]);
@@ -331,9 +330,11 @@ int BuildHSTree (rule_set_t* ruleset, hs_node_t* currNode, unsigned int depth)
 
         gChildCount ++;
         gNumLeafNode ++;
+#ifdef DEBUG
         if (gNumLeafNode % 1000000 == 0)
             printf(".");
             /*printf("\n>>#%8dM leaf-node generated", gNumLeafNode/1000000);*/
+#endif
         if (gWstDepth < depth)
             gWstDepth = depth;
         gAvgDepth += depth;

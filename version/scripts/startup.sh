@@ -8,6 +8,11 @@ ifconfig eth1 promisc up
 ifconfig eth3 promisc up
 ifconfig eth2 promisc up
 
-ifconfig pow0 up
+ifconfig pow0 down
+ifconfig pow1 down
+ifconfig pow2 down
+ifconfig pow3 down
+
+
 
 

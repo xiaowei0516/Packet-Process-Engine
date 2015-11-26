@@ -1,43 +1,7 @@
-######################*license start*###################################
-#   Copyright (c) 2003-2008 Cavium Inc.y (support@cavium.com). All rights
-#   reserved.
-# 
-# 
-#   Redistribution and use in source and binary forms, with or without
-#   modification, are permitted provided that the following conditions are
-#   met:
-# 
-#       * Redistributions of source code must retain the above copyright
-#         notice, this list of conditions and the following disclaimer.
-# 
-#       * Redistributions in binary form must reproduce the above
-#         copyright notice, this list of conditions and the following
-#         disclaimer in the documentation and/or other materials provided
-#         with the distribution.
-# 
-#       * Neither the name of Cavium Inc.y nor the names of
-#         its contributors may be used to endorse or promote products
-#         derived from this software without specific prior written
-#         permission.
-# 
-#   TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
-#   AND WITH ALL FAULTS AND CAVIUM NETWORKS MAKES NO PROMISES, REPRESENTATIONS
-#   OR WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH
-#   RESPECT TO THE SOFTWARE, INCLUDING ITS CONDITION, ITS CONFORMITY TO ANY
-#   REPRESENTATION OR DESCRIPTION, OR THE EXISTENCE OF ANY LATENT OR PATENT
-#   DEFECTS, AND CAVIUM SPECIFICALLY DISCLAIMS ALL IMPLIED (IF ANY) WARRANTIES
-#   OF TITLE, MERCHANTABILITY, NONINFRINGEMENT, FITNESS FOR A PARTICULAR
-#   PURPOSE, LACK OF VIRUSES, ACCURACY OR COMPLETENESS, QUIET ENJOYMENT, QUIET
-#   POSSESSION OR CORRESPONDENCE TO DESCRIPTION.  THE ENTIRE RISK ARISING OUT
-#   OF USE OR PERFORMANCE OF THE SOFTWARE LIES WITH YOU.
-# 
-# 
-#   For any questions regarding licensing please contact marketing@cavium.com
-# 
 #
 #  secd Makefile
 #
-#  $Id: Makefile 79826 2013-01-11 00:36:54Z cchavva $
+  
 #
 
 memory=384
@@ -76,6 +40,24 @@ include $(dir)/com.mk
 dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/acl
 include $(dir)/acl.mk
 
+dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/route
+include $(dir)/route.mk
+
+dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/attack
+include $(dir)/attack.mk
+
+dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/plugin/stream-tcp
+include $(dir)/stream-tcp.mk
+
+dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/output
+include $(dir)/output.mk
+
+dir := $(OCTEON_ROOT)/sec-fw/ipc
+include $(dir)/ipc.mk
+
+dir := $(OCTEON_ROOT)/sec-fw/rule
+include $(dir)/rule.mk
+
 dir := $(OCTEON_ROOT)/sec-fw/dataplane/src/platform
 include $(dir)/oct.mk
 
@@ -97,6 +79,10 @@ INCLUDE_DIR := \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/platform \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/flow \
 	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/common \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/L7 \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/plugin/stream-tcp \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/route \
+	-I$(OCTEON_ROOT)/sec-fw/dataplane/src/attack \
 	-I$(OCTEON_ROOT)/sec-fw/include
 
 
