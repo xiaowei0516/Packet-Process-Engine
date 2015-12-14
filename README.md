@@ -37,7 +37,6 @@ Packet Process Engine is a high performance Netwrok Packet Process Engine. It is
 - High performance memory pool
 
 ### Hardware Platform supporting list
-- Cavium octeon (base on SE-UM mode of SDK which provide by Linux kernel source code)
 - DPDK (Todo...) 
 
 ## How to use
