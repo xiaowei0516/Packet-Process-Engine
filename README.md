@@ -43,28 +43,6 @@ Packet Process Engine is a high performance Netwrok Packet Process Engine. It is
 ### Hardware Platform supporting list
 - DPDK (Todo...) 
 
-## How to use
-1. Download source code
-
-2. Setup platform environment
-
-3. Complie
-```bash
-#cd code root path
-#./build.sh             //ManagePlane and Dataplane full compile
-#./build.sh mgrplane    //ManagePlane compile 
-#./build.sh dataplane   //Dataplane compile
-#./build.sh clean       //Compile clean
-```
-
-4. Run
-```bash
-#cd ./bin
-#./startup.sh
-#./srv
-#schedtool –a 0x2 –e ./secd-linux_64
-#./cli
-```
 
 ## Contributors
 PPE is designed and implemented by @Roy Luo. For more information about the author, please visit: [http://royluo.org/about](http://royluo.org/about)
